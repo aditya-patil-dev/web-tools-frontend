@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { NAV_ITEMS } from "./nav.config";
+import { TOP_NAV_ITEMS, TOOLS_NAV_ITEMS } from "./nav.config";
 
 export default function Navbar() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -12,84 +12,104 @@ export default function Navbar() {
     return (
         <>
             <header className="nav-wrapper">
-                <nav className="nav-container">
-                    {/* Logo */}
-                    <Link href="/" className="nav-logo">
-                        Web<span>Tools</span>
-                    </Link>
+                {/* TOP ROW - Logo, Pricing, About, Login, Try Tools */}
+                <div className="nav-top-row">
+                    <div className="nav-container">
+                        {/* Logo */}
+                        <Link href="/" className="nav-logo">
+                            Web<span>Tools</span>
+                        </Link>
 
-                    {/* Desktop Menu */}
-                    <ul className="nav-menu desktop-only">
-                        {NAV_ITEMS.map((item, index) => {
-                            const hasDropdown = !!item.children;
-
-                            return (
-                                <li
+                        {/* Desktop Top Navigation */}
+                        <div className="nav-top-links desktop-only">
+                            {TOP_NAV_ITEMS.map((item) => (
+                                <Link
                                     key={item.label}
-                                    className={`nav-item ${hasDropdown ? "nav-dropdown" : ""} ${openIndex === index ? "open" : ""
-                                        }`}
-                                    onMouseEnter={() => hasDropdown && setOpenIndex(index)}
-                                    onMouseLeave={() => hasDropdown && setOpenIndex(null)}
+                                    href={item.href}
+                                    className="nav-top-link"
                                 >
-                                    {hasDropdown ? (
-                                        <div className="nav-item-wrapper">
-                                            <Link
-                                                href={item.href!}
-                                                className="nav-item-link"
-                                            >
-                                                {item.label}
-                                            </Link>
-                                            <button
-                                                className="dropdown-trigger-btn"
-                                                aria-label={`Open ${item.label} menu`}
-                                            >
-                                                <span className="caret" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <Link href={item.href!}>{item.label}</Link>
-                                    )}
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </div>
 
-                                    {hasDropdown && (
-                                        <div className="dropdown-menu">
-                                            {item.children!.map((child) => (
-                                                <Link key={child.href} href={child.href}>
-                                                    {child.label}
-                                                    {child.badge && (
-                                                        <span className={`badge badge-${child.badge}`}>
-                                                            {child.badge}
-                                                        </span>
-                                                    )}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
+                        {/* Desktop Actions */}
+                        <div className="nav-actions desktop-only">
+                            <Link href="/login" className="nav-link">
+                                Login
+                            </Link>
+                            <Link href="/tools" className="nav-cta">
+                                Try Tools
+                            </Link>
+                        </div>
 
-                    {/* Desktop Actions */}
-                    <div className="nav-actions desktop-only">
-                        <Link href="/login" className="nav-link">
-                            Login
-                        </Link>
-                        <Link href="/tools" className="nav-cta">
-                            Try Tools
-                        </Link>
+                        {/* Mobile Hamburger */}
+                        <button
+                            className="mobile-toggle mobile-only"
+                            onClick={() => setMobileOpen(true)}
+                            aria-label="Open menu"
+                        >
+                            <span />
+                            <span />
+                            <span />
+                        </button>
                     </div>
+                </div>
 
-                    {/* Mobile Hamburger */}
-                    <button
-                        className="mobile-toggle mobile-only"
-                        onClick={() => setMobileOpen(true)}
-                        aria-label="Open menu"
-                    >
-                        <span />
-                        <span />
-                        <span />
-                    </button>
-                </nav>
+                {/* BOTTOM ROW - All Tools with Dropdowns */}
+                <div className="nav-bottom-row desktop-only">
+                    <div className="nav-container">
+                        <nav className="nav-tools-menu">
+                            {TOOLS_NAV_ITEMS.map((item, index) => {
+                                const hasDropdown = !!item.children;
+
+                                return (
+                                    <div
+                                        key={item.label}
+                                        className={`nav-item ${hasDropdown ? "nav-dropdown" : ""} ${openIndex === index ? "open" : ""
+                                            }`}
+                                        onMouseEnter={() => hasDropdown && setOpenIndex(index)}
+                                        onMouseLeave={() => hasDropdown && setOpenIndex(null)}
+                                    >
+                                        {hasDropdown ? (
+                                            <div className="nav-item-wrapper">
+                                                <Link
+                                                    href={item.href!}
+                                                    className="nav-item-link"
+                                                >
+                                                    {item.label}
+                                                </Link>
+                                                <button
+                                                    className="dropdown-trigger-btn"
+                                                    aria-label={`Open ${item.label} menu`}
+                                                >
+                                                    <span className="caret" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <Link href={item.href!}>{item.label}</Link>
+                                        )}
+
+                                        {hasDropdown && (
+                                            <div className="dropdown-menu">
+                                                {item.children!.map((child) => (
+                                                    <Link key={child.href} href={child.href}>
+                                                        {child.label}
+                                                        {child.badge && (
+                                                            <span className={`badge badge-${child.badge}`}>
+                                                                {child.badge}
+                                                            </span>
+                                                        )}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </nav>
+                    </div>
+                </div>
             </header>
 
             {/* Mobile Slide Panel */}
@@ -110,7 +130,24 @@ export default function Navbar() {
                 </div>
 
                 <ul className="mobile-menu">
-                    {NAV_ITEMS.map((item, index) => {
+                    {/* Top Nav Items in Mobile */}
+                    {TOP_NAV_ITEMS.map((item) => (
+                        <li key={item.label}>
+                            <Link
+                                href={item.href}
+                                className="mobile-link"
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {item.label}
+                            </Link>
+                        </li>
+                    ))}
+
+                    {/* Divider */}
+                    <li className="mobile-divider">Tools</li>
+
+                    {/* Tools Items in Mobile */}
+                    {TOOLS_NAV_ITEMS.map((item, index) => {
                         const hasChildren = !!item.children;
                         const isOpen = mobileSub === index;
 

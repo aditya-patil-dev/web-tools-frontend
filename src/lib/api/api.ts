@@ -54,6 +54,10 @@ export const api = {
     return apiClient.put<T>(endpoint, body).then((res) => res.data);
   },
 
+  patch<T>(endpoint: string, body?: unknown) {
+    return apiClient.patch<T>(endpoint, body).then((res) => res.data);
+  },
+
   delete<T>(endpoint: string, body?: unknown) {
     return apiClient
       .delete<T>(endpoint, { data: body })

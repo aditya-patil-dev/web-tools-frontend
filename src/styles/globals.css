@@ -184,27 +184,36 @@ a {
 }
 
 /* ==========================================
-   NAVBAR
+   TWO-ROW NAVBAR LAYOUT
    ========================================== */
+
 .nav-wrapper {
   position: sticky;
   top: 0;
   z-index: 1000;
-  overflow: visible;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-primary);
-  transition: all var(--transition-base);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ==========================================
+   TOP ROW - Logo, Pricing, About, Login, Try Tools
+   ========================================== */
+
+.nav-top-row {
+  background: white;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .nav-container {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: var(--space-4) var(--container-padding);
+  padding: var(--space-3) var(--container-padding);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
 
 .nav-logo {
@@ -223,14 +232,94 @@ a {
   color: var(--color-primary);
 }
 
-/* Desktop Menu */
-.nav-menu {
+.nav-top-links {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  gap: var(--space-6);
+  margin-left: auto;
+}
+
+.nav-top-link {
+  font-size: var(--font-base);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-base);
+  position: relative;
+}
+
+.nav-top-link:hover {
+  color: var(--color-primary);
+}
+
+.nav-top-link::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-primary);
+  transition: width var(--transition-base);
+}
+
+.nav-top-link:hover::after {
+  width: 100%;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.nav-link {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-base);
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+}
+
+.nav-cta {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: white;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ==========================================
+   BOTTOM ROW - Tools Navigation
+   ========================================== */
+
+.nav-bottom-row {
+  background: rgba(249, 250, 251, 0.8);
+  border-top: 1px solid var(--border-primary);
+}
+
+.nav-bottom-row .nav-container {
+  padding: 0 var(--container-padding);
+  justify-content: center;
+}
+
+.nav-tools-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .nav-item {
@@ -243,7 +332,7 @@ a {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  font-size: var(--font-base);
+  font-size: var(--font-sm);
   font-weight: 500;
   color: var(--text-secondary);
   border-radius: var(--radius-md);
@@ -252,7 +341,7 @@ a {
 
 .nav-item > a:hover {
   color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: white;
 }
 
 /* Dual-Purpose Items (Link + Dropdown) */
@@ -264,13 +353,13 @@ a {
 }
 
 .nav-item-wrapper:hover {
-  background: var(--color-primary-light);
+  background: white;
 }
 
 .nav-item-link {
   flex: 1;
   padding: var(--space-3) var(--space-1) var(--space-3) var(--space-4);
-  font-size: var(--font-base);
+  font-size: var(--font-sm);
   font-weight: 500;
   color: var(--text-secondary);
   transition: color var(--transition-base);
@@ -316,10 +405,10 @@ a {
 /* Dropdown Menu */
 .dropdown-menu {
   position: absolute;
-  top: calc(85% + var(--space-2));
+  top: calc(100% + var(--space-2));
   left: 0;
   min-width: 220px;
-  background: var(--bg-elevated);
+  background: white;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
@@ -371,38 +460,9 @@ a {
   color: white;
 }
 
-/* Desktop Actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.nav-link {
-  padding: var(--space-3) var(--space-4);
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: color var(--transition-base);
-}
-
-.nav-link:hover {
-  color: var(--color-primary);
-}
-
-.nav-cta {
-  padding: var(--space-3) var(--space-6);
-  font-weight: 600;
-  color: white;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-}
-
-.nav-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
+/* ==========================================
+   MOBILE NAVIGATION
+   ========================================== */
 
 /* Mobile Toggle */
 .mobile-toggle {
@@ -448,6 +508,7 @@ a {
   justify-content: space-between;
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border-primary);
+  background: white;
 }
 
 .close-btn {
@@ -473,6 +534,17 @@ a {
 .mobile-menu {
   list-style: none;
   padding: var(--space-4);
+}
+
+.mobile-divider {
+  padding: var(--space-4) var(--space-2) var(--space-2);
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border-primary);
 }
 
 /* Mobile Link Wrapper (for items with both link and dropdown) */
@@ -577,6 +649,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  background: white;
 }
 
 .mobile-actions a {
@@ -599,7 +672,7 @@ a {
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-overlay);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1999;
   animation: fadeIn var(--transition-base);
 }
@@ -613,7 +686,10 @@ a {
   }
 }
 
-/* Responsive Utilities */
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
 @media (max-width: 768px) {
   .desktop-only {
     display: none !important;
@@ -622,11 +698,28 @@ a {
   .mobile-toggle {
     display: flex;
   }
+
+  .nav-top-row .nav-container {
+    padding: var(--space-4) var(--container-padding);
+  }
 }
 
 @media (min-width: 769px) {
   .mobile-only {
     display: none !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+  .nav-tools-menu {
+    gap: var(--space-05);
+  }
+
+  .nav-item-link,
+  .nav-item > a {
+    font-size: var(--font-xs);
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -6586,5 +6679,319 @@ a {
 
   .preset-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Buy Me a Coffee Widget Styles */
+
+.coffeeWidget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.coffeeWidget.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Floating Card */
+.coffeeCard {
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 6px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+  position: relative;
+}
+
+.coffeeCardInner {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-decoration: none;
+}
+
+.coffeeCardInner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.coffeeCard:hover .coffeeCardInner {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 24px rgba(255, 107, 53, 0.4),
+    0 0 40px rgba(255, 107, 53, 0.2);
+}
+
+.coffeeCard:active .coffeeCardInner {
+  transform: translateY(0);
+}
+
+/* Coffee Icon */
+.coffeeIconWrapper {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.coffeeIcon {
+  font-size: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Steam Effect */
+.steamContainer {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+  overflow: visible;
+}
+
+.steam {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  filter: blur(1px);
+}
+
+.steam:nth-child(1) {
+  left: 8px;
+  animation: steamRise 2s ease-in-out infinite;
+}
+
+.steam:nth-child(2) {
+  left: 14px;
+  animation: steamRise 2s ease-in-out 0.4s infinite;
+}
+
+.steam:nth-child(3) {
+  left: 20px;
+  animation: steamRise 2s ease-in-out 0.8s infinite;
+}
+
+@keyframes steamRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scaleX(1);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scaleX(1.5);
+  }
+}
+
+/* Text Content */
+.coffeeText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.coffeeMessage {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.coffeeCta {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Particles */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particleFloat 2s ease-out forwards;
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0);
+  }
+}
+
+/* Glow Effect */
+.glowPulse {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border-radius: 18px;
+  opacity: 0;
+  filter: blur(12px);
+  animation: glow 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Close Button */
+.closeBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.coffeeCard:hover .closeBtn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: #ff6b35;
+}
+
+.closeBtn::before,
+.closeBtn::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 1px;
+}
+
+.closeBtn::before {
+  transform: rotate(45deg);
+}
+
+.closeBtn::after {
+  transform: rotate(-45deg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .coffeeWidget {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .coffeeCardInner {
+    padding: 14px 18px;
+    gap: 10px;
+  }
+
+  .coffeeIconWrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .coffeeIcon {
+    font-size: 20px;
+  }
+
+  .coffeeMessage {
+    font-size: 11px;
+  }
+
+  .coffeeCta {
+    font-size: 14px;
   }
 }

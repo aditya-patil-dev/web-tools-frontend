@@ -475,7 +475,9 @@ export default function ToolsPage() {
                 header: "Type",
                 accessorKey: "tool_type",
                 cell: ({ row }) => (
-                    <span style={{ fontSize: 13 }}>{row.original.tool_type}</span>
+                    <span style={{ fontSize: 13, textTransform: "capitalize" }}>
+                        {row.original.tool_type || "N/A"}
+                    </span>
                 ),
             },
 
@@ -524,31 +526,35 @@ export default function ToolsPage() {
             },
 
             {
-                header: "Rating",
-                accessorKey: "rating",
-                cell: ({ row }) => (
-                    <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                        ⭐ {row.original.rating.toFixed(1)}
-                    </span>
-                ),
+                header: "Sort Order",
+                accessorKey: "sort_order",
+                cell: ({ row }) => {
+                    const order = row.original.sort_order;
+                    return (
+                        <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13 }}>
+                            {order ?? 0}
+                        </span>
+                    );
+                },
             },
 
             {
-                header: "Usage",
-                id: "usage",
+                header: "Created",
+                accessorKey: "created_at",
                 cell: ({ row }) => {
-                    const r = row.original;
-                    return (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <span style={{ fontSize: 12 }}>
-                                <i className="bi bi-eye" /> {r.views.toLocaleString()} views
-                            </span>
-                            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                                <i className="bi bi-people" /> {r.users_count.toLocaleString()}{" "}
-                                users
-                            </span>
-                        </div>
-                    );
+                    const date = row.original.created_at;
+                    if (!date) return <span style={{ color: "var(--text-tertiary)" }}>N/A</span>;
+
+                    try {
+                        const formatted = new Date(date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                        });
+                        return <span style={{ fontSize: 13 }}>{formatted}</span>;
+                    } catch {
+                        return <span style={{ color: "var(--text-tertiary)" }}>Invalid Date</span>;
+                    }
                 },
             },
 

@@ -34,6 +34,17 @@ import WebsiteSpeedTestTool from "@/components/tools/WebsiteSpeedTestTool";
 import HashGeneratorTool from "@/components/tools/HashGeneratorTool";
 import Base64Tool from "@/components/tools/Base64Tool";
 import JwtDecoderTool from "@/components/tools/JwtDecoderTool";
+import HeicConverterTool from "@/components/tools/HeicConverterTool";
+import JsonToCsvTool from "@/components/tools/JsonToCsvTool";
+import UnixTimestampTool from "@/components/tools/UnixTimestampTool";
+import PdfToJpgTool from "@/components/tools/PdfToJpgTool";
+import JpgToPdfTool from "@/components/tools/JpgToPdfTool";
+import MergePdfTool from "@/components/tools/MergePdfTool";
+import PdfToWordTool from "@/components/tools/PdfToWordTool";
+import PdfToExcelTool from "@/components/tools/PdfToExcelTool";
+import UnlockPdfTool from "@/components/tools/UnlockPdfTool";
+import ProtectPdfTool from "@/components/tools/ProtectPdfTool";
+
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -168,6 +179,16 @@ export default function ToolPage() {
                     {tool.tool_type === "hash-generator" && <HashGeneratorTool />}
                     {tool.tool_type === "base64-encoder-decoder" && <Base64Tool />}
                     {tool.tool_type === "jwt-decoder" && <JwtDecoderTool />}
+                    {tool.tool_type === "heic-to-jpg-png" && <HeicConverterTool />}
+                    {tool.tool_type === "json-to-csv-converter" && <JsonToCsvTool />}
+                    {tool.tool_type === "unix-timestamp-converter" && <UnixTimestampTool />}
+                    {tool.tool_type === "pdf-to-jpg-converter" && <PdfToJpgTool />}
+                    {tool.tool_type === "jpg-to-pdf-converter" && <JpgToPdfTool />}
+                    {tool.tool_type === "merge-pdf" && <MergePdfTool />}
+                    {tool.tool_type === "pdf-to-word-converter" && <PdfToWordTool />}
+                    {tool.tool_type === "pdf-to-excel-converter" && <PdfToExcelTool />}
+                    {tool.tool_type === "unlock-pdf" && <UnlockPdfTool />}
+                    {tool.tool_type === "protect-pdf" && <ProtectPdfTool />}
 
                 </motion.div>
 
