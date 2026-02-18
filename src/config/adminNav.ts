@@ -29,8 +29,13 @@ export const ADMIN_NAV: AdminNavItem[] = [
         id: "tools",
         label: "Tools",
         icon: "bi-tools",
-        href: "/admin/tools",
-        match: "exact",
+        match: "prefix",
+        children: [
+            { id: "categories", label: "Categories", href: "/admin/tools/categories", match: "prefix" },
+            { id: "tools-list", label: "Tools", href: "/admin/tools/list", match: "prefix" },
+            { id: "tools-pages", label: "Tool Pages", href: "/admin/tools/pages", match: "prefix" },
+
+        ],
     },
     {
         id: "settings",
