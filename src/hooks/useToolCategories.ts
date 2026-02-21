@@ -1,10 +1,15 @@
 import useSWR from "swr";
-import { api } from "@/lib/api/api";
+import { useState, useEffect } from "react";
+import { toolCategoriesApi } from "@/services/tool-categories.service";
 import type {
     ToolCategoryListParams,
     ToolCategoryListResponse,
+    ToolCategoryResponse,
 } from "@/types/tool-category.types";
 
+/**
+ * Fetch list of categories with pagination
+ */
 export function useToolCategories(params?: ToolCategoryListParams) {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.set("page", String(params.page));
@@ -17,7 +22,7 @@ export function useToolCategories(params?: ToolCategoryListParams) {
 
     const { data, error, isLoading, mutate } = useSWR<ToolCategoryListResponse>(
         endpoint,
-        (url: string) => api.get<ToolCategoryListResponse>(url),
+        () => toolCategoriesApi.list(params),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
@@ -37,12 +42,15 @@ export function useToolCategories(params?: ToolCategoryListParams) {
     };
 }
 
+/**
+ * Fetch single category by slug
+ */
 export function useToolCategory(slug: string | null) {
     const endpoint = slug ? `/admin/tools/categories/${slug}` : null;
 
-    const { data, error, isLoading, mutate } = useSWR(
+    const { data, error, isLoading, mutate } = useSWR<ToolCategoryResponse>(
         endpoint,
-        (url: string) => api.get(url),
+        slug ? () => toolCategoriesApi.getBySlug(slug) : null,
         {
             revalidateOnFocus: false,
         }
@@ -54,4 +62,40 @@ export function useToolCategory(slug: string | null) {
         error,
         refetch: mutate,
     };
+}
+
+/**
+ * Check if slug is available (with debouncing)
+ */
+export function useSlugAvailability(slug: string, enabled: boolean = true) {
+    const [isChecking, setIsChecking] = useState(false);
+    const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!enabled || !slug || slug.length < 2) {
+            setIsAvailable(null);
+            return;
+        }
+
+        // Debounce
+        const timer = setTimeout(async () => {
+            setIsChecking(true);
+            setError(null);
+
+            try {
+                const result = await toolCategoriesApi.checkSlug(slug);
+                setIsAvailable(result.data.available);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Check failed");
+                setIsAvailable(null);
+            } finally {
+                setIsChecking(false);
+            }
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [slug, enabled]);
+
+    return { isChecking, isAvailable, error };
 }

@@ -32,8 +32,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
         match: "prefix",
         children: [
             { id: "categories", label: "Categories", href: "/admin/tools/categories", match: "prefix" },
-            { id: "tools-list", label: "Tools", href: "/admin/tools/list", match: "prefix" },
-            { id: "tools-pages", label: "Tool Pages", href: "/admin/tools/pages", match: "prefix" },
+            { id: "tools-list", label: "Tools", href: "/admin/tools/tools-card", match: "prefix" },
+            { id: "tools-pages", label: "Tool Pages", href: "/admin/tools/tool-pages", match: "prefix" },
 
         ],
     },

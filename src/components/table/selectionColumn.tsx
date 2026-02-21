@@ -11,7 +11,7 @@ export function selectionColumn<T>(): ColumnDef<T> {
                 className="dtCheckbox"
                 checked={table.getIsAllPageRowsSelected()}
                 onChange={table.getToggleAllPageRowsSelectedHandler()}
-                aria-label="Select all"
+                aria-label="Select all rows"
             />
         ),
         cell: ({ row }) => (

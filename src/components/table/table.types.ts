@@ -1,8 +1,9 @@
-import type {
-    ColumnDef,
-    SortingState,
-    VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/react-table";
+import type { ReactNode } from "react";
+
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
 
 export type DataTableMode = "client" | "server";
 
@@ -17,35 +18,19 @@ export type DataTableProps<T> = {
     tableId: string;
     columns: ColumnDef<T, unknown>[];
     data: T[];
-
-    /** Row id resolver (strongly recommended for stable selection) */
     getRowId?: (row: T, index: number) => string;
-
-    /** client or server */
     mode?: DataTableMode;
-
-    /** server mode only */
     totalRows?: number;
     query?: Partial<DataTableQueryState>;
     onQueryChange?: (next: DataTableQueryState) => void;
-
-    /** UI */
     title?: string;
     subtitle?: string;
     loading?: boolean;
     error?: string | null;
     onRetry?: () => void;
-
-    /** features */
     enableRowSelection?: boolean;
-
-    /** actions (optional): shown in toolbar right */
-    rightActions?: React.ReactNode;
-
-    /** called when selection changes */
-    onSelectionChange?: (selectedRows: T[]) => void;
-
-    /** initial */
+    rightActions?: ReactNode;
+    onSelectionChange?: (rows: T[]) => void;
     initialPageSize?: number;
 };
 
@@ -53,3 +38,26 @@ export type PersistedTablePrefs = {
     columnVisibility?: VisibilityState;
     pageSize?: number;
 };
+
+// ─────────────────────────────────────────────
+// Storage helpers
+// ─────────────────────────────────────────────
+
+const KEY_PREFIX = "dt_prefs:";
+
+export function loadPrefs(tableId: string): PersistedTablePrefs | null {
+    if (typeof window === "undefined") return null;
+    try {
+        const raw = window.localStorage.getItem(`${KEY_PREFIX}${tableId}`);
+        return raw ? (JSON.parse(raw) as PersistedTablePrefs) : null;
+    } catch {
+        return null;
+    }
+}
+
+export function savePrefs(tableId: string, prefs: PersistedTablePrefs) {
+    if (typeof window === "undefined") return;
+    try {
+        window.localStorage.setItem(`${KEY_PREFIX}${tableId}`, JSON.stringify(prefs));
+    } catch { /* quota errors — silently ignore */ }
+}

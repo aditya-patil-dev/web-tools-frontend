@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { toolsApi } from "@/services/tools.api";
+import { toolsApi } from "@/services/tools.service";
 import { toast } from "@/components/toast/toast";
 import { loading } from "@/components/loading/loading";
 import type {
@@ -28,16 +28,13 @@ interface UseToolsListReturn {
   setParams: (params: Partial<ToolListParams>) => void;
 }
 
-export function useToolsList(
-  initialParams?: ToolListParams,
-): UseToolsListReturn {
+export function useToolsList(initialParams?: ToolListParams): UseToolsListReturn {
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [pagination, setPagination] =
-    useState<UseToolsListReturn["pagination"]>(null);
+  const [pagination, setPagination] = useState<UseToolsListReturn["pagination"]>(null);
   const [params, setParamsState] = useState<ToolListParams>(
-    initialParams || { page: 1, limit: 20 },
+    initialParams || { page: 1, limit: 20 }
   );
 
   const fetchTools = useCallback(async () => {
@@ -46,7 +43,7 @@ export function useToolsList(
     try {
       const response = await toolsApi.getTools(params);
       setTools(response.data);
-      setPagination(response.meta);
+      setPagination(response.meta || null);
     } catch (err) {
       const error = err as Error;
       setError(error);
@@ -126,11 +123,7 @@ interface UseToolMutationsReturn {
   createTool: (data: CompleteToolData) => Promise<boolean>;
   updateTool: (id: number, data: Partial<CompleteToolData>) => Promise<boolean>;
   deleteTool: (id: number, permanent?: boolean) => Promise<boolean>;
-  duplicateTool: (
-    id: number,
-    newSlug: string,
-    newTitle?: string,
-  ) => Promise<boolean>;
+  duplicateTool: (id: number, newSlug: string, newTitle?: string) => Promise<boolean>;
   restoreTool: (id: number) => Promise<boolean>;
   isSubmitting: boolean;
 }
@@ -146,7 +139,7 @@ export function useToolMutations(): UseToolMutationsReturn {
     try {
       const response = await toolsApi.createTool(data);
       toast.success(response.message || "Tool created successfully!");
-      router.push("/admin/tools");
+      router.push("/admin/tools/tools-card");
       return true;
     } catch (err) {
       const error = err as Error;
@@ -160,7 +153,7 @@ export function useToolMutations(): UseToolMutationsReturn {
 
   const updateTool = async (
     id: number,
-    data: Partial<CompleteToolData>,
+    data: Partial<CompleteToolData>
   ): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({ message: "Updating tool..." });
@@ -179,10 +172,7 @@ export function useToolMutations(): UseToolMutationsReturn {
     }
   };
 
-  const deleteTool = async (
-    id: number,
-    permanent = false,
-  ): Promise<boolean> => {
+  const deleteTool = async (id: number, permanent = false): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({
       message: permanent ? "Permanently deleting tool..." : "Deleting tool...",
@@ -207,7 +197,7 @@ export function useToolMutations(): UseToolMutationsReturn {
   const duplicateTool = async (
     id: number,
     newSlug: string,
-    newTitle?: string,
+    newTitle?: string
   ): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({ message: "Duplicating tool..." });
@@ -276,7 +266,7 @@ export function useBulkOperations(): UseBulkOperationsReturn {
       const response = await toolsApi.bulkUpdate(payload);
       toast.success(
         response.message ||
-          `${response.data.updated_count} tools updated successfully!`,
+        `${response.data.updated_count} tools updated successfully!`
       );
       return true;
     } catch (err) {
@@ -301,7 +291,7 @@ export function useBulkOperations(): UseBulkOperationsReturn {
       const response = await toolsApi.bulkDelete(payload);
       toast.success(
         response.message ||
-          `${response.data.deleted_count} tools deleted successfully!`,
+        `${response.data.deleted_count} tools deleted successfully!`
       );
       return true;
     } catch (err) {
@@ -379,6 +369,7 @@ export function useSlugChecker(): UseSlugCheckerReturn {
     try {
       const response = await toolsApi.checkSlugAvailability(slug);
       return response.data.available;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error("Failed to check slug availability");
       return false;

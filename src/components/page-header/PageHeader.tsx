@@ -10,7 +10,8 @@ export default function PageHeader({
     showBack,
     onBack,
     actions,
-    variant = "card", // 👈 default card
+    stickyActions = false,
+    variant = "card",
     className,
 }: PageHeaderProps) {
     return (
@@ -18,6 +19,7 @@ export default function PageHeader({
             className={[
                 "pageHeader",
                 variant === "card" ? "pageHeaderCard" : "pageHeaderFlat",
+                stickyActions ? "pageHeaderSticky" : "",
                 className ?? "",
             ].join(" ")}
         >
@@ -43,28 +45,47 @@ export default function PageHeader({
 
                 {actions && actions.length > 0 && (
                     <div className="pageHeaderActions">
-                        {actions.map((a, idx) =>
-                            a.href ? (
-                                <Link
-                                    key={idx}
-                                    href={a.href}
-                                    className={`phBtn ${a.variant ?? "secondary"}`}
-                                >
-                                    {a.icon && <i className={`bi ${a.icon}`} />}
-                                    <span>{a.label}</span>
-                                </Link>
-                            ) : (
+                        {actions.map((action, idx) => {
+                            // If it's a link
+                            if (action.href) {
+                                return (
+                                    <Link
+                                        key={idx}
+                                        href={action.href}
+                                        className={`phBtn ${action.variant ?? "secondary"}`}
+                                    >
+                                        {action.icon && <i className={`bi ${action.icon}`} />}
+                                        {action.leftIcon && action.leftIcon}
+                                        <span>{action.label}</span>
+                                    </Link>
+                                );
+                            }
+
+                            // If it's a button
+                            return (
                                 <button
                                     key={idx}
-                                    type="button"
-                                    className={`phBtn ${a.variant ?? "secondary"}`}
-                                    onClick={a.onClick}
+                                    type={action.type ?? "button"}
+                                    className={`phBtn ${action.variant ?? "secondary"} ${action.isLoading ? "loading" : ""
+                                        }`}
+                                    onClick={action.onClick}
+                                    disabled={action.disabled || action.isLoading}
                                 >
-                                    {a.icon && <i className={`bi ${a.icon}`} />}
-                                    <span>{a.label}</span>
+                                    {action.isLoading ? (
+                                        <>
+                                            <span className="phBtnSpinner" />
+                                            <span>{action.loadingText || action.label}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {action.icon && <i className={`bi ${action.icon}`} />}
+                                            {action.leftIcon && action.leftIcon}
+                                            <span>{action.label}</span>
+                                        </>
+                                    )}
                                 </button>
-                            )
-                        )}
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -74,7 +95,11 @@ export default function PageHeader({
                 <nav className="pageBreadcrumbs" aria-label="Breadcrumb">
                     {breadcrumbs.map((b, idx) => (
                         <span key={idx} className="breadcrumbItem">
-                            {b.href ? <Link href={b.href}>{b.label}</Link> : <span>{b.label}</span>}
+                            {b.href ? (
+                                <Link href={b.href}>{b.label}</Link>
+                            ) : (
+                                <span>{b.label}</span>
+                            )}
                             {idx < breadcrumbs.length - 1 && (
                                 <i className="bi bi-chevron-right breadcrumbSep" />
                             )}

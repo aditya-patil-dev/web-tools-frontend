@@ -15,10 +15,17 @@ export type PageHeaderProps = {
         icon?: string;
         onClick?: () => void;
         href?: string;
-        variant?: "primary" | "secondary" | "danger";
+        variant?: "primary" | "secondary" | "danger" | "ghost";
+        type?: "button" | "submit";
+        isLoading?: boolean;
+        loadingText?: string;
+        disabled?: boolean;
+        leftIcon?: React.ReactNode;
     }[];
 
-    /** NEW */
+    /** NEW - for form pages with sticky actions */
+    stickyActions?: boolean;
+
     variant?: "card" | "flat";
 
     className?: string;
