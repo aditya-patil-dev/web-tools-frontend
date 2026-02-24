@@ -1,20 +1,4 @@
-// about.config.ts - Centralized configuration for About page
-
 export const ABOUT_CONFIG = {
-    // SEO & Meta
-    seo: {
-        title: "About Us - WebTools | Fast & Free Online Tools",
-        description:
-            "Learn about WebTools - a modern platform offering fast, simple, and reliable online tools for developers, marketers, and creators.",
-        keywords: [
-            "about webtools",
-            "online tools platform",
-            "developer tools",
-            "free web tools",
-            "SEO tools",
-        ],
-    },
-
     // Header Section
     header: {
         title: "About",
@@ -103,4 +87,4 @@ export const ABOUT_CONFIG = {
 };
 
 // You can also export individual sections if needed
-export const { seo, header, mission, why, audience, principles, technology, future } = ABOUT_CONFIG;
+export const { header, mission, why, audience, principles, technology, future } = ABOUT_CONFIG;

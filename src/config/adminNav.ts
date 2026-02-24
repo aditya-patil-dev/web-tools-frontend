@@ -44,7 +44,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
         match: "prefix",
         children: [
             { id: "settings-general", label: "General", href: "/admin/settings", match: "prefix" },
-            { id: "settings-security", label: "Security", href: "/admin/settings/security", match: "prefix" },
+            { id: "settings-online-store", label: "Online Store", href: "/admin/settings/online-store", match: "prefix" },
         ],
     },
 ];
