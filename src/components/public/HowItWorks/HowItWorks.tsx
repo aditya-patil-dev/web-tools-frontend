@@ -48,7 +48,34 @@ const stepNumberVariants = {
     },
 };
 
-export default function HowItWorks() {
+interface Step {
+    step: string;
+    icon: string;
+    title: string;
+    description: string;
+}
+
+interface HowItWorksConfig {
+    header: {
+        title: string;
+        subtitle: string;
+    };
+    steps: Step[];
+}
+
+interface HowItWorksProps {
+    config?: HowItWorksConfig;
+}
+
+const DEFAULT_CONFIG: HowItWorksConfig = {
+    header: {
+        title: "How It <span>Works</span>",
+        subtitle: "Start using our tools in seconds. No learning curve, no setup.",
+    },
+    steps: STEPS,
+};
+
+export default function HowItWorks({ config = DEFAULT_CONFIG }: HowItWorksProps) {
     return (
         <section className="how-wrapper">
             <div className="how-container">
@@ -59,12 +86,8 @@ export default function HowItWorks() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                 >
-                    <h2>
-                        How It <span>Works</span>
-                    </h2>
-                    <p>
-                        Start using our tools in seconds. No learning curve, no setup.
-                    </p>
+                    <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
+                    <p>{config.header.subtitle}</p>
                 </motion.div>
 
                 <motion.div
@@ -74,7 +97,7 @@ export default function HowItWorks() {
                     viewport={{ once: true, margin: "-50px" }}
                     variants={containerVariants}
                 >
-                    {STEPS.map((step, index) => (
+                    {config.steps.map((step, index) => (
                         <motion.div
                             key={step.step}
                             className="how-card"
