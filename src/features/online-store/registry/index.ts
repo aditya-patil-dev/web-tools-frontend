@@ -20,6 +20,8 @@ import whyChooseUsSection from "../sections/why-choose-us";
 import howItWorksSection from "../sections/how-it-works";
 import finalCtaSection from "../sections/final-cta";
 import seoContentSection from "../sections/seo-content";
+import navbarSection from "../sections/navbar";
+import footerSection from "../sections/footer";
 
 const registry = new Map<string, SectionDefinition>([
     ["hero", heroSection],
@@ -28,6 +30,8 @@ const registry = new Map<string, SectionDefinition>([
     ["how-it-works", howItWorksSection],
     ["final-cta", finalCtaSection],
     ["seo-content", seoContentSection],
+    ["navbar", navbarSection],
+    ["footer", footerSection],
 ]);
 
 export default registry;
