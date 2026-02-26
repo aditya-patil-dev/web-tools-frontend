@@ -28,7 +28,7 @@ export default function ToolsPage() {
         page: query.pageIndex + 1,
         limit: query.pageSize,
         search: query.globalFilter,
-        sort_by: query.sorting[0]?.id || "created_at",
+        sort_by: (query.sorting[0]?.id as any) || "created_at",
         sort_order: query.sorting[0]?.desc ? "desc" : "asc",
     });
 
@@ -226,16 +226,6 @@ export default function ToolsPage() {
                         >
                             <i className="bi bi-pencil" />
                         </button>
-                        <button
-                            className="dt-btn danger"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(row.original.id, row.original.title);
-                            }}
-                            title="Delete tool"
-                        >
-                            <i className="bi bi-trash" />
-                        </button>
                     </div>
                 ),
                 enableSorting: false,
@@ -243,7 +233,7 @@ export default function ToolsPage() {
                 size: 120,
             },
         ],
-        [handleEdit, handleDelete]
+        [handleEdit]
     );
 
     return (
@@ -251,11 +241,6 @@ export default function ToolsPage() {
             <PageHeader
                 title="Tools"
                 subtitle="Manage your tools directory"
-                breadcrumbs={[
-                    { label: "Admin", href: "/admin" },
-                    { label: "Tools", href: "/admin/tools" },
-                    { label: "Tools Card" },
-                ]}
                 actions={[
                     {
                         label: "New Tool",

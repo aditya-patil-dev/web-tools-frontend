@@ -92,24 +92,7 @@ export default function ToolPagesPage() {
                 cell: ({ row }) => <code className="dtCode">{row.original.tool_slug}</code>,
                 enableSorting: true,
             },
-
-            {
-                id: "page_description",
-                accessorKey: "page_description",
-                header: "Description",
-                cell: ({ row }) => {
-                    const desc = row.original.page_description;
-                    if (!desc) return <span className="dtMuted">—</span>;
-                    return (
-                        <span className="dtMuted">
-                            {desc.slice(0, 60)}
-                            {desc.length > 60 ? "…" : ""}
-                        </span>
-                    );
-                },
-                enableSorting: false,
-            },
-
+            
             {
                 id: "status",
                 accessorKey: "status",
@@ -190,11 +173,6 @@ export default function ToolPagesPage() {
             <PageHeader
                 title="Tool Pages"
                 subtitle="Manage SEO content and details for each tool"
-                breadcrumbs={[
-                    { label: "Admin", href: "/admin" },
-                    { label: "Tools", href: "/admin/tools" },
-                    { label: "Tool Pages" },
-                ]}
                 actions={[
                     {
                         label: "New Tool Page",

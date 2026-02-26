@@ -6,28 +6,25 @@ export type ToolPageDTO = {
   slug: string;
   category_slug: string;
   tool_type: string;
-
+  tags?: string[];
+  short_description?: string;
   access_level: "free" | "premium" | "pro" | "enterprise";
   daily_limit: number | null;
   monthly_limit: number | null;
-
   views: number | string;
   users_count: number | string;
-
   page_title: string;
   page_intro: string;
   long_content?: string;
-
   features: {
     title: string;
     description: string;
   }[];
-
   faqs: {
     question: string;
     answer: string;
   }[];
-
+  // SEO fields
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string[];
@@ -54,11 +51,17 @@ export async function fetchToolPage(
 
   return {
     ...res.data,
-    views: Number(res.data.views),
-    users_count: Number(res.data.users_count),
+    views: Number(res.data.views) || 0,
+    users_count: Number(res.data.users_count) || 0,
+    // Ensure arrays are properly formatted
+    tags: res.data.tags || [],
+    features: res.data.features || [],
+    faqs: res.data.faqs || [],
+    meta_keywords: res.data.meta_keywords || [],
   };
 }
 
+// Redirect Checker Types
 interface RedirectHop {
   url: string;
   statusCode: number;
@@ -88,6 +91,7 @@ export const checkRedirect = async (url: string): Promise<RedirectResult> => {
     .then((res) => res.data);
 };
 
+// Speed Test Types
 export interface SpeedTestRequest {
   url: string;
 }

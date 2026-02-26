@@ -144,11 +144,6 @@ export default function ToolCategoriesPage() {
             <PageHeader
                 title="Tool Categories"
                 subtitle="Manage tool category pages and SEO content"
-                breadcrumbs={[
-                    { label: "Admin", href: "/admin" },
-                    { label: "Tools", href: "/admin/tools" },
-                    { label: "Categories" },
-                ]}
                 actions={[
                     {
                         label: "New Category",

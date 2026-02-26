@@ -19,13 +19,22 @@ export type CategoryPage = {
   page_title: string;
   page_description: string;
   page_intro?: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string[];
+  canonical_url?: string;
+  noindex?: boolean;
 };
 
 export async function fetchToolsByCategory(category: string): Promise<{
   category: CategoryPage | null;
   tools: ToolItem[];
 }> {
-  const res = await api.get(`/tools?category=${category}`);
+  const res = await api.get<{
+    success: boolean;
+    message: string;
+    data: { category: CategoryPage | null; tools: ToolItem[] };
+  }>(`/tools?category=${category}`);
 
   return {
     category: res.data.category ?? null,

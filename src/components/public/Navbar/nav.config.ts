@@ -10,10 +10,10 @@ export type NavItem = {
 
 // Top row navigation items (static pages)
 export const TOP_NAV_ITEMS = [
-  {
-    label: "Pricing",
-    href: "/pricing",
-  },
+  // {
+  //   label: "Pricing",
+  //   href: "/pricing",
+  // },
   {
     label: "About",
     href: "/about",
