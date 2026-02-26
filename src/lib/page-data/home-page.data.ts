@@ -1,5 +1,7 @@
 import { fetchPageComponents } from "@/lib/api-calls/page-components.api";
 import { HeroConfig, DEFAULT_HERO_CONFIG } from "@/components/public/Hero/hero.config";
+import type { NavbarData } from "@/features/online-store/sections/navbar";
+import type { FooterData } from "@/features/online-store/sections/footer";
 
 export interface HomePageData {
     hero: HeroConfig | undefined;
@@ -8,6 +10,8 @@ export interface HomePageData {
     howItWorks: any;
     finalCta: any;
     seoContent: any;
+    navbar: NavbarData | undefined;
+    footer: FooterData | undefined;
 }
 
 /**
@@ -30,6 +34,8 @@ export async function fetchHomePageData(): Promise<HomePageData> {
             howItWorks: componentsMap.get("how-it-works") || undefined,
             finalCta: componentsMap.get("final-cta") || undefined,
             seoContent: componentsMap.get("seo-content") || undefined,
+            navbar: (componentsMap.get("navbar") as NavbarData) || undefined,
+            footer: (componentsMap.get("footer") as FooterData) || undefined,
         };
     } catch (error) {
         console.error("Error fetching home page data:", error);
@@ -42,6 +48,8 @@ export async function fetchHomePageData(): Promise<HomePageData> {
             howItWorks: undefined,
             finalCta: undefined,
             seoContent: undefined,
+            navbar: undefined,
+            footer: undefined,
         };
     }
 }

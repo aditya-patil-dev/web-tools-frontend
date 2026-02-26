@@ -15,6 +15,8 @@ const COMPONENT_MAP: Record<string, React.ComponentType<{ config?: any }>> = {
     "how-it-works": dynamic(() => import("@/components/public/HowItWorks/HowItWorks")),
     "final-cta": dynamic(() => import("@/components/public/FinalCTA/FinalCTA")),
     "seo-content": dynamic(() => import("@/components/public/SEOContent/SEOContent")),
+    "navbar": dynamic(() => import("@/components/public/Navbar/Navbar")),
+    "footer": dynamic(() => import("@/components/public/Footer/Footer")),
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
