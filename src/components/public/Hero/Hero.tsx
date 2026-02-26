@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { HeroConfig, DEFAULT_HERO_CONFIG } from "./hero.config";
 
 const badgeVariants = {
     hidden: { opacity: 0, y: -20, scale: 0.8 },
@@ -87,7 +88,11 @@ const trustItemVariants = {
     },
 };
 
-export default function Hero() {
+interface HeroProps {
+    config?: HeroConfig;
+}
+
+export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
     return (
         <section className="hero-wrapper">
             {/* Decorative blobs */}
@@ -115,7 +120,7 @@ export default function Hero() {
                         transition: { duration: 0.2 },
                     }}
                 >
-                    🚀 Free & Fast Web Tools
+                    {config.badge}
                 </motion.span>
 
                 <motion.h1
@@ -123,11 +128,8 @@ export default function Hero() {
                     initial="hidden"
                     animate="visible"
                     variants={titleVariants}
-                >
-                    Powerful <span>Web Tools</span> for
-                    <br />
-                    Developers & Marketers
-                </motion.h1>
+                    dangerouslySetInnerHTML={{ __html: config.title }}
+                />
 
                 <motion.p
                     className="hero-subtitle"
@@ -135,8 +137,7 @@ export default function Hero() {
                     animate="visible"
                     variants={subtitleVariants}
                 >
-                    Convert images, optimize SEO, generate content, and get things done
-                    faster — no sign-up, no limits.
+                    {config.subtitle}
                 </motion.p>
 
                 <motion.div
@@ -147,19 +148,19 @@ export default function Hero() {
                 >
                     <motion.div variants={ctaVariants}>
                         <Link
-                            href="/tools"
+                            href={config.primaryCta.href}
                             className="hero-cta-primary"
                         >
-                            Try Tools
+                            {config.primaryCta.text}
                         </Link>
                     </motion.div>
 
                     <motion.div variants={ctaVariants}>
                         <Link
-                            href="/pricing"
+                            href={config.secondaryCta.href}
                             className="hero-cta-secondary"
                         >
-                            View Pricing
+                            {config.secondaryCta.text}
                         </Link>
                     </motion.div>
                 </motion.div>
@@ -170,15 +171,11 @@ export default function Hero() {
                     animate="visible"
                     variants={trustVariants}
                 >
-                    <motion.span variants={trustItemVariants}>
-                        ⚡ Instant results
-                    </motion.span>
-                    <motion.span variants={trustItemVariants}>
-                        🔒 Privacy-friendly
-                    </motion.span>
-                    <motion.span variants={trustItemVariants}>
-                        💻 Built for productivity
-                    </motion.span>
+                    {config.trustBadges.map((badge, index) => (
+                        <motion.span key={index} variants={trustItemVariants}>
+                            {badge.icon} {badge.text}
+                        </motion.span>
+                    ))}
                 </motion.div>
             </div>
         </section>

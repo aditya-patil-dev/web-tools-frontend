@@ -44,7 +44,43 @@ const headerVariants = {
     },
 };
 
-export default function PopularTools() {
+interface Tool {
+    title: string;
+    description: string;
+    icon: string;
+    href: string;
+    badge?: string | null;
+}
+
+interface PopularToolsConfig {
+    header: {
+        title: string;
+        subtitle: string;
+    };
+    tools: Tool[];
+    footer: {
+        text: string;
+        href: string;
+    };
+}
+
+interface PopularToolsProps {
+    config?: PopularToolsConfig;
+}
+
+const DEFAULT_CONFIG: PopularToolsConfig = {
+    header: {
+        title: "Popular <span>Tools</span>",
+        subtitle: "Try our most used tools trusted by developers and marketers.",
+    },
+    tools: POPULAR_TOOLS,
+    footer: {
+        text: "View All Tools →",
+        href: "/tools",
+    },
+};
+
+export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsProps) {
     return (
         <section className="tools-wrapper">
             <div className="tools-container">
@@ -55,12 +91,8 @@ export default function PopularTools() {
                     viewport={{ once: true, margin: "-100px" }}
                     variants={headerVariants}
                 >
-                    <h2>
-                        Popular <span>Tools</span>
-                    </h2>
-                    <p>
-                        Try our most used tools trusted by developers and marketers.
-                    </p>
+                    <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
+                    <p>{config.header.subtitle}</p>
                 </motion.div>
 
                 <motion.div
@@ -70,9 +102,9 @@ export default function PopularTools() {
                     viewport={{ once: true, margin: "-50px" }}
                     variants={containerVariants}
                 >
-                    {POPULAR_TOOLS.map((tool) => (
+                    {config.tools.map((tool, index) => (
                         <motion.div
-                            key={tool.href}
+                            key={index}
                             className="tool-card"
                             variants={itemVariants}
                             whileHover={{
@@ -115,8 +147,8 @@ export default function PopularTools() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                    <Link href="/tools" className="tools-view-all">
-                        View All Tools →
+                    <Link href={config.footer.href} className="tools-view-all">
+                        {config.footer.text}
                     </Link>
                 </motion.div>
             </div>

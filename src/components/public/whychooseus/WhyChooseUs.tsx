@@ -43,8 +43,33 @@ const iconVariants = {
         },
     },
 };
+interface Feature {
+    icon: string;
+    title: string;
+    description: string;
+}
 
-export default function WhyChooseUs() {
+interface WhyChooseUsConfig {
+    header: {
+        title: string;
+        subtitle: string;
+    };
+    features: Feature[];
+}
+
+interface WhyChooseUsProps {
+    config?: WhyChooseUsConfig;
+}
+
+const DEFAULT_CONFIG: WhyChooseUsConfig = {
+    header: {
+        title: "Why Choose <span>Us</span>",
+        subtitle: "Built to help you work faster, smarter, and more efficiently — without unnecessary complexity.",
+    },
+    features: FEATURES,
+};
+
+export default function WhyChooseUs({ config = DEFAULT_CONFIG }: WhyChooseUsProps) {
     return (
         <section className="why-wrapper">
             <div className="why-container">
@@ -55,13 +80,8 @@ export default function WhyChooseUs() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                 >
-                    <h2>
-                        Why Choose <span>Us</span>
-                    </h2>
-                    <p>
-                        Built to help you work faster, smarter, and more efficiently —
-                        without unnecessary complexity.
-                    </p>
+                    <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
+                    <p>{config.header.subtitle}</p>
                 </motion.div>
 
                 <motion.div
@@ -71,9 +91,9 @@ export default function WhyChooseUs() {
                     viewport={{ once: true, margin: "-50px" }}
                     variants={containerVariants}
                 >
-                    {FEATURES.map((feature, index) => (
+                    {config.features.map((feature, index) => (
                         <motion.div
-                            key={feature.title}
+                            key={index}
                             className="why-card"
                             variants={cardVariants}
                             whileHover={{
