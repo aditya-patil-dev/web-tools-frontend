@@ -1,11 +1,21 @@
 "use client";
 
+// src/app/(public)/tools/[category]/[slug]/ToolPageClient.tsx
+//
+// CLIENT COMPONENT — handles all interactivity:
+//   - PAGE_VIEW tracking (needs localStorage/sessionStorage)
+//   - All tool component rendering
+//   - ToolPageSections (Related / Popular / Also Used)
+
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { SlArrowRight } from "react-icons/sl";
 import { ToolPageDTO } from "@/lib/api-calls/tools.api";
+import { trackPageView } from "@/lib/api-calls/tracking";
+import { ToolPageSections } from "@/components/upsell/ToolSections";
 
-// Import all your tool components
+// ── Tool components ───────────────────────────────────────────────────────────
 import JpgToPngTool from "@/components/tools/JpgToPngTool";
 import PngToJpgTool from "@/components/tools/PngToJpgTool";
 import WebpToJpgPngTool from "@/components/tools/WebpToJpgPngTool";
@@ -13,7 +23,6 @@ import ImageToBase64Tool from "@/components/tools/ImageToBase64Tool";
 import ImageCompressorTool from "@/components/tools/ImageCompressorTool";
 import ImageResizerTool from "@/components/tools/ImageResizerTool";
 import BackgroundRemoverTool from "@/components/tools/BackgroundRemoverTool";
-//import ImageToWebpTool from "@/components/tools/ImageToWebpTool";
 import UniversalImageConverterTool from "@/components/tools/UniversalImageConverterTool";
 import FaviconGeneratorTool from "@/components/tools/FaviconGeneratorTool";
 import QRCodeGeneratorTool from "@/components/tools/QRCodeGeneratorTool";
@@ -41,45 +50,41 @@ import PdfToExcelTool from "@/components/tools/PdfToExcelTool";
 import UnlockPdfTool from "@/components/tools/UnlockPdfTool";
 import ProtectPdfTool from "@/components/tools/ProtectPdfTool";
 
+// ── Animation variants ────────────────────────────────────────────────────────
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] as const }
-    }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] as const } },
 };
-
 const staggerContainer = {
     hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2
-        }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
 };
-
 const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: {
-        opacity: 1,
-        x: 0,
-        transition: { duration: 0.4 }
-    }
+    visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
 };
 
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface ToolPageClientProps {
     tool: ToolPageDTO;
     category: string;
     slug: string;
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function ToolPageClient({ tool, category, slug }: ToolPageClientProps) {
+
+    // PAGE_VIEW tracking — fires once after mount.
+    // Deduped via sessionStorage so React 18 Strict Mode
+    // double-invoke never double-counts.
+    useEffect(() => {
+        if (tool?.id) trackPageView(tool.id);
+    }, [tool?.id]);
+
     return (
         <div className="tools-container">
             <div className="tool-container">
+
                 {/* Breadcrumb */}
                 <motion.nav
                     className="tool-breadcrumb"
@@ -120,7 +125,6 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     {tool.tool_type === "image-compressor" && <ImageCompressorTool />}
                     {tool.tool_type === "image-resizer" && <ImageResizerTool />}
                     {tool.tool_type === "background-remover" && <BackgroundRemoverTool />}
-                    {/* {tool.tool_type === "image-to-webp" && <ImageToWebpTool />} */}
                     {tool.tool_type === "universal-image-converter" && <UniversalImageConverterTool />}
                     {tool.tool_type === "favicon-generator" && <FaviconGeneratorTool />}
                     {tool.tool_type === "qr-code-generator" && <QRCodeGeneratorTool />}
@@ -149,7 +153,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     {tool.tool_type === "protect-pdf" && <ProtectPdfTool />}
                 </motion.div>
 
-                {/* Features Section */}
+                {/* Features */}
                 {tool.features && tool.features.length > 0 && (
                     <motion.section
                         className="tool-features-section"
@@ -162,11 +166,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                             <h2>Features & Benefits</h2>
                             <p>Everything you need to know about this tool</p>
                         </div>
-
-                        <motion.div
-                            className="features-grid"
-                            variants={staggerContainer}
-                        >
+                        <motion.div className="features-grid" variants={staggerContainer}>
                             {tool.features.map((feature, index) => (
                                 <motion.div
                                     key={index}
@@ -185,7 +185,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     </motion.section>
                 )}
 
-                {/* FAQ Section */}
+                {/* FAQ */}
                 {tool.faqs && tool.faqs.length > 0 && (
                     <motion.section
                         className="tool-faq-section"
@@ -198,17 +198,9 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                             <h2>Frequently Asked Questions</h2>
                             <p>Common questions about this tool</p>
                         </div>
-
-                        <motion.div
-                            className="faq-list"
-                            variants={staggerContainer}
-                        >
+                        <motion.div className="faq-list" variants={staggerContainer}>
                             {tool.faqs.map((faq, index) => (
-                                <motion.div
-                                    key={index}
-                                    className="faq-item"
-                                    variants={itemVariants}
-                                >
+                                <motion.div key={index} className="faq-item" variants={itemVariants}>
                                     <h3>{faq.question}</h3>
                                     <p>{faq.answer}</p>
                                 </motion.div>
@@ -216,7 +208,15 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                         </motion.div>
                     </motion.section>
                 )}
-            </div>
+
+                {/* ── Upsell / Discovery Sections */}
+                <ToolPageSections
+                    toolSlug={slug}
+                    toolId={tool.id}
+                />
+
+            </div>{/* /.tool-container */}
+
         </div>
     );
 }

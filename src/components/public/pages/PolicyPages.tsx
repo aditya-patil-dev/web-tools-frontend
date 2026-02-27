@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, JSX } from "react";
+import { useState, useEffect, useRef, JSX, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./PolicyPages.module.css";
-import { POLICY_PAGES, POLICY_CONTENT } from "./policyData";
-import type {
-    IconKey,
-    PolicyContent,
-    PolicySection,
-    ContactChannel,
-    FormState,
-} from "./types";
+import type { IconKey } from "./types";
+import type { LegalPageData, LegalPageListItem } from "@/lib/api-calls/legalPagesApi";
 
 // ─── Icon Map ────────────────────────────────────────────────────────────────
 const icons: Record<IconKey, JSX.Element> = {
@@ -29,192 +24,100 @@ const icons: Record<IconKey, JSX.Element> = {
     clock: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>),
 };
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
+// ─── Slug → Icon mapping ──────────────────────────────────────────────────────
+const SLUG_ICON_MAP: Record<string, IconKey> = {
+    "privacy-policy": "shield",
+    "terms-and-conditions": "scroll",
+    "cookie-policy": "cookie",
+    "refund-policy": "refund",
+    "contact": "mail",
+};
+
+function getIconForSlug(slug: string): IconKey {
+    return SLUG_ICON_MAP[slug] ?? "briefcase";
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function cx(...classes: (string | undefined | false | null)[]): string {
     return classes.filter(Boolean).join(" ");
 }
 
-// ─── Hook: Scroll-Spy ────────────────────────────────────────────────────────
-function useActiveSection(sections: PolicySection[] = []): [string, (id: string) => void] {
-    const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
-
-    useEffect(() => {
-        if (!sections.length) return;
-        const observer = new IntersectionObserver(
-            (entries) => entries.forEach((e) => e.isIntersecting && setActiveId(e.target.id)),
-            { rootMargin: "-20% 0px -70% 0px" }
-        );
-        sections.forEach(({ id }) => {
-            const el = document.getElementById(id);
-            if (el) observer.observe(el);
-        });
-        return () => observer.disconnect();
-    }, [sections]);
-
-    return [activeId, setActiveId];
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
 }
 
-// ─── Contact Page ─────────────────────────────────────────────────────────────
-function ContactPage({ data }: { data: PolicyContent }): JSX.Element {
-    const [formState, setFormState] = useState<FormState>({ name: "", email: "", subject: "", message: "" });
-    const [submitted, setSubmitted] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-        e.preventDefault();
-        // TODO: await fetch('/api/contact', { method: 'POST', body: JSON.stringify(formState) });
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 4000);
-        setFormState({ name: "", email: "", subject: "", message: "" });
-    };
-
+// ─── HTML Content ─────────────────────────────────────────────────────────────
+function HtmlContentView({ html }: { html: string }): JSX.Element {
     return (
-        <div className={styles.contactPage}>
-            <div className={styles.contactChannels}>
-                {data.channels?.map((ch: ContactChannel) => (
-                    <a key={ch.id} href={`mailto:${ch.contact}`} className={styles.channelCard}>
-                        <span className={styles.channelIcon}>{icons[ch.icon]}</span>
-                        <div className={styles.channelBody}>
-                            <strong>{ch.title}</strong>
-                            <p>{ch.description}</p>
-                            <span className={styles.channelEmail}>{ch.contact}</span>
-                        </div>
-                        <span className={styles.channelArrow}>{icons.chevron}</span>
-                    </a>
-                ))}
-            </div>
+        <div
+            className={styles.htmlContent}
+            dangerouslySetInnerHTML={{ __html: html }}
+        />
+    );
+}
 
-            <div className={styles.contactSplit}>
-                <div className={styles.contactInfoBlock}>
-                    <h3 className={styles.infoHeading}>Get in Touch</h3>
-                    <div className={styles.infoItem}>
-                        <span>{icons.phone}</span>
-                        <div><strong>Phone</strong><p>{data.contactInfo?.phone}</p></div>
-                    </div>
-                    <div className={styles.infoItem}>
-                        <span>{icons.clock}</span>
-                        <div><strong>Business Hours</strong><p>{data.contactInfo?.hours}</p></div>
-                    </div>
-                    <div className={styles.infoItem}>
-                        <span>{icons.location}</span>
-                        <div><strong>Office Address</strong><p style={{ whiteSpace: "pre-line" }}>{data.contactInfo?.address}</p></div>
-                    </div>
+// ─── Skeleton Loader ──────────────────────────────────────────────────────────
+function SkeletonLoader(): JSX.Element {
+    return (
+        <div className={styles.skeletonLoader} aria-label="Loading content">
+            {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className={styles.skeletonBlock} style={{ animationDelay: `${i * 80}ms` }}>
+                    <div className={styles.skeletonHeading} />
+                    <div className={styles.skeletonText} />
+                    <div className={cx(styles.skeletonText, styles.short)} />
                 </div>
-
-                <form className={styles.contactForm} onSubmit={handleSubmit}>
-                    <h3 className={styles.infoHeading}>Send a Message</h3>
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label htmlFor="cf-name">Full Name</label>
-                            <input id="cf-name" type="text" placeholder="John Doe" value={formState.name}
-                                onChange={(e) => setFormState({ ...formState, name: e.target.value })} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label htmlFor="cf-email">Email Address</label>
-                            <input id="cf-email" type="email" placeholder="you@example.com" value={formState.email}
-                                onChange={(e) => setFormState({ ...formState, email: e.target.value })} required />
-                        </div>
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label htmlFor="cf-subject">Subject</label>
-                        <input id="cf-subject" type="text" placeholder="How can we help?" value={formState.subject}
-                            onChange={(e) => setFormState({ ...formState, subject: e.target.value })} required />
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label htmlFor="cf-message">Message</label>
-                        <textarea id="cf-message" rows={5} placeholder="Tell us more..." value={formState.message}
-                            onChange={(e) => setFormState({ ...formState, message: e.target.value })} required />
-                    </div>
-                    <button type="submit" className={cx(styles.submitBtn, submitted && styles.success)}>
-                        {submitted ? "✓ Message Sent!" : "Send Message"}
-                    </button>
-                </form>
-            </div>
+            ))}
         </div>
     );
 }
 
-// ─── Policy Content View ──────────────────────────────────────────────────────
-function PolicyContentView({ data }: { data: PolicyContent }): JSX.Element {
-    const [activeSection, setActiveSection] = useActiveSection(data.sections);
-
-    const scrollTo = (id: string): void => {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        setActiveSection(id);
-    };
-
-    if (data.isContactPage) return <ContactPage data={data} />;
-
-    return (
-        <div className={styles.policyLayout}>
-            {(data.sections?.length ?? 0) > 0 && (
-                <nav className={styles.toc}>
-                    <p className={styles.tocLabel}>On this page</p>
-                    <ul>
-                        {data.sections?.map((s) => (
-                            <li key={s.id}>
-                                <button
-                                    className={cx(styles.tocLink, activeSection === s.id && styles.active)}
-                                    onClick={() => scrollTo(s.id)}
-                                >
-                                    {s.heading}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            )}
-
-            <div className={styles.policySections}>
-                {data.sections?.map((section, i) => (
-                    <section
-                        key={section.id}
-                        id={section.id}
-                        className={styles.policySection}
-                        style={{ animationDelay: `${i * 50}ms` }}
-                    >
-                        <h3>{section.heading}</h3>
-                        {section.content && <p>{section.content}</p>}
-                        {section.list.length > 0 && (
-                            <ul className={styles.policyList}>
-                                {section.list.map((item, j) => <li key={j}>{item}</li>)}
-                            </ul>
-                        )}
-                    </section>
-                ))}
-            </div>
-        </div>
-    );
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface PolicyPagesProps {
+    activePage: LegalPageData;
+    allPages: LegalPageListItem[];
+    currentSlug: string;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function PolicyPages(): JSX.Element {
-    const [activePage, setActivePage] = useState<string>(POLICY_PAGES[0].slug);
+export default function PolicyPages({
+    activePage,
+    allPages,
+    currentSlug,
+}: PolicyPagesProps): JSX.Element {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
     const contentRef = useRef<HTMLElement>(null);
 
-    const currentMeta = POLICY_PAGES.find((p) => p.slug === activePage);
-    const currentData: PolicyContent = POLICY_CONTENT[activePage];
+    useEffect(() => {
+        contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    }, [currentSlug]);
 
     const handlePageChange = (slug: string): void => {
-        if (slug === activePage) return;
-        setLoading(true);
+        if (slug === currentSlug) return;
         setSidebarOpen(false);
-        setTimeout(() => {
-            setActivePage(slug);
-            setLoading(false);
-            contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-        }, 280);
-        // TODO: Replace with real API fetch:
-        // const data: PolicyContent = await fetchPolicyContent(slug);
+        startTransition(() => {
+            router.push(`/pages/${slug}`);
+        });
     };
+
+    const icon = getIconForSlug(currentSlug);
 
     return (
         <div className={styles.policyRoot}>
             {sidebarOpen && (
-                <div className={styles.mobileOverlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
+                <div
+                    className={styles.mobileOverlay}
+                    onClick={() => setSidebarOpen(false)}
+                    aria-hidden="true"
+                />
             )}
 
+            {/* Sidebar */}
             <aside className={cx(styles.policySidebar, sidebarOpen && styles.open)} aria-label="Policy navigation">
                 <div className={styles.sidebarHeader}>
                     <span className={styles.sidebarTitle}>Legal & Support</span>
@@ -224,16 +127,17 @@ export default function PolicyPages(): JSX.Element {
                 </div>
 
                 <nav className={styles.sidebarNav} aria-label="Policy pages">
-                    {POLICY_PAGES.map((page) => (
+                    {allPages.map((page) => (
                         <button
                             key={page.slug}
-                            className={cx(styles.sidebarItem, activePage === page.slug && styles.active)}
+                            className={cx(styles.sidebarItem, currentSlug === page.slug && styles.active)}
                             onClick={() => handlePageChange(page.slug)}
-                            aria-current={activePage === page.slug ? "page" : undefined}
+                            aria-current={currentSlug === page.slug ? "page" : undefined}
                         >
-                            <span className={styles.sidebarIcon} aria-hidden="true">{icons[page.icon]}</span>
-                            <span className={styles.sidebarLabel}>{page.label}</span>
-                            {page.badge && <span className={styles.sidebarBadge}>{page.badge}</span>}
+                            <span className={styles.sidebarIcon} aria-hidden="true">
+                                {icons[getIconForSlug(page.slug)]}
+                            </span>
+                            <span className={styles.sidebarLabel}>{page.title}</span>
                         </button>
                     ))}
                 </nav>
@@ -244,44 +148,28 @@ export default function PolicyPages(): JSX.Element {
                 </div>
             </aside>
 
+            {/* Main */}
             <main className={styles.policyMain} ref={contentRef}>
                 <div className={styles.mobileTopbar}>
                     <button className={styles.mobileMenuBtn} onClick={() => setSidebarOpen(true)} aria-label="Open navigation">
                         {icons.menu}
                     </button>
-                    <span>{currentMeta?.label}</span>
+                    <span>{activePage.title}</span>
                 </div>
 
                 <header className={styles.policyHeader}>
-                    <div className={styles.headerIcon} aria-hidden="true">
-                        {currentMeta?.icon && icons[currentMeta.icon]}
-                    </div>
+                    <div className={styles.headerIcon} aria-hidden="true">{icons[icon]}</div>
                     <div className={styles.headerMeta}>
-                        {currentMeta?.lastUpdated && (
-                            <span className={styles.metaChip}>Last updated: {currentMeta.lastUpdated}</span>
-                        )}
-                        {currentMeta?.effectiveDate && (
-                            <span className={styles.metaChip}>Effective: {currentMeta.effectiveDate}</span>
-                        )}
+                        <span className={styles.metaChip}>Last updated: {formatDate(activePage.updated_at)}</span>
                     </div>
-                    <h1>{currentData?.title}</h1>
-                    <p className={styles.headerSubtitle}>{currentData?.subtitle}</p>
+                    <h1>{activePage.title}</h1>
+                    {activePage.meta_description && (
+                        <p className={styles.headerSubtitle}>{activePage.meta_description}</p>
+                    )}
                 </header>
 
-                <div className={cx(styles.policyContent, loading && styles.loading)}>
-                    {loading ? (
-                        <div className={styles.skeletonLoader} aria-label="Loading content">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className={styles.skeletonBlock} style={{ animationDelay: `${i * 80}ms` }}>
-                                    <div className={styles.skeletonHeading} />
-                                    <div className={styles.skeletonText} />
-                                    <div className={cx(styles.skeletonText, styles.short)} />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <PolicyContentView data={currentData} />
-                    )}
+                <div className={cx(styles.policyContent, isPending && styles.loading)}>
+                    {isPending ? <SkeletonLoader /> : <HtmlContentView html={activePage.content} />}
                 </div>
             </main>
         </div>

@@ -688,6 +688,116 @@
   z-index: 200;
 }
 
+.htmlContent {
+  max-width: 72ch;
+  color: inherit;
+  line-height: 1.75;
+}
+
+/* Headings */
+.htmlContent h1,
+.htmlContent h2,
+.htmlContent h3,
+.htmlContent h4 {
+  margin: 2rem 0 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.htmlContent h1 {
+  font-size: 2rem;
+}
+.htmlContent h2 {
+  font-size: 1.5rem;
+}
+.htmlContent h3 {
+  font-size: 1.25rem;
+}
+
+/* Paragraphs & spacing */
+.htmlContent p {
+  margin: 0 0 1rem;
+}
+
+.htmlContent p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.htmlContent ul,
+.htmlContent ol {
+  margin: 0.75rem 0 1rem 1.5rem;
+  padding: 0;
+}
+
+.htmlContent li {
+  margin-bottom: 0.4rem;
+}
+
+/* Links */
+.htmlContent a {
+  color: var(--color-accent, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.htmlContent a:hover {
+  opacity: 0.8;
+}
+
+/* Horizontal rule */
+.htmlContent hr {
+  border: none;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  margin: 2rem 0;
+}
+
+/* Blockquote */
+.htmlContent blockquote {
+  border-left: 3px solid var(--color-accent, #2563eb);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: inherit;
+  opacity: 0.8;
+}
+
+/* Code */
+.htmlContent code {
+  font-family: monospace;
+  font-size: 0.9em;
+  background: var(--color-code-bg, rgba(0, 0, 0, 0.06));
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* Tables */
+.htmlContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.htmlContent th,
+.htmlContent td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  text-align: left;
+}
+
+.htmlContent th {
+  font-weight: 600;
+  background: var(--color-table-header, rgba(0, 0, 0, 0.04));
+}
+
+/* Strong / em */
+.htmlContent strong {
+  font-weight: 700;
+}
+.htmlContent em {
+  font-style: italic;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .policyHeader {

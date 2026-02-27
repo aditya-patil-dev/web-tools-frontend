@@ -183,6 +183,9 @@ a {
   transition: color var(--transition-base);
 }
 
+.Form-Section-main {
+  margin-bottom: var(--space-5);
+}
 /* ==========================================
    TWO-ROW NAVBAR LAYOUT
    ========================================== */
@@ -8125,4 +8128,408 @@ a {
   .coffeeCta {
     font-size: 14px;
   }
+}
+/* ================================================================
+   RICH TEXT EDITOR  
+================================================================ */
+
+/* ── Form field wrapper ──────────────────────────────────────── */
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Label (rendered as <label> above the toolbar) ───────────── */
+.formLabel {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+/* ── Error message (rendered as <div> below the editor) ──────── */
+.formError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--color-error);
+  line-height: 1.4;
+}
+
+/* ================================================================
+   TOOLBAR  —  .rteToolbar
+   Contains: one <select> and multiple <button> elements
+================================================================ */
+.rteToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* ── Heading <select> inside toolbar ─────────────────────────── */
+.rteToolbar select {
+  height: 30px;
+  padding: 0 var(--space-3);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  /* Wide enough for "Heading 1" */
+  min-width: 110px;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    color var(--transition-fast);
+  /* Remove default arrow on some browsers for cleaner look */
+  appearance: auto;
+}
+.rteToolbar select:hover {
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+.rteToolbar select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+  color: var(--text-primary);
+}
+
+/* ── All <button> elements inside toolbar ────────────────────── */
+/*
+   Buttons rendered in the component:
+   B  I  U  S  • List  1. List  Link  Unlink  HR  Undo  Redo
+   Each gets: base → hover → active (format applied) → pressed
+*/
+.rteToolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 var(--space-2);
+  gap: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  line-height: 1;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+.rteToolbar button:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+.rteToolbar button:active {
+  transform: scale(0.92);
+}
+
+/*
+  .active is added by clsx() on B / I / U buttons
+  when that format is currently applied to the selection
+*/
+.rteToolbar button.active {
+  background: var(--color-primary-light);
+  border-color: rgba(255, 107, 53, 0.35);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+}
+.rteToolbar button.active:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+/* Give the italic "I" button its proper italic slant */
+.rteToolbar button:nth-child(3) {
+  font-style: italic;
+}
+
+/* Give the strikethrough "S" button its decoration */
+.rteToolbar button:nth-child(5) {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-secondary);
+}
+
+/* ================================================================
+   EDITOR CONTAINER  —  .rteContainer
+   Wraps <EditorContent editor={editor} /> which renders
+   a <div class="ProseMirror"> inside
+================================================================ */
+.rteContainer {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  /* Smooth focus ring via :focus-within — TipTap focuses the inner div */
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* Focus state — triggered when ProseMirror gains focus */
+.rteContainer:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+}
+
+/* Error state — applied via clsx("rteContainer", error && "error") */
+.rteContainer.error {
+  border-color: var(--color-error);
+}
+.rteContainer.error:focus-within {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* ================================================================
+   PROSEMIRROR ROOT
+   TipTap renders: <div class="ProseMirror tiptap"> as the
+   actual contenteditable area inside .rteContainer
+================================================================ */
+.rteContainer .ProseMirror {
+  min-height: 200px;
+  padding: var(--space-4) var(--space-5);
+  outline: none;
+  font-size: var(--font-base);
+  line-height: 1.75;
+  color: var(--text-primary);
+  caret-color: var(--color-primary);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ── Placeholder  ────────────────────────────────────────────── */
+/*
+  TipTap's Placeholder extension adds data-placeholder + .is-editor-empty
+  on the first child <p> when the editor is empty
+*/
+.rteContainer .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--text-tertiary);
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* ── Text selection highlight ────────────────────────────────── */
+.rteContainer .ProseMirror ::selection {
+  background: rgba(255, 107, 53, 0.15);
+}
+
+/* ── Headings — rendered by StarterKit ───────────────────────── */
+.rteContainer .ProseMirror h1,
+.rteContainer .ProseMirror h2,
+.rteContainer .ProseMirror h3 {
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-2);
+}
+/* Don't add top margin to the very first element */
+.rteContainer .ProseMirror > *:first-child {
+  margin-top: 0;
+}
+.rteContainer .ProseMirror h1 {
+  font-size: var(--font-3xl);
+  letter-spacing: -0.02em;
+}
+.rteContainer .ProseMirror h2 {
+  font-size: var(--font-2xl);
+}
+.rteContainer .ProseMirror h3 {
+  font-size: var(--font-xl);
+}
+
+/* ── Paragraph ───────────────────────────────────────────────── */
+.rteContainer .ProseMirror p {
+  font-size: var(--font-base);
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin-bottom: var(--space-3);
+}
+.rteContainer .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Bold — <strong>  ────────────────────────────────────────── */
+.rteContainer .ProseMirror strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Italic — <em>  ──────────────────────────────────────────── */
+.rteContainer .ProseMirror em {
+  font-style: italic;
+}
+
+/* ── Underline — <u>  (from @tiptap/extension-underline) ────── */
+.rteContainer .ProseMirror u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-primary);
+}
+
+/* ── Strikethrough — <s>  (StarterKit) ───────────────────────── */
+.rteContainer .ProseMirror s {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+/* ── Highlight — <mark>  (@tiptap/extension-highlight) ──────── */
+.rteContainer .ProseMirror mark {
+  background: rgba(255, 107, 53, 0.15);
+  color: var(--color-primary-dark);
+  border-radius: 2px;
+  padding: 1px 3px;
+}
+
+/* ── Link — <a>  (@tiptap/extension-link) ────────────────────── */
+.rteContainer .ProseMirror a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 107, 53, 0.4);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    text-decoration-color var(--transition-fast);
+}
+.rteContainer .ProseMirror a:hover {
+  color: var(--color-primary-hover);
+  text-decoration-color: var(--color-primary-hover);
+}
+
+/* ── Bullet list — <ul>  (StarterKit) ───────────────────────── */
+.rteContainer .ProseMirror ul {
+  list-style: disc;
+  padding-left: var(--space-6);
+  margin-bottom: var(--space-3);
+  color: var(--text-secondary);
+}
+.rteContainer .ProseMirror ul li::marker {
+  color: var(--color-primary);
+}
+
+/* ── Ordered list — <ol>  (StarterKit) ──────────────────────── */
+.rteContainer .ProseMirror ol {
+  list-style: decimal;
+  padding-left: var(--space-6);
+  margin-bottom: var(--space-3);
+  color: var(--text-secondary);
+}
+.rteContainer .ProseMirror ol li::marker {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ── List items shared ───────────────────────────────────────── */
+.rteContainer .ProseMirror li {
+  line-height: 1.75;
+  margin-bottom: var(--space-1);
+}
+/* TipTap wraps list item content in a <p> — remove its margin */
+.rteContainer .ProseMirror li > p {
+  margin-bottom: 0;
+}
+
+/* ── Horizontal rule — <hr>  (@tiptap/extension-horizontal-rule) */
+.rteContainer .ProseMirror hr {
+  border: none;
+  border-top: 2px solid var(--border-primary);
+  margin: var(--space-6) 0;
+  border-radius: var(--radius-full);
+}
+/* TipTap adds .ProseMirror-selectednode when the HR is selected */
+.rteContainer .ProseMirror hr.ProseMirror-selectednode {
+  border-top-color: var(--color-primary);
+  outline: none;
+}
+
+/* ── Code inline — <code>  (StarterKit) ─────────────────────── */
+.rteContainer .ProseMirror code {
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  font-size: 0.875em;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  color: var(--color-primary-dark);
+}
+
+/* ── Code block — <pre><code>  (StarterKit) ─────────────────── */
+.rteContainer .ProseMirror pre {
+  background: var(--color-slate-900);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin: var(--space-5) 0;
+  overflow-x: auto;
+}
+.rteContainer .ProseMirror pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-slate-50);
+  font-size: var(--font-sm);
+}
+
+/* ── Blockquote  (StarterKit) ───────────────────────────────── */
+.rteContainer .ProseMirror blockquote {
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: var(--space-3) var(--space-5);
+  margin: var(--space-5) 0;
+  font-style: italic;
+}
+.rteContainer .ProseMirror blockquote p {
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* ── Image — <img>  (@tiptap/extension-image) ───────────────── */
+.rteContainer .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+  display: block;
+  margin: var(--space-4) 0;
+  transition: box-shadow var(--transition-fast);
+}
+/* Selected image — TipTap adds this class */
+.rteContainer .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Gapcursor — TipTap internal ────────────────────────────── */
+.rteContainer .ProseMirror .ProseMirror-gapcursor::after {
+  border-top-color: var(--text-primary);
 }

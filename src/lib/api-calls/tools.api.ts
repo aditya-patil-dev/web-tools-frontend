@@ -39,25 +39,57 @@ type ToolPageApiResponse = {
   data: ToolPageDTO;
 };
 
+// Client-side version (axios) — used by ToolPageClient and other client components
 export async function fetchToolPage(
   category: string,
   slug: string,
 ): Promise<ToolPageDTO> {
   const res = await api.get<ToolPageApiResponse>(`/tools/${category}/${slug}`);
-
   if (!res.success || !res.data) {
     throw new Error("Tool not found");
   }
+  return normalizeToolPage(res.data);
+}
 
+// Cannot use axios here because server components have no browser APIs.
+export async function fetchToolPageServer(
+  category: string,
+  slug: string,
+): Promise<ToolPageDTO | null> {
+  try {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+    if (!base) {
+      console.warn("[Server] NEXT_PUBLIC_API_BASE_URL is not set");
+      return null;
+    }
+
+    const res = await fetch(`${base}/tools/${category}/${slug}`, {
+      cache: "no-store", // always fresh — tool data changes
+    });
+
+    if (!res.ok) return null;
+
+    const json = await res.json();
+
+    if (!json.success || !json.data) return null;
+
+    return normalizeToolPage(json.data);
+  } catch (e) {
+    console.error("[Server] fetchToolPageServer failed:", e);
+    return null;
+  }
+}
+
+// ── Shared normalizer — keeps both versions consistent
+function normalizeToolPage(data: ToolPageApiResponse["data"]): ToolPageDTO {
   return {
-    ...res.data,
-    views: Number(res.data.views) || 0,
-    users_count: Number(res.data.users_count) || 0,
-    // Ensure arrays are properly formatted
-    tags: res.data.tags || [],
-    features: res.data.features || [],
-    faqs: res.data.faqs || [],
-    meta_keywords: res.data.meta_keywords || [],
+    ...data,
+    views: Number(data.views) || 0,
+    users_count: Number(data.users_count) || 0,
+    tags: data.tags || [],
+    features: data.features || [],
+    faqs: data.faqs || [],
+    meta_keywords: data.meta_keywords || [],
   };
 }
 

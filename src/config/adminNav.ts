@@ -43,7 +43,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
         icon: "bi-gear",
         match: "prefix",
         children: [
-            { id: "settings-general", label: "General", href: "/admin/settings", match: "prefix" },
+            { id: "settings-general", label: "General", href: "/admin/settings/general", match: "prefix" },
+            { id: "settings-legal", label: "Legal Pages", href: "/admin/settings/legal", match: "prefix" },
             { id: "settings-online-store", label: "Online Store", href: "/admin/settings/online-store", match: "prefix" },
         ],
     },

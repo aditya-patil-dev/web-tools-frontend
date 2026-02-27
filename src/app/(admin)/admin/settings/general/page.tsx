@@ -68,8 +68,6 @@ const SECTIONS: NavSection[] = [
     { id: "seo-homepage", label: "Homepage", group: "SEO", icon: <FiGlobe size={15} />, description: "Meta tags and structured data for the homepage" },
     { id: "seo-about", label: "About Page", group: "SEO", icon: <FiFileText size={15} />, description: "Meta tags and structured data for the About page" },
     { id: "seo-pricing", label: "Pricing Page", group: "SEO", icon: <FiFileText size={15} />, description: "Meta tags and structured data for the Pricing page" },
-    // Legal
-    { id: "legal", label: "Legal Pages", group: "Legal", icon: <FiShield size={15} />, description: "Manage all policy and legal pages from one place" },
     // Technical
     { id: "robots", label: "Robots.txt", group: "Technical", icon: <FiCode size={15} />, description: "Control how search engines crawl your site" },
     { id: "smtp", label: "Email / SMTP", group: "Technical", icon: <FiMail size={15} />, description: "Outgoing email server configuration" },
@@ -217,7 +215,7 @@ function GeneralPanel() {
     const { saving, save } = useSave();
     return (
         <>
-            <FormSection title="Site Identity" description="Core information about your website" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Site Identity" description="Core information about your website" collapsible defaultOpen>
                 <FormGroup columns={2}>
                     <TextInput label="Site Name" placeholder="Your Website Name" required />
                     <TextInput label="Site Tagline" placeholder="Short tagline or motto" />
@@ -230,62 +228,7 @@ function GeneralPanel() {
                 </FormGroup>
             </FormSection>
 
-            <FormSection title="Contact Details" description="Public-facing contact information" collapsible defaultOpen>
-                <FormGroup columns={2}>
-                    <TextInput label="Contact Email" placeholder="hello@yoursite.com" type="email" />
-                    <TextInput label="Support Email" placeholder="support@yoursite.com" type="email" />
-                </FormGroup>
-                <FormGroup columns={2}>
-                    <TextInput label="Phone" placeholder="+91 98765 43210" />
-                    <TextInput label="WhatsApp" placeholder="+91 98765 43210" />
-                </FormGroup>
-                <Textarea label="Office Address" placeholder="123 Main St, City, State 400001" minRows={2} autoResize />
-            </FormSection>
-
-            <FormSection title="Social Media" description="Links to your social profiles" collapsible defaultOpen>
-                <FormGroup columns={2}>
-                    <TextInput label="Twitter / X" placeholder="https://x.com/yourhandle" />
-                    <TextInput label="LinkedIn" placeholder="https://linkedin.com/company/..." />
-                </FormGroup>
-                <FormGroup columns={2}>
-                    <TextInput label="Instagram" placeholder="https://instagram.com/..." />
-                    <TextInput label="YouTube" placeholder="https://youtube.com/..." />
-                </FormGroup>
-                <FormGroup columns={2}>
-                    <TextInput label="Facebook" placeholder="https://facebook.com/..." />
-                    <TextInput label="GitHub" placeholder="https://github.com/..." />
-                </FormGroup>
-            </FormSection>
-
-            <FormSection title="Regional Settings" description="Locale, currency, and date formatting" collapsible>
-                <FormGroup columns={2}>
-                    <Select label="Timezone" value="Asia/Kolkata" onChange={() => { }} options={[
-                        { value: "Asia/Kolkata", label: "IST — Asia/Kolkata" },
-                        { value: "America/New_York", label: "EST — America/New_York" },
-                        { value: "Europe/London", label: "GMT — Europe/London" },
-                        { value: "America/Los_Angeles", label: "PST — America/Los_Angeles" },
-                        { value: "Asia/Dubai", label: "GST — Asia/Dubai" },
-                    ]} />
-                    <Select label="Date Format" value="DD/MM/YYYY" onChange={() => { }} options={[
-                        { value: "DD/MM/YYYY", label: "DD/MM/YYYY" },
-                        { value: "MM/DD/YYYY", label: "MM/DD/YYYY" },
-                        { value: "YYYY-MM-DD", label: "YYYY-MM-DD" },
-                    ]} />
-                </FormGroup>
-                <FormGroup columns={2}>
-                    <Select label="Currency" value="INR" onChange={() => { }} options={[
-                        { value: "INR", label: "INR — ₹ Indian Rupee" },
-                        { value: "USD", label: "USD — $ US Dollar" },
-                        { value: "EUR", label: "EUR — € Euro" },
-                    ]} />
-                    <Select label="Language" value="en" onChange={() => { }} options={[
-                        { value: "en", label: "English" },
-                        { value: "hi", label: "Hindi" },
-                    ]} />
-                </FormGroup>
-            </FormSection>
-
-            <FormSection title="Analytics & Tracking" description="Search console verification and analytics IDs" collapsible>
+            <FormSection className="Form-Section-main" title="Analytics & Tracking" description="Search console verification and analytics IDs" collapsible>
                 <FormGroup columns={2}>
                     <TextInput label="Google Analytics ID" placeholder="G-XXXXXXXXXX" helperText="GA4 Measurement ID" />
                     <TextInput label="Google Tag Manager ID" placeholder="GTM-XXXXXXX" />
@@ -310,7 +253,7 @@ function UsersPanel() {
     const { saving, save } = useSave();
     return (
         <>
-            <FormSection title="Registration" description="Who can create an account and how" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Registration" description="Who can create an account and how" collapsible defaultOpen>
                 <Toggle label="Allow Public Registration" description="Visitors can create accounts on the site" checked={true} onChange={() => { }} />
                 <Toggle label="Email Verification Required" description="New accounts must verify email before using features" checked={true} onChange={() => { }} />
                 <Toggle label="Admin Approval Required" description="New accounts need admin approval before they can log in" checked={false} onChange={() => { }} />
@@ -323,7 +266,7 @@ function UsersPanel() {
                 </FormGroup>
             </FormSection>
 
-            <FormSection title="Authentication" description="Login, session, and lockout settings" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Authentication" description="Login, session, and lockout settings" collapsible defaultOpen>
                 <FormGroup columns={2}>
                     <TextInput label="Session Duration (hours)" placeholder="24" type="number" />
                     <TextInput label="Max Login Attempts" placeholder="5" type="number" helperText="Before account lockout" />
@@ -339,13 +282,13 @@ function UsersPanel() {
                 </FormGroup>
             </FormSection>
 
-            <FormSection title="OAuth / Social Login" description="Third-party sign-in providers" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="OAuth / Social Login" description="Third-party sign-in providers" collapsible defaultOpen>
                 <Toggle label="Google Sign-In" description="Allow users to sign in with Google" checked={false} onChange={() => { }} />
                 <Toggle label="GitHub Sign-In" description="Allow users to sign in with GitHub" checked={false} onChange={() => { }} />
                 <Toggle label="Facebook Sign-In" description="Allow users to sign in with Facebook" checked={false} onChange={() => { }} />
             </FormSection>
 
-            <FormSection title="User Notifications" description="Automated emails sent to users" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="User Notifications" description="Automated emails sent to users" collapsible defaultOpen>
                 <Toggle label="Welcome Email" description="Send welcome email after registration" checked={true} onChange={() => { }} />
                 <Toggle label="Email Verification" description="Send verification link on signup" checked={true} onChange={() => { }} />
                 <Toggle label="Password Reset" description="Enable password reset via email" checked={true} onChange={() => { }} />
@@ -354,7 +297,7 @@ function UsersPanel() {
                 <Toggle label="Plan Expiry Reminder" description="Send reminder 7 days before plan expires" checked={true} onChange={() => { }} />
             </FormSection>
 
-            <FormSection title="Admin Alerts" description="Notify admins on key site events" collapsible>
+            <FormSection className="Form-Section-main" title="Admin Alerts" description="Notify admins on key site events" collapsible>
                 <TextInput label="Admin Alert Email" placeholder="admin@yoursite.com" type="email" helperText="Destination for all admin notifications" />
                 <Toggle label="New User Registration" description="Alert when a new user signs up" checked={true} onChange={() => { }} />
                 <Toggle label="New Subscription" description="Alert when a plan is purchased" checked={true} onChange={() => { }} />
@@ -362,7 +305,7 @@ function UsersPanel() {
                 <Toggle label="Contact Form Submission" description="Alert on contact form submissions" checked={true} onChange={() => { }} />
             </FormSection>
 
-            <FormSection title="Account Lifecycle" description="Data retention and self-service deletion" collapsible>
+            <FormSection className="Form-Section-main" title="Account Lifecycle" description="Data retention and self-service deletion" collapsible>
                 <Toggle label="Allow Account Self-Deletion" description="Users can permanently delete their own account" checked={true} onChange={() => { }} />
                 <TextInput label="Data Retention After Deletion (days)" placeholder="90" type="number" helperText="How long to retain data after account deletion" />
             </FormSection>
@@ -397,7 +340,7 @@ function SeoPanel({
             {isNew && <NewRecordBanner />}
 
             {/* ── Basic SEO ── */}
-            <FormSection title="Basic SEO" description={`Meta tags for the ${pageLabel}`} collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Basic SEO" description={`Meta tags for the ${pageLabel}`} collapsible defaultOpen>
                 <TextInput
                     label="Page Title"
                     placeholder={`${pageLabel} | YourSite`}
@@ -432,7 +375,7 @@ function SeoPanel({
             </FormSection>
 
             {/* ── Open Graph / Social ── */}
-            <FormSection title="Open Graph / Social" description="Controls social share card appearance" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Open Graph / Social" description="Controls social share card appearance" collapsible defaultOpen>
                 <FormGroup columns={2}>
                     <TextInput
                         label="OG Title"
@@ -481,329 +424,7 @@ function SeoPanel({
                 </FormGroup>
             </FormSection>
 
-            {/* ── Advanced ── */}
-            <FormSection title="Advanced" description="Indexing directives and JSON-LD schema" collapsible>
-                <Toggle
-                    label="Noindex"
-                    description="Prevent search engines indexing this page. Use with caution."
-                    checked={form.noindex}
-                    onChange={(v) => setField("noindex", v)}
-                />
-                <Toggle
-                    label="Nofollow"
-                    description="Prevent search engines following links on this page."
-                    checked={form.nofollow}
-                    onChange={(v) => setField("nofollow", v)}
-                />
-                <Textarea
-                    label="Schema Markup (JSON-LD)"
-                    placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "WebPage",\n  "name": "...",\n  ...\n}'}
-                    value={form.schema_markup}
-                    onChange={(e) => setField("schema_markup", e.target.value)}
-                    minRows={8}
-                    helperText="Injected into <head>. Enables rich results in Google Search."
-                />
-                <Select
-                    label="Record Status"
-                    value={form.status}
-                    onChange={(e) => setField("status", e.target.value as SeoFormValues["status"])}
-                    options={[
-                        { value: "active", label: "Active — served to visitors" },
-                        { value: "inactive", label: "Inactive — hidden from output" },
-                    ]}
-                    helperText="Inactive records are excluded from the public SEO output"
-                />
-            </FormSection>
-
             <SaveBar onSave={save} saving={isSaving} />
-        </>
-    );
-}
-
-// ── 3d. Legal Pages Manager (no API yet — local state) ─────
-type LegalPage = {
-    id: string;
-    title: string;
-    slug: string;
-    status: "published" | "draft";
-    lastUpdated: string;
-    required: boolean;
-};
-
-type LegalForm = Omit<LegalPage, "id" | "lastUpdated"> & {
-    content: string;
-    metaTitle: string;
-    metaDesc: string;
-    noindex: boolean;
-    version: string;
-    updatedDate: string;
-};
-
-const BLANK_LEGAL: LegalForm = {
-    title: "", slug: "", status: "draft", required: false,
-    content: "", metaTitle: "", metaDesc: "", noindex: false, version: "1.0", updatedDate: "",
-};
-
-const SEED_PAGES: LegalPage[] = [
-    { id: "1", title: "Privacy Policy", slug: "privacy-policy", status: "published", lastUpdated: "2024-12-01", required: true },
-    { id: "2", title: "Terms of Service", slug: "terms-of-service", status: "published", lastUpdated: "2024-12-01", required: true },
-    { id: "3", title: "Cookie Policy", slug: "cookie-policy", status: "published", lastUpdated: "2024-11-15", required: false },
-    { id: "4", title: "Refund Policy", slug: "refund-policy", status: "draft", lastUpdated: "2024-10-20", required: false },
-];
-
-function legalStatusStyle(s: LegalPage["status"]) {
-    const ok = s === "published";
-    return {
-        bg: ok ? "rgba(16,185,129,0.1)" : "rgba(245,158,11,0.1)",
-        border: ok ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)",
-        color: ok ? "#10b981" : "#f59e0b",
-    };
-}
-
-function LegalPanel() {
-    const [pages, setPages] = useState<LegalPage[]>(SEED_PAGES);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [editing, setEditing] = useState<LegalPage | null>(null);
-    const [form, setForm] = useState<LegalForm>(BLANK_LEGAL);
-    const [formErr, setFormErr] = useState<{ title?: string; slug?: string }>({});
-    const [delTarget, setDelTarget] = useState<string | null>(null);
-
-    const setField = <K extends keyof LegalForm>(k: K, v: LegalForm[K]) =>
-        setForm((f) => ({ ...f, [k]: v }));
-
-    const autoSlug = (t: string) =>
-        t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-    const openNew = () => {
-        setEditing(null);
-        setForm({ ...BLANK_LEGAL, updatedDate: new Date().toISOString().split("T")[0] });
-        setFormErr({});
-        setModalOpen(true);
-    };
-
-    const openEdit = (p: LegalPage) => {
-        setEditing(p);
-        setForm({
-            title: p.title, slug: p.slug, status: p.status, required: p.required,
-            content: "", metaTitle: "", metaDesc: "", noindex: false, version: "1.0",
-            updatedDate: p.lastUpdated
-        });
-        setFormErr({});
-        setModalOpen(true);
-    };
-
-    const validate = () => {
-        const errs: typeof formErr = {};
-        if (!form.title.trim()) errs.title = "Title is required";
-        if (!form.slug.trim()) errs.slug = "Slug is required";
-        setFormErr(errs);
-        return !Object.keys(errs).length;
-    };
-
-    const handleSave = () => {
-        if (!validate()) return;
-        const today = new Date().toISOString().split("T")[0];
-        if (editing) {
-            setPages((prev) => prev.map((p) => p.id === editing.id
-                ? { ...p, title: form.title, slug: form.slug, status: form.status, lastUpdated: today }
-                : p
-            ));
-        } else {
-            setPages((prev) => [...prev, {
-                id: String(Date.now()), title: form.title, slug: form.slug,
-                status: form.status, required: false, lastUpdated: today,
-            }]);
-        }
-        setModalOpen(false);
-    };
-
-    const handleDelete = () => {
-        setPages((p) => p.filter((x) => x.id !== delTarget));
-        setDelTarget(null);
-    };
-
-    const toggleStatus = (id: string) => setPages((prev) => prev.map((p) =>
-        p.id === id ? { ...p, status: p.status === "published" ? "draft" : "published" } : p
-    ));
-
-    const published = pages.filter((p) => p.status === "published").length;
-
-    return (
-        <>
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-5)" }}>
-                <p style={{ fontSize: "var(--font-sm)", color: "var(--text-tertiary)" }}>
-                    {pages.length} page{pages.length !== 1 ? "s" : ""} &nbsp;·&nbsp;
-                    <span style={{ color: "var(--color-success)", fontWeight: 600 }}>{published} published</span>
-                    {pages.length - published > 0 && (
-                        <span style={{ color: "#f59e0b", fontWeight: 600 }}> &nbsp;·&nbsp; {pages.length - published} draft</span>
-                    )}
-                </p>
-                <button onClick={openNew} style={S.primary}>
-                    <FiPlus size={14} /> Add Legal Page
-                </button>
-            </div>
-
-            {/* Table */}
-            <div style={{ borderRadius: "var(--radius-xl)", border: "1px solid var(--border-primary)", overflow: "hidden" }}>
-                <div style={{
-                    display: "grid", gridTemplateColumns: "1fr 170px 110px 115px 130px",
-                    padding: "10px 20px", background: "var(--bg-tertiary)",
-                    borderBottom: "1px solid var(--border-primary)",
-                }}>
-                    {["Page Title", "Slug", "Status", "Last Updated", "Actions"].map((h) => (
-                        <span key={h} style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-tertiary)", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
-                            {h}
-                        </span>
-                    ))}
-                </div>
-
-                {pages.map((page, i) => {
-                    const ss = legalStatusStyle(page.status);
-                    return (
-                        <div key={page.id} style={{
-                            display: "grid", gridTemplateColumns: "1fr 170px 110px 115px 130px",
-                            padding: "14px 20px", alignItems: "center",
-                            borderBottom: i < pages.length - 1 ? "1px solid var(--border-primary)" : "none",
-                            background: "var(--bg-primary)", transition: "background var(--transition-fast)",
-                        }}
-                            onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.background = "var(--bg-secondary)"}
-                            onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.background = "var(--bg-primary)"}
-                        >
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <div style={{
-                                    width: "32px", height: "32px", borderRadius: "var(--radius-md)", flexShrink: 0,
-                                    background: "var(--color-primary-light)", border: "1px solid rgba(255,107,53,0.2)",
-                                    display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-primary)",
-                                }}><FiShield size={14} /></div>
-                                <div>
-                                    <span style={{ fontSize: "var(--font-sm)", fontWeight: 600, color: "var(--text-primary)" }}>
-                                        {page.title}
-                                    </span>
-                                    {page.required && (
-                                        <span style={{
-                                            marginLeft: "8px", fontSize: "9px", fontWeight: 700, padding: "1px 6px",
-                                            borderRadius: "var(--radius-full)", background: "rgba(59,130,246,0.1)",
-                                            color: "#3b82f6", border: "1px solid rgba(59,130,246,0.2)", letterSpacing: "0.04em",
-                                        }}>REQUIRED</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <code style={{ fontSize: "11.5px", color: "var(--text-tertiary)", background: "var(--bg-tertiary)", padding: "3px 8px", borderRadius: "var(--radius-sm)", fontFamily: "monospace" }}>
-                                /{page.slug}
-                            </code>
-
-                            <span style={{
-                                display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 10px",
-                                borderRadius: "var(--radius-full)", fontSize: "11px", fontWeight: 700, width: "fit-content",
-                                background: ss.bg, color: ss.color, border: `1px solid ${ss.border}`,
-                            }}>
-                                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: ss.color }} />
-                                {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
-                            </span>
-
-                            <span style={{ fontSize: "var(--font-xs)", color: "var(--text-tertiary)" }}>
-                                {new Date(page.lastUpdated).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                            </span>
-
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                <button onClick={() => toggleStatus(page.id)} title={page.status === "published" ? "Set to Draft" : "Publish"} style={S.iconBtn}>
-                                    {page.status === "published" ? <FiEyeOff size={13} /> : <FiEye size={13} />}
-                                </button>
-                                <a href={`/${page.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.iconBtn, textDecoration: "none", color: "inherit" }}>
-                                    <FiExternalLink size={13} />
-                                </a>
-                                <button onClick={() => openEdit(page)} style={S.iconBtn}><FiEdit2 size={13} /></button>
-                                {!page.required && (
-                                    <button onClick={() => setDelTarget(page.id)} style={{ ...S.iconBtn, ...S.iconBtnDanger }}>
-                                        <FiTrash2 size={13} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-
-                {pages.length === 0 && (
-                    <div style={{ textAlign: "center", padding: "48px 24px", color: "var(--text-tertiary)" }}>
-                        <FiShield size={32} style={{ opacity: 0.25, marginBottom: "12px" }} />
-                        <p style={{ fontSize: "var(--font-sm)", fontWeight: 600 }}>No legal pages yet</p>
-                        <p style={{ fontSize: "var(--font-xs)", marginTop: "6px" }}>Click "Add Legal Page" to create one.</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Add/Edit Modal */}
-            {modalOpen && (
-                <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-overlay)", backdropFilter: "blur(6px)", padding: "var(--space-4)" }}>
-                    <div style={{ background: "var(--bg-primary)", borderRadius: "var(--radius-2xl)", border: "1px solid var(--border-primary)", boxShadow: "var(--shadow-2xl)", width: "100%", maxWidth: "680px", maxHeight: "90vh", overflowY: "auto", padding: "var(--space-8)" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-6)" }}>
-                            <div>
-                                <h2 style={{ fontSize: "var(--font-xl)", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
-                                    {editing ? "Edit Legal Page" : "Add Legal Page"}
-                                </h2>
-                                <p style={{ fontSize: "var(--font-sm)", color: "var(--text-tertiary)", marginTop: "4px" }}>
-                                    {editing ? `Editing: ${editing.title}` : "Create a new policy or legal page"}
-                                </p>
-                            </div>
-                            <button onClick={() => setModalOpen(false)} style={{ ...S.iconBtn, width: "32px", height: "32px" }}>✕</button>
-                        </div>
-
-                        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-                            <FormGroup columns={2}>
-                                <TextInput label="Page Title" placeholder="e.g., Privacy Policy" value={form.title} required error={formErr.title}
-                                    onChange={(e) => { setField("title", e.target.value); setField("slug", autoSlug(e.target.value)); }} />
-                                <Select label="Status" value={form.status} onChange={(e) => setField("status", e.target.value as LegalForm["status"])}
-                                    options={[{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }]}
-                                    helperText="Draft pages are hidden from visitors" />
-                            </FormGroup>
-                            <TextInput label="URL Slug" placeholder="privacy-policy" value={form.slug} required error={formErr.slug}
-                                leftAddon="/" helperText="yoursite.com/slug"
-                                onChange={(e) => setField("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
-                            <Textarea label="Page Content" placeholder="Enter full page content. HTML markup is supported..."
-                                value={form.content} onChange={(e) => setField("content", e.target.value)} minRows={12} helperText="Supports full HTML formatting" />
-                            <FormGroup columns={2}>
-                                <TextInput label="Last Updated Date" type="text" placeholder="YYYY-MM-DD" value={form.updatedDate} onChange={(e) => setField("updatedDate", e.target.value)} />
-                                <TextInput label="Version" placeholder="1.0" value={form.version} onChange={(e) => setField("version", e.target.value)} />
-                            </FormGroup>
-                            <details style={{ borderRadius: "var(--radius-lg)", border: "1px solid var(--border-primary)", overflow: "hidden" }}>
-                                <summary style={{ padding: "12px 16px", cursor: "pointer", fontWeight: 600, fontSize: "var(--font-sm)", color: "var(--text-primary)", background: "var(--bg-secondary)", userSelect: "none" as const, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <span>SEO Settings <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(optional)</span></span>
-                                    <FiChevronRight size={13} style={{ color: "var(--text-tertiary)" }} />
-                                </summary>
-                                <div style={{ padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-                                    <TextInput label="Meta Title" placeholder="Leave blank to use page title" value={form.metaTitle} onChange={(e) => setField("metaTitle", e.target.value)} showCharCount maxLength={60} />
-                                    <Textarea label="Meta Description" placeholder="Brief description for search results..." value={form.metaDesc} onChange={(e) => setField("metaDesc", e.target.value)} showCharCount maxLength={160} minRows={2} autoResize />
-                                    <Toggle label="Noindex" description="Hide from search engines (not recommended for policy pages)" checked={form.noindex} onChange={(v) => setField("noindex", v)} />
-                                </div>
-                            </details>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-3)", marginTop: "var(--space-6)", paddingTop: "var(--space-5)", borderTop: "1px solid var(--border-primary)" }}>
-                            <button onClick={() => setModalOpen(false)} style={S.ghost}>Cancel</button>
-                            <button onClick={handleSave} style={S.primary}><FiSave size={13} />{editing ? "Update Page" : "Create Page"}</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Delete Confirm */}
-            {delTarget && (
-                <div style={{ position: "fixed", inset: 0, zIndex: 1010, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-overlay)", backdropFilter: "blur(6px)", padding: "var(--space-4)" }}>
-                    <div style={{ background: "var(--bg-primary)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border-primary)", boxShadow: "var(--shadow-2xl)", padding: "var(--space-8)", maxWidth: "400px", width: "100%", textAlign: "center" }}>
-                        <div style={{ width: "52px", height: "52px", borderRadius: "var(--radius-full)", margin: "0 auto var(--space-4)", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <FiTrash2 size={20} style={{ color: "var(--color-error)" }} />
-                        </div>
-                        <h3 style={{ fontSize: "var(--font-lg)", fontWeight: 700, color: "var(--text-primary)", marginBottom: "8px" }}>Delete this page?</h3>
-                        <p style={{ fontSize: "var(--font-sm)", color: "var(--text-secondary)", marginBottom: "var(--space-6)", lineHeight: 1.55 }}>This action is permanent and cannot be undone.</p>
-                        <div style={{ display: "flex", gap: "var(--space-3)", justifyContent: "center" }}>
-                            <button onClick={() => setDelTarget(null)} style={{ ...S.ghost, flex: 1 }}>Cancel</button>
-                            <button onClick={handleDelete} style={{ ...S.danger, flex: 1, justifyContent: "center" }}><FiTrash2 size={13} /> Delete</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }
@@ -1187,7 +808,7 @@ function SmtpPanel() {
     const { saving, save } = useSave();
     return (
         <>
-            <FormSection title="SMTP Server" description="Outgoing mail server connection details" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="SMTP Server" description="Outgoing mail server connection details" collapsible defaultOpen>
                 <FormGroup columns={2}>
                     <TextInput label="SMTP Host" placeholder="smtp.gmail.com" required />
                     <TextInput label="SMTP Port" placeholder="587" type="number" helperText="587 (TLS) · 465 (SSL) · 25 (plain)" />
@@ -1203,7 +824,7 @@ function SmtpPanel() {
                 ]} />
             </FormSection>
 
-            <FormSection title="Sender Details" description="From / Reply-To used in all outgoing emails" collapsible defaultOpen>
+            <FormSection className="Form-Section-main" title="Sender Details" description="From / Reply-To used in all outgoing emails" collapsible defaultOpen>
                 <FormGroup columns={2}>
                     <TextInput label="From Name" placeholder="YourSite Team" />
                     <TextInput label="From Email" placeholder="noreply@yoursite.com" type="email" />
@@ -1214,7 +835,7 @@ function SmtpPanel() {
                 </FormGroup>
             </FormSection>
 
-            <FormSection title="Email Subjects" description="Customize transactional email subject lines" collapsible>
+            <FormSection className="Form-Section-main" title="Email Subjects" description="Customize transactional email subject lines" collapsible>
                 <TextInput label="Welcome Email" placeholder="Welcome to {{site_name}}!" />
                 <TextInput label="Email Verification" placeholder="Verify your email — {{site_name}}" />
                 <TextInput label="Password Reset" placeholder="Reset your {{site_name}} password" />
@@ -1226,7 +847,7 @@ function SmtpPanel() {
                 </p>
             </FormSection>
 
-            <FormSection title="Send Test Email" description="Verify your SMTP config is working" collapsible>
+            <FormSection className="Form-Section-main" title="Send Test Email" description="Verify your SMTP config is working" collapsible>
                 <FormGroup columns={2}>
                     <TextInput label="Send Test To" placeholder="you@example.com" type="email" />
                     <div style={{ paddingTop: "28px" }}>

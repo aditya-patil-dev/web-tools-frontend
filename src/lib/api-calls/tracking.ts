@@ -1,7 +1,3 @@
-// Central tracking utility for tool analytics.
-// Currently handles: PAGE_VIEW, RECOMMENDATION_CLICK
-// TOOL_RUN can be added later per tool component.
-
 import { api } from "@/lib/api/api";
 import { getOrCreateSessionId } from "@/lib/session";
 
@@ -62,8 +58,11 @@ export function trackPageView(toolId: string): void {
 }
 
 // ── Convenience: track RECOMMENDATION_CLICK ───────────────────────────────────
-export function trackRecommendationClick(id: string, currentToolId: string | number, widget: string, href: string, {
-    clickedToolId, currentToolId, widget, toPath,
+export function trackRecommendationClick({
+    clickedToolId,
+    currentToolId,
+    widget,
+    toPath,
 }: {
     clickedToolId: string;
     currentToolId: string;

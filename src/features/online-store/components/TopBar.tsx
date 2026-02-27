@@ -1,7 +1,7 @@
-// src/features/online-store/components/TopBar.tsx
 "use client";
 
-import { Monitor, Tablet, Smartphone, Save, Layout, RefreshCw, Loader2, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Monitor, Tablet, Smartphone, Save, Layout, RefreshCw, Loader2, ChevronRight, ArrowLeft } from "lucide-react";
 import { PageEditorState } from "../hooks/usePageEditor";
 
 const DEVICES = [
@@ -21,15 +21,51 @@ interface TopBarProps {
 export default function TopBar({
     editor, activeDevice, onDeviceChange, sidebarOpen, onToggleSidebar,
 }: TopBarProps) {
+    const router = useRouter();
+
     return (
         <header style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 18px", height: 54, background: "#fff",
-            borderBottom: "1px solid #e2e8f0", flexShrink: 0, zIndex: 100,
+            borderBottom: "1px solid #e2e8f0", flexShrink: 0,
             boxShadow: "0 1px 4px rgba(0,0,0,.05)",
         }}>
             {/* ── Left ── */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+                {/* Back button */}
+                <button
+                    onClick={() => router.push("/admin/settings/online-store")}
+                    title="Back to Online Store settings"
+                    style={{
+                        padding: "6px 8px",
+                        background: "transparent",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        color: "#64748b",
+                        display: "flex",
+                        alignItems: "center",
+                        transition: "all .15s",
+                    }}
+                    onMouseEnter={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = "#f8fafc";
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#cbd5e1";
+                        (e.currentTarget as HTMLButtonElement).style.color = "#0f172a";
+                    }}
+                    onMouseLeave={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#e2e8f0";
+                        (e.currentTarget as HTMLButtonElement).style.color = "#64748b";
+                    }}
+                >
+                    <ArrowLeft size={15} />
+                </button>
+
+                {/* Divider */}
+                <div style={{ width: 1, height: 20, background: "#e2e8f0" }} />
+
+                {/* Sidebar toggle */}
                 <button
                     onClick={onToggleSidebar}
                     title="Toggle sidebar"
@@ -45,12 +81,14 @@ export default function TopBar({
                     <Layout size={15} />
                 </button>
 
+                {/* Breadcrumb */}
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 12.5, color: "#94a3b8" }}>Online Store</span>
                     <ChevronRight size={12} color="#cbd5e1" />
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>Home Page</span>
                 </div>
 
+                {/* Unsaved badge */}
                 {editor.hasPending && (
                     <span style={{
                         background: "#fff7ed", color: "#ff6b35",
