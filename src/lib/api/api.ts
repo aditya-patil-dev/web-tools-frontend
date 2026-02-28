@@ -1,39 +1,58 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+} from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 /* ---------------------------------
-   Axios Instance
+   Axios Instance (Cookie Auth)
 ---------------------------------- */
+
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
+
   headers: {
     "Content-Type": "application/json",
   },
+
+  // VERY IMPORTANT
+  // allows sending & receiving
+  // HTTP-only cookies
+  withCredentials: true,
 });
 
 /* ---------------------------------
-   Request Interceptor (JWT)
+   Request Interceptor
+   (no JWT needed now)
 ---------------------------------- */
+
 apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("jwtToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
+  (config: InternalAxiosRequestConfig) => {
+    // cookies automatically included
+
     return config;
   },
+
   (error) => Promise.reject(error),
 );
 
 /* ---------------------------------
-   Response Interceptor (Optional)
+   Response Interceptor
+   (handle auth errors)
 ---------------------------------- */
+
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => response,
+
   (error: AxiosError) => {
+    if (typeof window !== "undefined" && error.response?.status === 401) {
+      // session expired
+      window.location.href = "/admin-login";
+    }
+
     return Promise.reject(error);
   },
 );
@@ -41,6 +60,7 @@ apiClient.interceptors.response.use(
 /* ---------------------------------
    HTTP Helpers
 ---------------------------------- */
+
 export const api = {
   get<T>(endpoint: string) {
     return apiClient.get<T>(endpoint).then((res) => res.data);

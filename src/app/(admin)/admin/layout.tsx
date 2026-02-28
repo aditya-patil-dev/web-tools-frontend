@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    // Close mobile sidebar on route change
+    /*
+      Close mobile sidebar on route change
+      */
+
     useEffect(() => {
         setMobileOpen(false);
     }, [children]);
@@ -21,13 +30,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onCloseMobile={() => setMobileOpen(false)}
             />
 
-            {/* Overlay for mobile */}
             {mobileOpen && (
-                <div
-                    className="adminOverlay"
-                    onClick={() => setMobileOpen(false)}
-                    aria-hidden="true"
-                />
+                <div className="adminOverlay" onClick={() => setMobileOpen(false)} />
             )}
 
             <div className={`adminMain ${sidebarCollapsed ? "collapsed" : ""}`}>

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { authApi } from "@/lib/api-calls/auth.api";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -25,26 +26,40 @@ export default function AdminLoginPage() {
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         setError(null);
 
         if (!isValid) {
-            setError("Please enter a valid email and a password (min 6 characters).");
+            setError("Please enter valid credentials.");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            // TODO: Replace with real API call
-            await new Promise((r) => setTimeout(r, 900));
+            const res = await authApi.login(email.trim(), password.trim());
+
+            if (!res.success) throw new Error(res.message);
 
             router.push("/admin");
-        } catch (err) {
-            setError("Login failed. Please check your credentials and try again.");
+        } catch (err: any) {
+            setError(err?.response?.data?.message || err?.message || "Login failed");
         } finally {
             setIsSubmitting(false);
         }
     }
+
+    useEffect(() => {
+        async function checkSession() {
+            try {
+                await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + "/api/v1/users/me", {
+                    credentials: "include",
+                });
+                router.push("/admin");
+            } catch { }
+        }
+        checkSession();
+    }, []);
 
     return (
         <div className="loginRoot">
@@ -75,13 +90,19 @@ export default function AdminLoginPage() {
                         <div className="loginCardHeader">
                             <div className="loginCardTitle">
                                 <h1 className="cardTitle">Admin Sign In</h1>
-                                <p className="cardSubtitle">Use your admin credentials to continue.</p>
+                                <p className="cardSubtitle">
+                                    Use your admin credentials to continue.
+                                </p>
                             </div>
 
                             <motion.div
                                 className="loginSpark"
                                 animate={{ rotate: [0, 8, 0], scale: [1, 1.05, 1] }}
-                                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+                                transition={{
+                                    duration: 3.4,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }}
                                 aria-hidden="true"
                             >
                                 ✦
@@ -134,7 +155,9 @@ export default function AdminLoginPage() {
                                         type="button"
                                         className="inputToggle"
                                         onClick={() => setShowPassword((s) => !s)}
-                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                        aria-label={
+                                            showPassword ? "Hide password" : "Show password"
+                                        }
                                     >
                                         <i className={`bi bi-eye${showPassword ? "-slash" : ""}`} />
                                     </button>
