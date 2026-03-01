@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/lib/api-calls/auth.api";
+import { loginAction } from "@/lib/api/auth.actions";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -12,10 +12,8 @@ export default function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [error, setError] = useState<string | null>(null);
 
     const isValid = useMemo(() => {
@@ -26,44 +24,33 @@ export default function AdminLoginPage() {
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
-
         setError(null);
 
         if (!isValid) {
-            setError("Please enter valid credentials.");
+            setError("Please enter a valid email and a password (min 6 characters).");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            const res = await authApi.login(email.trim(), password.trim());
+            const result = await loginAction(email, password);
 
-            if (!res.success) throw new Error(res.message);
+            if (!result.success) {
+                setError(result.message || "Login failed. Please check your credentials.");
+                return;
+            }
 
             router.push("/admin");
-        } catch (err: any) {
-            setError(err?.response?.data?.message || err?.message || "Login failed");
+        } catch {
+            setError("Something went wrong. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    useEffect(() => {
-        async function checkSession() {
-            try {
-                await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + "/api/v1/users/me", {
-                    credentials: "include",
-                });
-                router.push("/admin");
-            } catch { }
-        }
-        checkSession();
-    }, []);
-
     return (
         <div className="loginRoot">
-            {/* Animated background blobs */}
             <motion.div
                 className="loginBlob loginBlobA"
                 initial={{ opacity: 0, scale: 0.85, x: -40, y: 30 }}
@@ -79,47 +66,32 @@ export default function AdminLoginPage() {
 
             <div className="loginContainer">
                 <div className="loginWrapper">
-                    {/* Login Card */}
                     <motion.div
                         className="loginCard"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
                     >
-                        {/* Card Header */}
                         <div className="loginCardHeader">
                             <div className="loginCardTitle">
                                 <h1 className="cardTitle">Admin Sign In</h1>
-                                <p className="cardSubtitle">
-                                    Use your admin credentials to continue.
-                                </p>
+                                <p className="cardSubtitle">Use your admin credentials to continue.</p>
                             </div>
-
                             <motion.div
                                 className="loginSpark"
                                 animate={{ rotate: [0, 8, 0], scale: [1, 1.05, 1] }}
-                                transition={{
-                                    duration: 3.4,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                }}
+                                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
                                 aria-hidden="true"
                             >
                                 ✦
                             </motion.div>
                         </div>
 
-                        {/* Form */}
                         <form onSubmit={onSubmit} className="loginForm">
-                            {/* Email Field */}
                             <div className="formGroup">
-                                <label htmlFor="email" className="formLabel">
-                                    Email
-                                </label>
+                                <label htmlFor="email" className="formLabel">Email</label>
                                 <div className="inputGroup">
-                                    <div className="inputIcon">
-                                        <i className="bi bi-envelope" />
-                                    </div>
+                                    <div className="inputIcon"><i className="bi bi-envelope" /></div>
                                     <input
                                         id="email"
                                         type="email"
@@ -133,15 +105,10 @@ export default function AdminLoginPage() {
                                 </div>
                             </div>
 
-                            {/* Password Field */}
                             <div className="formGroup">
-                                <label htmlFor="password" className="formLabel">
-                                    Password
-                                </label>
+                                <label htmlFor="password" className="formLabel">Password</label>
                                 <div className="inputGroup">
-                                    <div className="inputIcon">
-                                        <i className="bi bi-shield-lock" />
-                                    </div>
+                                    <div className="inputIcon"><i className="bi bi-shield-lock" /></div>
                                     <input
                                         id="password"
                                         type={showPassword ? "text" : "password"}
@@ -155,16 +122,13 @@ export default function AdminLoginPage() {
                                         type="button"
                                         className="inputToggle"
                                         onClick={() => setShowPassword((s) => !s)}
-                                        aria-label={
-                                            showPassword ? "Hide password" : "Show password"
-                                        }
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
                                         <i className={`bi bi-eye${showPassword ? "-slash" : ""}`} />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Remember Me & Forgot Password */}
                             <div className="formRow">
                                 <label className="checkboxLabel">
                                     <input
@@ -175,13 +139,11 @@ export default function AdminLoginPage() {
                                     />
                                     <span className="checkboxText">Remember me</span>
                                 </label>
-
                                 <Link href="/forgot-password" className="forgotLink">
                                     Forgot password?
                                 </Link>
                             </div>
 
-                            {/* Error Message */}
                             <AnimatePresence>
                                 {error && (
                                     <motion.div
@@ -198,7 +160,6 @@ export default function AdminLoginPage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* Submit Button */}
                             <motion.button
                                 type="submit"
                                 className="loginBtn"
@@ -208,19 +169,12 @@ export default function AdminLoginPage() {
                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                             >
                                 {isSubmitting ? (
-                                    <>
-                                        <span className="spinner" />
-                                        <span>Signing in...</span>
-                                    </>
+                                    <><span className="spinner" /><span>Signing in...</span></>
                                 ) : (
-                                    <>
-                                        <span>Sign In</span>
-                                        <i className="bi bi-arrow-right" />
-                                    </>
+                                    <><span>Sign In</span><i className="bi bi-arrow-right" /></>
                                 )}
                             </motion.button>
 
-                            {/* Help Text */}
                             <div className="loginHelp">
                                 Having trouble? Contact your system administrator.
                             </div>

@@ -14,10 +14,8 @@ interface SectionRowProps {
     idx: number;
     total: number;
     editor: PageEditorState;
-    /** Whether this row's field panel is open */
     expanded: boolean;
     onToggle: () => void;
-    /** Request deletion (parent shows confirm modal) */
     onDeleteRequest: (id: number, name: string) => void;
 }
 
@@ -65,7 +63,16 @@ export default function SectionRow({
                     </button>
                 </div>
 
-                <span style={{ fontSize: 17, flexShrink: 0 }}>{getSectionIcon(comp.component_type)}</span>
+                {/* ── Section icon — React Icon via getSectionIcon() ── */}
+                <div style={{
+                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                    background: expanded ? "rgba(99,102,241,.1)" : "#f8fafc",
+                    border: `1px solid ${expanded ? "rgba(99,102,241,.2)" : "#f1f5f9"}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all .15s",
+                }}>
+                    {getSectionIcon(comp.component_type, 14, expanded ? "#6366f1" : "#94a3b8")}
+                </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -119,7 +126,6 @@ export default function SectionRow({
                         data={liveData}
                         onChange={data => editor.onFieldChange(comp.id, data)}
                     />
-
                     {isDirty && (
                         <>
                             <button

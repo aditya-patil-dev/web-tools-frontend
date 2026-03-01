@@ -73,12 +73,12 @@ export default function LegalPagesAdminListPage() {
     // Actions
     // ─────────────────────────────────────────────
     const handleEdit = useCallback(
-        (id: number) => router.push(`/admin/legal/${id}`),
+        (id: number) => router.push(`/admin/settings/legal/${id}`),
         [router]
     );
 
     const handleCreate = useCallback(
-        () => router.push("/admin/legal/new"),
+        () => router.push("/admin/settings/legal/new"),
         [router]
     );
 

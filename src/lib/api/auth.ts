@@ -1,31 +1,56 @@
-import { jwtDecode } from "jwt-decode";
+import { api } from "./api";
 
-export type DecodedUser = {
-  id: string;
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface LoginPayload {
   email: string;
-  role: string;
-  exp: number;
-};
-
-export function getLoggedInUser(): DecodedUser | null {
-  try {
-    if (typeof window === "undefined") return null;
-
-    const token = localStorage.getItem("jwtToken");
-    if (!token) return null;
-
-    return jwtDecode<DecodedUser>(token);
-  } catch (error) {
-    console.error("JWT decode failed", error);
-    return null;
-  }
+  password: string;
+  client?: "admin" | "customer";
 }
 
-export function isTokenExpired(token: string): boolean {
+export interface LoginUser {
+  id: string;
+  full_name: string;
+  email: string;
+  phone_number: string | null;
+  role: string;
+  account_status: string;
+  last_login_at: string;
+}
+
+export interface LoginWorkspace {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  member_role: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: LoginUser;
+    workspace: LoginWorkspace;
+  };
+  token: string;
+  expires_in: number;
+}
+
+// ─── API Calls ────────────────────────────────────────────────────────────────
+
+export async function loginRequest(
+  payload: LoginPayload,
+): Promise<LoginResponse> {
+  return api.post<LoginResponse>("/users/login", payload);
+}
+
+export async function logoutRequest(): Promise<void> {
+  // Call your backend logout if you have one
+  // If not, the server action handles cookie clearing
   try {
-    const decoded = jwtDecode<{ exp: number }>(token);
-    return decoded.exp * 1000 < Date.now();
+    await api.post("/users/logout");
   } catch {
-    return true;
+    // Silently fail — we'll clear cookies regardless
   }
 }

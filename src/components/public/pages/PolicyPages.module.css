@@ -7,6 +7,7 @@
   background: var(--bg-primary);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin-bottom: 24px;
 }
 
 /* ── Sidebar ── */

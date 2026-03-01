@@ -408,7 +408,7 @@ a {
 /* Dropdown Menu */
 .dropdown-menu {
   position: absolute;
-  top: calc(100% + var(--space-2));
+  top: calc(80% + var(--space-2));
   left: 0;
   min-width: 220px;
   background: white;
