@@ -13,8 +13,17 @@ interface TrackEventPayload {
     meta?: Record<string, unknown>;
 }
 
+// ── Consent Gate ──────────────────────────────────────────────────────────────
+function hasConsented(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("cookie_consent") === "accepted";
+}
+
 // ── Core fire-and-forget tracker ──────────────────────────────────────────────
 export async function trackEvent(payload: TrackEventPayload): Promise<void> {
+    // Block all tracking if user declined or hasn't decided yet
+    if (!hasConsented()) return;
+
     try {
         await api.post("/tools/events/track", payload);
     } catch {
@@ -22,9 +31,7 @@ export async function trackEvent(payload: TrackEventPayload): Promise<void> {
     }
 }
 
-// ── Dedupe guard for PAGE_VIEW ─────────────────────────────────────────────────
-// Prevents double-firing in React 18 Strict Mode and on accidental re-renders.
-// Uses sessionStorage so it resets when the browser tab closes.
+// ── Dedupe guard for PAGE_VIEW ────────────────────────────────────────────────
 const PAGE_VIEW_TTL_MS = 30_000; // 30 seconds
 
 export function shouldTrackPageView(toolId: string): boolean {
@@ -42,6 +49,8 @@ export function shouldTrackPageView(toolId: string): boolean {
 
 // ── Convenience: track PAGE_VIEW ──────────────────────────────────────────────
 export function trackPageView(toolId: string): void {
+    if (!hasConsented()) return;                  // ← consent check
+
     const sessionId = getOrCreateSessionId();
     if (!sessionId || !toolId) return;
     if (!shouldTrackPageView(toolId)) return;
@@ -53,6 +62,23 @@ export function trackPageView(toolId: string): void {
         meta: {
             path: location.pathname,
             referrer: document.referrer || null,
+        },
+    });
+}
+
+// ── Convenience: track TOOL_RUN ───────────────────────────────────────────────
+export function trackToolRun(toolId: string): void {
+    if (!hasConsented()) return;                  // ← consent check
+
+    const sessionId = getOrCreateSessionId();
+    if (!sessionId || !toolId) return;
+
+    trackEvent({
+        tool_id: toolId,
+        event_type: "TOOL_RUN",
+        session_id: sessionId,
+        meta: {
+            path: location.pathname,
         },
     });
 }
@@ -69,6 +95,8 @@ export function trackRecommendationClick({
     widget: WidgetType;
     toPath: string;
 }): void {
+    if (!hasConsented()) return;                  // ← consent check
+
     const sessionId = getOrCreateSessionId();
     if (!sessionId) return;
 

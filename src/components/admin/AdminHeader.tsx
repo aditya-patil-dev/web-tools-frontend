@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { logoutAction } from "@/lib/api/auth.actions";
+import { useAuth } from "@/hooks/useAuth";
 
 type NotificationItem = {
     id: string;
@@ -21,11 +23,10 @@ type Props = {
 
 export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile }: Props) {
     const pathname = usePathname();
-    const router = useRouter();
+    const { user } = useAuth();
     const notifRef = useRef<HTMLDivElement>(null);
     const profileRef = useRef<HTMLDivElement>(null);
 
-    // Demo notifications (replace with API later)
     const [notifications, setNotifications] = useState<NotificationItem[]>([
         {
             id: "n1",
@@ -60,8 +61,8 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
 
     const [notifOpen, setNotifOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-    // Close dropdowns when clicking outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -87,10 +88,10 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }
 
-    function handleLogout() {
-        // TODO: call logout API, clear cookies/token, etc.
+    async function handleLogout() {
         closeAll();
-        router.push("/login");
+        setIsLoggingOut(true);
+        await logoutAction(); // deletes cookies + redirects to /admin-login
     }
 
     const title = useMemo(() => {
@@ -100,10 +101,11 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
         return "Admin";
     }, [pathname]);
 
+    const avatarLetter = user?.full_name?.charAt(0).toUpperCase() ?? "A";
+
     return (
         <header className="adminHeader">
             <div className="headerLeft">
-                {/* Mobile hamburger */}
                 <button
                     type="button"
                     className="iconBtn mobileOnly"
@@ -113,14 +115,13 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                     <i className="bi bi-list" />
                 </button>
 
-                {/* Desktop collapse toggle */}
                 <button
                     type="button"
                     className="iconBtn desktopOnly"
                     onClick={onToggleCollapse}
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
-                    <i className={`bi bi-${collapsed ? 'chevron-right' : 'chevron-left'}`} />
+                    <i className={`bi bi-${collapsed ? "chevron-right" : "chevron-left"}`} />
                 </button>
 
                 <div className="headerTitle">
@@ -130,7 +131,6 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
             </div>
 
             <div className="headerRight">
-                {/* Search */}
                 <div className="searchWrap desktopOnly">
                     <i className="bi bi-search searchIcon" />
                     <input className="searchInput" placeholder="Search..." />
@@ -165,7 +165,6 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                                         {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
                                     </div>
                                 </div>
-
                                 <button className="dropdownActionBtn" type="button" onClick={markAllRead}>
                                     Mark all read
                                 </button>
@@ -202,7 +201,7 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                     )}
                 </div>
 
-                {/* Profile dropdown */}
+                {/* Profile Dropdown */}
                 <div className="dropdownWrap" ref={profileRef}>
                     <button
                         type="button"
@@ -214,10 +213,10 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                         aria-expanded={profileOpen}
                         aria-label="Profile menu"
                     >
-                        <div className="profileAvatar">A</div>
+                        <div className="profileAvatar">{avatarLetter}</div>
                         <div className="profileInfo desktopOnly">
-                            <div className="profileName">Admin</div>
-                            <div className="profileRole">Super Admin</div>
+                            <div className="profileName">{user?.full_name ?? "Admin"}</div>
+                            <div className="profileRole">{user?.workspace?.member_role ?? "Admin"}</div>
                         </div>
                         <i className="bi bi-chevron-down" />
                     </button>
@@ -225,10 +224,10 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                     {profileOpen && (
                         <div className="dropdownMenu dropdownMenuRight">
                             <div className="profileMenuHeader">
-                                <div className="profileAvatarLg">A</div>
+                                <div className="profileAvatarLg">{avatarLetter}</div>
                                 <div>
-                                    <div className="profileMenuName">Admin</div>
-                                    <div className="profileMenuEmail">admin@company.com</div>
+                                    <div className="profileMenuName">{user?.full_name ?? "Admin"}</div>
+                                    <div className="profileMenuEmail">{user?.email ?? ""}</div>
                                 </div>
                             </div>
 
@@ -243,9 +242,14 @@ export default function AdminHeader({ collapsed, onToggleCollapse, onOpenMobile 
                                     <span>Settings</span>
                                 </Link>
 
-                                <button type="button" className="menuItem danger" onClick={handleLogout}>
+                                <button
+                                    type="button"
+                                    className="menuItem danger"
+                                    onClick={handleLogout}
+                                    disabled={isLoggingOut}
+                                >
                                     <i className="bi bi-box-arrow-right" />
-                                    <span>Logout</span>
+                                    <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
                                 </button>
                             </div>
                         </div>
