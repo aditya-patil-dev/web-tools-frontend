@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const SITE_URL = process.env.FRONTEND_URL || "https://nextgenaitools.in";
+const SITE_URL = process.env.FRONTEND_URL || "https://fusiontools.in";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //   Later this will come from API

@@ -31,6 +31,8 @@ import Textarea from "@/components/forms/Textarea";
 import Toggle from "@/components/forms/Toggle";
 import Select from "@/components/forms/Select";
 import { FormSection, FormGroup } from "@/components/forms/FormLayout";
+import FileUpload from "@/components/forms/FileUpload";
+import { useSettings } from "@/hooks/useSettings-general";
 
 // Hooks (src/hooks/useSettings.ts)
 import {
@@ -212,38 +214,154 @@ const S = {
 
 // ── 3a. General (no API yet — stub save) ───────────────────
 function GeneralPanel() {
-    const { saving, save } = useSave();
+    const {
+        settings,
+        isLoading,
+        isSaving,
+        isUploading,
+        updateField,
+        uploadLogo,
+        uploadFavicon,
+        save,
+    } = useSettings();
+
+    if (isLoading) {
+        return <PanelSkeleton />;
+    }
+
+    if (!settings) {
+        return (
+            <div style={{ textAlign: "center", padding: "48px", color: "var(--text-tertiary)" }}>
+                <p>Failed to load settings. Please refresh the page.</p>
+            </div>
+        );
+    }
+
     return (
         <>
-            <FormSection className="Form-Section-main" title="Site Identity" description="Core information about your website" collapsible defaultOpen>
+            <FormSection
+                className="Form-Section-main"
+                title="Site Identity"
+                description="Core information about your website"
+                collapsible
+                defaultOpen
+            >
                 <FormGroup columns={2}>
-                    <TextInput label="Site Name" placeholder="Your Website Name" required />
-                    <TextInput label="Site Tagline" placeholder="Short tagline or motto" />
+                    <TextInput
+                        label="Site Name"
+                        placeholder="Your Website Name"
+                        value={settings.site_name || ""}
+                        onChange={(e) => updateField("site_name", e.target.value)}
+                        required
+                    />
+                    <TextInput
+                        label="Site Tagline"
+                        placeholder="Short tagline or motto"
+                        value={settings.site_tagline || ""}
+                        onChange={(e) => updateField("site_tagline", e.target.value)}
+                    />
                 </FormGroup>
-                <TextInput label="Site URL" placeholder="yoursite.com" leftAddon="https://" required helperText="Canonical root URL — used in sitemaps and emails" />
-                <Textarea label="Site Description" placeholder="Default meta description used when no page-level description is set..." minRows={3} autoResize showCharCount maxLength={160} />
+
+                <TextInput
+                    label="Site URL"
+                    placeholder="yoursite.com"
+                    leftAddon="https://"
+                    value={settings.site_url || ""}
+                    onChange={(e) => updateField("site_url", e.target.value)}
+                    required
+                    helperText="Canonical root URL — used in sitemaps and emails"
+                />
+
+                <Textarea
+                    label="Site Description"
+                    placeholder="Default meta description used when no page-level description is set..."
+                    value={settings.site_description || ""}
+                    onChange={(e) => updateField("site_description", e.target.value)}
+                    minRows={3}
+                    autoResize
+                    showCharCount
+                    maxLength={160}
+                />
+
+                {/* File Uploads */}
                 <FormGroup columns={2}>
-                    <TextInput label="Logo URL" placeholder="/logo.png" helperText="Used in header and emails" />
-                    <TextInput label="Favicon URL" placeholder="/favicon.ico" helperText="32×32px ICO or PNG" />
+                    <FileUpload
+                        label="Logo"
+                        value={settings.logo_url}
+                        onUpload={uploadLogo}
+                        isUploading={isUploading}
+                        disabled={isSaving}
+                        accept="image/png,image/jpeg,image/svg+xml"
+                        helperText="Used in header and emails (PNG, JPG, SVG)"
+                        previewType="image"
+                    />
+                    <FileUpload
+                        label="Favicon"
+                        value={settings.favicon_url}
+                        onUpload={uploadFavicon}
+                        isUploading={isUploading}
+                        disabled={isSaving}
+                        accept="image/x-icon,image/png"
+                        helperText="32×32px ICO or PNG"
+                        previewType="icon"
+                    />
                 </FormGroup>
             </FormSection>
 
-            <FormSection className="Form-Section-main" title="Analytics & Tracking" description="Search console verification and analytics IDs" collapsible>
+            <FormSection
+                className="Form-Section-main"
+                title="Analytics & Tracking"
+                description="Search console verification and analytics IDs"
+                collapsible
+            >
                 <FormGroup columns={2}>
-                    <TextInput label="Google Analytics ID" placeholder="G-XXXXXXXXXX" helperText="GA4 Measurement ID" />
-                    <TextInput label="Google Tag Manager ID" placeholder="GTM-XXXXXXX" />
+                    <TextInput
+                        label="Google Analytics ID"
+                        placeholder="G-XXXXXXXXXX"
+                        value={settings.google_analytics_id || ""}
+                        onChange={(e) => updateField("google_analytics_id", e.target.value)}
+                        helperText="GA4 Measurement ID"
+                    />
+                    <TextInput
+                        label="Google Tag Manager ID"
+                        placeholder="GTM-XXXXXXX"
+                        value={settings.google_tag_manager_id || ""}
+                        onChange={(e) => updateField("google_tag_manager_id", e.target.value)}
+                    />
                 </FormGroup>
+
                 <FormGroup columns={2}>
-                    <TextInput label="Google Search Console" placeholder="google-site-verification=xxxxx" />
-                    <TextInput label="Bing Webmaster" placeholder="msvalidate.01=xxxxx" />
+                    <TextInput
+                        label="Google Search Console"
+                        placeholder="google-site-verification=xxxxx"
+                        value={settings.google_search_console || ""}
+                        onChange={(e) => updateField("google_search_console", e.target.value)}
+                    />
+                    <TextInput
+                        label="Bing Webmaster"
+                        placeholder="msvalidate.01=xxxxx"
+                        value={settings.bing_webmaster || ""}
+                        onChange={(e) => updateField("bing_webmaster", e.target.value)}
+                    />
                 </FormGroup>
+
                 <FormGroup columns={2}>
-                    <TextInput label="Facebook Pixel ID" placeholder="123456789" />
-                    <TextInput label="Hotjar Site ID" placeholder="1234567" />
+                    <TextInput
+                        label="Facebook Pixel ID"
+                        placeholder="123456789"
+                        value={settings.facebook_pixel_id || ""}
+                        onChange={(e) => updateField("facebook_pixel_id", e.target.value)}
+                    />
+                    <TextInput
+                        label="Hotjar Site ID"
+                        placeholder="1234567"
+                        value={settings.hotjar_site_id || ""}
+                        onChange={(e) => updateField("hotjar_site_id", e.target.value)}
+                    />
                 </FormGroup>
             </FormSection>
 
-            <SaveBar onSave={save} saving={saving} />
+            <SaveBar onSave={save} saving={isSaving} disabled={isUploading} />
         </>
     );
 }
@@ -879,8 +997,6 @@ function renderPanel(
         case "seo-homepage": return <SeoPanel pageLabel="Homepage" pagePath="/" seo={hooks.homepage} />;
         case "seo-about": return <SeoPanel pageLabel="About" pagePath="/about" seo={hooks.about} />;
         case "seo-pricing": return <SeoPanel pageLabel="Pricing" pagePath="/pricing" seo={hooks.pricing} />;
-        // Legal
-        case "legal": return <LegalPanel />;
         // Robots
         case "robots": return <RobotsPanel robots={hooks.robots} />;
         // SMTP

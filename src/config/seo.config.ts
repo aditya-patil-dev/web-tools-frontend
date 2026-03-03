@@ -5,12 +5,12 @@ import { Metadata } from "next";
 ================================= */
 
 export const siteConfig = {
-    name: "ToolBox - Free Online Toolssss",
+    name: "ToolBox - Free Online Tools",
     shortName: "FusionTools",
     description:
         "Free online tools for image conversion, PDF editing, text formatting, and more. All tools run in your browser with complete privacy.",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com",
-    ogImage: "/images/og-image.jpg",
+    ogImage: "https://ik.imagekit.io/7w8ikjsre/logos/ba45e1e8-9be3-4904-b3bf-4e116b228c0f.png",
     twitterHandle: "@yourtoolbox",
     twitterCreator: "@yourtoolbox",
     keywords: [
