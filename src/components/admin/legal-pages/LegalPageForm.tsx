@@ -92,7 +92,7 @@ export default function LegalPageForm({ id }: Props) {
             } catch (err: any) {
                 toast.error(err?.message || "Failed to load legal page");
 
-                router.push("/admin/legal");
+                router.push("/admin/settings/legal");
             } finally {
                 setIsFetching(false);
             }
@@ -181,7 +181,7 @@ export default function LegalPageForm({ id }: Props) {
                 toast.success("Page created");
             }
 
-            router.push("/admin/legal");
+            router.push("/admin/settings/legal");
         } catch (err: any) {
             toast.error(err?.response?.data?.message || err?.message || "Failed");
         } finally {
