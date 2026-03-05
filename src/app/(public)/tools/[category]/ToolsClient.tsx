@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
     AiOutlineEye,
     AiOutlineUser,
@@ -12,13 +12,11 @@ import {
     AiOutlineSearch,
 } from "react-icons/ai";
 
-import { loading } from "@/components/loading/loading";
 import {
     fetchToolsByCategory,
     ToolItem,
     CategoryPage,
 } from "../tools.config";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /* -----------------------------
    Star Rating Component
@@ -46,32 +44,21 @@ export default function ToolsListing() {
     const params = useParams();
     const category = params.category as string;
 
-    const [tools, setTools] = useState<ToolItem[]>([]);
-    const [categoryPage, setCategoryPage] = useState<CategoryPage | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
     /* -----------------------------
        Fetch tools + category page
+       - cached per category for 5 minutes
+       - user visits /tools/seo then /tools/image then back to /tools/seo
+         → only 2 API calls total, not 3
     ------------------------------ */
-    useEffect(() => {
-        if (!category) return;
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["tools-by-category", category],
+        queryFn: () => fetchToolsByCategory(category),
+        staleTime: 1000 * 60 * 5,  // 5 minutes
+        enabled: !!category,
+    });
 
-        const loadData = async () => {
-            loading.show({ message: "Loading tools…" });
-
-            try {
-                const data = await fetchToolsByCategory(category);
-                setTools(data.tools);
-                setCategoryPage(data.category);
-            } catch (err: unknown) {
-                setError(getErrorMessage(err));
-            } finally {
-                loading.hide();
-            }
-        };
-
-        loadData();
-    }, [category]);
+    const tools: ToolItem[] = data?.tools ?? [];
+    const categoryPage: CategoryPage | null = data?.category ?? null;
 
     /* -----------------------------
        Derived Stats
@@ -81,10 +68,24 @@ export default function ToolsListing() {
         0,
     );
 
-    if (error) {
+    if (isLoading) {
+        return (
+            <div className="tools-page-wrapper">
+                <div className="tools-page-container">
+                    <div className="tools-page-grid">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="tool-card tool-card--skeleton" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isError) {
         return (
             <div className="tools-error">
-                <p>{error}</p>
+                <p>Failed to load tools. Please try again.</p>
             </div>
         );
     }
@@ -175,7 +176,7 @@ export default function ToolsListing() {
                 </div>
 
                 {/* Empty State */}
-                {tools.length === 0 && !error && (
+                {tools.length === 0 && (
                     <div className="empty-state">
                         <AiOutlineSearch />
                         <h3>No tools found</h3>
