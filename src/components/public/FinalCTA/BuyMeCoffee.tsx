@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './BuyMeCoffee.module.css';
+import styles from './BuyMeCoffee.module.css';                        
 
 interface BuyMeCoffeeProps {
   username?: string;
 }
 
-export default function BuyMeCoffee({ username = 'techfusion' }: BuyMeCoffeeProps) {
+export default function BuyMeCoffee({ username = 'fusiontools' }: BuyMeCoffeeProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
 

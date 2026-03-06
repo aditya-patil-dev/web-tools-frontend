@@ -17,7 +17,7 @@ export default async function PublicLayout({
             <Footer config={layout.footer} />
 
             {/* Buy Me a Coffee widget - fixed to viewport */}
-            <BuyMeCoffee username="techfusion" />
+            <BuyMeCoffee username="fusiontools" />
         </>
     );
 }
