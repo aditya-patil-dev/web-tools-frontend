@@ -1,0 +1,6 @@
+.page {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-primary, #ffffff);
+  color: var(--text-primary, #0f172a);
+  overflow-x: hidden;
+}

@@ -1,0 +1,67 @@
+.section {
+  padding: 7rem 1.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255,107,53,0.07), transparent);
+}
+.inner {
+  position: relative; z-index: 1;
+  max-width: 620px; margin: 0 auto;
+}
+.label {
+  display: inline-block;
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--color-primary, #ff6b35); margin-bottom: 1rem;
+}
+.title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 800; letter-spacing: -0.025em;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.1; margin-bottom: 1rem;
+}
+.desc {
+  font-size: 1.1rem; color: var(--text-secondary, #475569);
+  margin-bottom: 2.5rem; line-height: 1.7;
+}
+.ctaRow {
+  display: flex; gap: 0.75rem; max-width: 520px; margin: 0 auto;
+  background: #fff;
+  border: 2px solid var(--border-primary, #e2e8f0);
+  border-radius: 9999px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  box-shadow: 0 20px 50px -15px rgba(15,23,42,0.14);
+  transition: border-color 250ms ease, box-shadow 250ms ease;
+}
+.ctaRow:focus-within {
+  border-color: rgba(255,107,53,0.5);
+  box-shadow: 0 20px 50px -15px rgba(15,23,42,0.14), 0 0 0 4px rgba(255,107,53,0.1);
+}
+.ctaInput {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem;
+  color: var(--text-primary, #0f172a); min-width: 0;
+}
+.ctaInput::placeholder { color: var(--text-tertiary, #64748b); }
+.ctaBtn {
+  display: flex; align-items: center; gap: 0.45rem;
+  background: linear-gradient(135deg, #ff6b35, #ff5722);
+  color: #fff; border: none; cursor: pointer;
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+  padding: 0.78rem 1.6rem; border-radius: 9999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(255,107,53,0.35);
+  transition: transform 400ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 250ms ease;
+}
+.ctaBtn:hover  { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 25px rgba(255,107,53,0.48); }
+.ctaBtn:active { transform: scale(0.96); }
+
+@media (max-width: 560px) {
+  .ctaRow { flex-direction: column; border-radius: 1.25rem; padding: 1rem; }
+  .ctaBtn { width: 100%; justify-content: center; }
+}
