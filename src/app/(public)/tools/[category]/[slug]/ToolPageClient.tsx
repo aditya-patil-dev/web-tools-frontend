@@ -153,6 +153,22 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     {tool.tool_type === "protect-pdf" && <ProtectPdfTool />}
                 </motion.div>
 
+                {/* Long Content Section */}
+                {tool.long_content && (
+                    <motion.section
+                        className="tool-content-section"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        variants={fadeInUp}
+                    >
+                        <div
+                            className="tool-content-body"
+                            dangerouslySetInnerHTML={{ __html: tool.long_content }}
+                        />
+                    </motion.section>
+                )}
+
                 {/* Features */}
                 {tool.features && tool.features.length > 0 && (
                     <motion.section

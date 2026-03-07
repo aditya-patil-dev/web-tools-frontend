@@ -12,6 +12,7 @@ import { Form, FormSection, FormGroup } from "@/components/forms/FormLayout";
 import { toast } from "@/components/toast/toast";
 import { loading } from "@/components/loading/loading";
 import RepeatableField from "@/components/forms/RepeatableField";
+import RichTextEditor from "@/components/forms/RichTextEditor"; // ✅ ADDED
 import type { FieldDefinition } from "@/components/forms/RepeatableField";
 import { useToolPageDetail } from "@/hooks/useToolPages";
 import { useToolsList } from "@/hooks/useTools";
@@ -336,24 +337,29 @@ export default function ToolPageFormPage() {
                     />
                 </FormSection>
 
-                {/* ── CONTENT ── */}
+                {/* ── CONTENT (✅ UPDATED TO USE RICH TEXT EDITOR) ── */}
                 <FormSection
                     title="Content"
                     description="Main body content for the tool page"
                     collapsible
                     defaultOpen
                 >
-                    <Textarea
+                    <RichTextEditor
                         label="Long Content"
-                        placeholder="Main detailed content about the tool..."
                         value={formData.long_content ?? ""}
-                        onChange={(e) =>
-                            setFormData((prev) => ({ ...prev, long_content: e.target.value }))
+                        onChange={(html) =>
+                            setFormData((prev) => ({ ...prev, long_content: html }))
                         }
-                        minRows={8}
-                        autoResize
-                        helperText="Full article content (HTML or Markdown supported)"
+                        placeholder="Write detailed content about the tool..."
+                        error={errors.long_content}
                     />
+                    <p style={{
+                        fontSize: "var(--font-xs)",
+                        color: "var(--text-tertiary)",
+                        marginTop: "6px"
+                    }}>
+                        Full article content with rich formatting (headings, lists, links, etc.)
+                    </p>
                 </FormSection>
 
                 {/* ── FEATURES ── */}
