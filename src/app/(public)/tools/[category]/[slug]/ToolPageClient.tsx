@@ -1,16 +1,10 @@
 "use client";
-
 // src/app/(public)/tools/[category]/[slug]/ToolPageClient.tsx
-//
-// CLIENT COMPONENT — handles all interactivity:
-//   - PAGE_VIEW tracking (needs localStorage/sessionStorage)
-//   - All tool component rendering
-//   - ToolPageSections (Related / Popular / Also Used)
-
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { SlArrowRight } from "react-icons/sl";
+import { FiCheckCircle } from "react-icons/fi";
 import { ToolPageDTO } from "@/lib/api-calls/tools.api";
 import { trackPageView } from "@/lib/api-calls/tracking";
 import { ToolPageSections } from "@/components/upsell/ToolSections";
@@ -109,6 +103,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     variants={fadeInUp}
                 >
                     <h1>{tool.page_title || tool.title}</h1>
+                    {/* Only show intro if it exists */}
                     {tool.page_intro && <p>{tool.page_intro}</p>}
                 </motion.header>
 
@@ -153,7 +148,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     {tool.tool_type === "protect-pdf" && <ProtectPdfTool />}
                 </motion.div>
 
-                {/* Long Content Section */}
+                {/* Long Content Section - Only if exists */}
                 {tool.long_content && (
                     <motion.section
                         className="tool-content-section"
@@ -169,7 +164,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     </motion.section>
                 )}
 
-                {/* Features */}
+                {/* Features - Only if array has items */}
                 {tool.features && tool.features.length > 0 && (
                     <motion.section
                         className="tool-features-section"
@@ -190,18 +185,23 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                                     variants={itemVariants}
                                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
                                 >
+                                    {/* Universal icon for all features */}
                                     <div className="feature-icon">
-                                        {index === 0 ? "🚀" : index === 1 ? "⚡" : index === 2 ? "🔒" : "✨"}
+                                        <FiCheckCircle />
                                     </div>
-                                    <h3>{feature.title}</h3>
-                                    <p>{feature.description}</p>
+                                    
+                                    {/* Only show title if it exists */}
+                                    {feature.title && <h3>{feature.title}</h3>}
+                                    
+                                    {/* Only show description if it exists */}
+                                    {feature.description && <p>{feature.description}</p>}
                                 </motion.div>
                             ))}
                         </motion.div>
                     </motion.section>
                 )}
 
-                {/* FAQ */}
+                {/* FAQ - Only if array has items */}
                 {tool.faqs && tool.faqs.length > 0 && (
                     <motion.section
                         className="tool-faq-section"
@@ -217,8 +217,11 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                         <motion.div className="faq-list" variants={staggerContainer}>
                             {tool.faqs.map((faq, index) => (
                                 <motion.div key={index} className="faq-item" variants={itemVariants}>
-                                    <h3>{faq.question}</h3>
-                                    <p>{faq.answer}</p>
+                                    {/* Only show question if it exists */}
+                                    {faq.question && <h3>{faq.question}</h3>}
+                                    
+                                    {/* Only show answer if it exists */}
+                                    {faq.answer && <p>{faq.answer}</p>}
                                 </motion.div>
                             ))}
                         </motion.div>
