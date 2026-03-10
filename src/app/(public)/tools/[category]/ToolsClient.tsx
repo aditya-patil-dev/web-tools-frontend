@@ -23,6 +23,10 @@ import {
 ------------------------------ */
 function StarRating({ rating }: { rating: number }) {
     const safeRating = Number(rating) || 0;
+    
+    // Don't render if rating is 0 or null
+    if (!safeRating) return null;
+    
     const fullStars = Math.floor(safeRating);
 
     return (
@@ -67,6 +71,9 @@ export default function ToolsListing() {
         (sum, tool) => sum + Number(tool.users_count || 0),
         0,
     );
+    
+    // Calculate available tools count (only tools with data)
+    const validToolsCount = tools.filter(tool => tool.title).length;
 
     if (isLoading) {
         return (
@@ -101,11 +108,15 @@ export default function ToolsListing() {
                             category.replace(/-/g, " ")}
                     </h1>
 
-                    <p>
-                        {categoryPage?.page_description ||
-                            "Browse all available tools and start using them instantly."}
-                    </p>
+                    {/* Only show description if it exists */}
+                    {(categoryPage?.page_description || category) && (
+                        <p>
+                            {categoryPage?.page_description ||
+                                "Browse all available tools and start using them instantly."}
+                        </p>
+                    )}
 
+                    {/* Only show intro if it exists */}
                     {categoryPage?.page_intro && (
                         <div className="category-intro">
                             {categoryPage.page_intro}
@@ -113,56 +124,86 @@ export default function ToolsListing() {
                     )}
                 </div>
 
-                {/* Stats */}
-                <div className="stats-bar">
-                    <div className="stat-item">
-                        <span className="stat-number">{tools.length}</span>
-                        <span className="stat-label">Tools Available</span>
-                    </div>
+                {/* Stats - Only show if we have data */}
+                {(validToolsCount > 0 || totalActiveUsers > 0) && (
+                    <div className="stats-bar">
+                        {/* Only show Tools Available if count > 0 */}
+                        {validToolsCount > 0 && (
+                            <div className="stat-item">
+                                <span className="stat-number">{validToolsCount}</span>
+                                <span className="stat-label">Tools Available</span>
+                            </div>
+                        )}
 
-                    <div className="stat-item">
-                        <span className="stat-number">
-                            {totalActiveUsers.toLocaleString()}
-                        </span>
-                        <span className="stat-label">Active Users</span>
-                    </div>
+                        {/* Only show Active Users if count > 0 */}
+                        {totalActiveUsers > 0 && (
+                            <div className="stat-item">
+                                <span className="stat-number">
+                                    {totalActiveUsers.toLocaleString()}
+                                </span>
+                                <span className="stat-label">Active Users</span>
+                            </div>
+                        )}
 
-                    <div className="stat-item">
-                        <span className="stat-number">100%</span>
-                        <span className="stat-label">Free to Use</span>
+                        {/* Always show "Free to Use" as it's a constant */}
+                        <div className="stat-item">
+                            <span className="stat-number">100%</span>
+                            <span className="stat-label">Free to Use</span>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Tools Grid */}
                 <div className="tools-page-grid">
                     {tools.map((tool) => (
                         <div key={tool.id} className="tool-card">
+                            {/* Only show badge if it exists */}
                             {tool.badge && (
                                 <span className={`tool-badge ${tool.badge}`}>
                                     {tool.badge.toUpperCase()}
                                 </span>
                             )}
 
+                            {/* Title - always show (required field) */}
                             <h3>{tool.title}</h3>
-                            <p className="tool-desc">{tool.short_description}</p>
+                            
+                            {/* Only show description if it exists */}
+                            {tool.short_description && (
+                                <p className="tool-desc">{tool.short_description}</p>
+                            )}
 
-                            <div className="tool-tags">
-                                {tool.tags.map((tag) => (
-                                    <span key={tag}>{tag}</span>
-                                ))}
-                            </div>
+                            {/* Only show tags if array has items */}
+                            {tool.tags && tool.tags.length > 0 && (
+                                <div className="tool-tags">
+                                    {tool.tags.map((tag) => (
+                                        <span key={tag}>{tag}</span>
+                                    ))}
+                                </div>
+                            )}
 
-                            <div className="tool-meta">
-                                <span>
-                                    <AiOutlineEye /> {tool.views.toLocaleString()}
-                                </span>
-                                <span>
-                                    <AiOutlineUser /> {tool.users_count.toLocaleString()}
-                                </span>
-                            </div>
+                            {/* Only show meta if either views or users_count exists */}
+                            {(tool.views > 0 || tool.users_count > 0) && (
+                                <div className="tool-meta">
+                                    {/* Only show views if > 0 */}
+                                    {tool.views > 0 && (
+                                        <span>
+                                            <AiOutlineEye /> {tool.views.toLocaleString()}
+                                        </span>
+                                    )}
+                                    
+                                    {/* Only show users_count if > 0 */}
+                                    {tool.users_count > 0 && (
+                                        <span>
+                                            <AiOutlineUser /> {tool.users_count.toLocaleString()}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
 
+                            {/* StarRating component handles null internally */}
                             <StarRating rating={tool.rating} />
 
+                            {/* CTA - always show (required for functionality) */}
                             <Link
                                 href={tool.tool_url}
                                 className="tool-cta-wrapper"
