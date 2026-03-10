@@ -1,6 +1,7 @@
 import { api } from "@/lib/api/api";
 
 export type ToolPageDTO = {
+  image_url: any;
   id: string;
   title: string;
   slug: string;

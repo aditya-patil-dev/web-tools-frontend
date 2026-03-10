@@ -144,6 +144,22 @@ export default function ToolPagesPage() {
             },
 
             {
+                id: "updated_at",
+                accessorKey: "updated_at",
+                header: "Lat Updated",
+                cell: ({ row }) => (
+                    <span className="dtMuted">
+                        {new Date(row.original.updated_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                        })}
+                    </span>
+                ),
+                enableSorting: true,
+            },
+
+            {
                 id: "actions",
                 header: "Actions",
                 cell: ({ row }) => (

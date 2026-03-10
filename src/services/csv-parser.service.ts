@@ -1,215 +1,222 @@
 import type { ResourceColumn } from "@/config/import-export.config";
 
-/**
- * CSV Parser Service
- * Handles parsing CSV files and generating CSV from data
- */
-
 export type ParsedCSV = {
-    headers: string[];
-    rows: Record<string, any>[];
+  headers: string[];
+  rows: Record<string, any>[];
 };
 
-/**
- * Parse CSV file to JSON
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// PARSE CSV → JSON
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function parseCSV(file: File): Promise<ParsedCSV> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-        reader.onload = (e) => {
-            try {
-                const text = e.target?.result as string;
-                const parsed = csvToJson(text);
-                resolve(parsed);
-            } catch (error) {
-                reject(new Error("Failed to parse CSV file"));
-            }
-        };
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        resolve(csvToJson(text));
+      } catch (error) {
+        reject(new Error("Failed to parse CSV file"));
+      }
+    };
 
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsText(file);
-    });
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsText(file);
+  });
 }
 
-/**
- * Convert CSV text to JSON
- */
 function csvToJson(csvText: string): ParsedCSV {
-    const lines = csvText.split("\n").filter((line) => line.trim());
+  // Normalise line endings
+  const lines = csvText
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .filter((line) => line.trim());
 
-    if (lines.length === 0) {
-        throw new Error("CSV file is empty");
-    }
+  if (lines.length === 0) throw new Error("CSV file is empty");
 
-    // Parse headers
-    const headers = parseCsvLine(lines[0]);
+  const headers = parseCsvLine(lines[0]);
 
-    // Parse rows
-    const rows = lines.slice(1).map((line, index) => {
-        const values = parseCsvLine(line);
-        const row: Record<string, any> = {};
-
-        headers.forEach((header, i) => {
-            row[header] = values[i] || "";
-        });
-
-        return row;
+  const rows = lines.slice(1).map((line) => {
+    const values = parseCsvLine(line);
+    const row: Record<string, any> = {};
+    headers.forEach((header, i) => {
+      row[header] = values[i] ?? "";
     });
+    return row;
+  });
 
-    return { headers, rows };
+  return { headers, rows };
 }
 
 /**
- * Parse a single CSV line (handles quotes and commas)
+ * RFC 4180-compliant CSV line parser.
+ * Handles: quoted fields, escaped quotes (""), commas inside quotes.
  */
 function parseCsvLine(line: string): string[] {
-    const result: string[] = [];
-    let current = "";
-    let inQuotes = false;
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
 
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const nextChar = line[i + 1];
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const next = line[i + 1];
 
-        if (char === '"') {
-            if (inQuotes && nextChar === '"') {
-                // Escaped quote
-                current += '"';
-                i++;
-            } else {
-                // Toggle quote state
-                inQuotes = !inQuotes;
-            }
-        } else if (char === "," && !inQuotes) {
-            // End of field
-            result.push(current.trim());
-            current = "";
-        } else {
-            current += char;
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  result.push(current.trim());
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JSON → CSV
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Convert an array of DB row objects to CSV.
+ * JSON / array columns (features, faqs, tags, schema_markup) are serialised
+ * as JSON strings so they round-trip correctly on import.
+ */
+export function jsonToCsv(
+  data: Record<string, any>[],
+  columns: ResourceColumn[],
+): string {
+  if (data.length === 0) return "";
+
+  const keys = columns.map((c) => c.key);
+  const headerRow = keys.map(escapeCsvValue).join(",");
+
+  const dataRows = data.map((row) =>
+    keys
+      .map((key) => {
+        const col = columns.find((c) => c.key === key);
+        let value = row[key];
+
+        // Serialise JSON / array values back to a string
+        if (
+          value !== null &&
+          value !== undefined &&
+          typeof value === "object"
+        ) {
+          value = JSON.stringify(value);
         }
-    }
 
-    // Add last field
-    result.push(current.trim());
+        // PostgreSQL text[] comes back as "{a,b,c}" — convert to "a,b,c" for the array column
+        if (
+          col?.type === "array" &&
+          typeof value === "string" &&
+          value.startsWith("{") &&
+          value.endsWith("}")
+        ) {
+          value = value.slice(1, -1).replace(/"/g, "");
+        }
 
-    return result;
+        return escapeCsvValue(value);
+      })
+      .join(","),
+  );
+
+  return [headerRow, ...dataRows].join("\n");
 }
 
-/**
- * Convert JSON to CSV
- */
-export function jsonToCsv(data: Record<string, any>[], columns: ResourceColumn[]): string {
-    if (data.length === 0) {
-        return "";
-    }
-
-    // Generate headers
-    const headers = columns.map((col) => col.key);
-    const headerRow = headers.map(escapeCsvValue).join(",");
-
-    // Generate rows
-    const dataRows = data.map((row) => {
-        return headers
-            .map((header) => {
-                const value = row[header];
-                return escapeCsvValue(value);
-            })
-            .join(",");
-    });
-
-    return [headerRow, ...dataRows].join("\n");
-}
-
-/**
- * Escape CSV value (handle quotes and commas)
- */
 function escapeCsvValue(value: any): string {
-    if (value === null || value === undefined) {
-        return "";
-    }
+  if (value === null || value === undefined) return "";
 
-    let str = String(value);
+  const str = String(value);
 
-    // If value contains comma, quote, or newline, wrap in quotes
-    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-        // Escape existing quotes by doubling them
-        str = str.replace(/"/g, '""');
-        return `"${str}"`;
-    }
+  // Must quote if: contains comma, double-quote, newline, or leading/trailing space
+  if (
+    str.includes(",") ||
+    str.includes('"') ||
+    str.includes("\n") ||
+    str !== str.trim()
+  ) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
 
-    return str;
+  return str;
 }
 
-/**
- * Download CSV file
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// DOWNLOAD
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function downloadCsv(csvContent: string, filename: string): void {
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    link.style.visibility = "hidden";
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPLATE GENERATOR
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Generate template CSV with example data
+ * Generates a two-row CSV: header + one example row.
+ * JSON columns use their example value directly (it's already a JSON string).
  */
 export function generateTemplate(columns: ResourceColumn[]): string {
-    // Header row
-    const headers = columns.map((col) => col.key);
-    const headerRow = headers.map(escapeCsvValue).join(",");
-
-    // Example row
-    const exampleRow = columns
-        .map((col) => escapeCsvValue(col.example || ""))
-        .join(",");
-
-    return [headerRow, exampleRow].join("\n");
+  const headerRow = columns.map((c) => escapeCsvValue(c.key)).join(",");
+  const exampleRow = columns
+    .map((c) => escapeCsvValue(c.example ?? ""))
+    .join(",");
+  return [headerRow, exampleRow].join("\n");
 }
 
-/**
- * Validate CSV structure against expected columns
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// STRUCTURE VALIDATION
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function validateCsvStructure(
-    parsedCsv: ParsedCSV,
-    expectedColumns: ResourceColumn[]
-): { valid: boolean; errors: string[] } {
-    const errors: string[] = [];
+  parsedCsv: ParsedCSV,
+  expectedColumns: ResourceColumn[],
+): { valid: boolean; errors: string[]; warnings: string[] } {
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
-    // Check for required columns
-    const requiredColumns = expectedColumns
-        .filter((col) => col.required)
-        .map((col) => col.key);
+  // Missing required columns → hard error
+  const requiredColumns = expectedColumns
+    .filter((c) => c.required)
+    .map((c) => c.key);
+  const missingRequired = requiredColumns.filter(
+    (col) => !parsedCsv.headers.includes(col),
+  );
+  if (missingRequired.length > 0) {
+    errors.push(`Missing required columns: ${missingRequired.join(", ")}`);
+  }
 
-    const missingColumns = requiredColumns.filter(
-        (col) => !parsedCsv.headers.includes(col)
-    );
+  // Unknown columns → warning only (backend ignores them)
+  const knownKeys = expectedColumns.map((c) => c.key);
+  const unknownCols = parsedCsv.headers.filter((h) => !knownKeys.includes(h));
+  if (unknownCols.length > 0) {
+    warnings.push(`Unknown columns will be ignored: ${unknownCols.join(", ")}`);
+  }
 
-    if (missingColumns.length > 0) {
-        errors.push(`Missing required columns: ${missingColumns.join(", ")}`);
-    }
-
-    // Check for unknown columns
-    const knownColumns = expectedColumns.map((col) => col.key);
-    const unknownColumns = parsedCsv.headers.filter(
-        (header) => !knownColumns.includes(header)
-    );
-
-    if (unknownColumns.length > 0) {
-        errors.push(`Unknown columns will be ignored: ${unknownColumns.join(", ")}`);
-    }
-
-    return {
-        valid: errors.length === 0 || unknownColumns.length === errors.length,
-        errors,
-    };
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
 }

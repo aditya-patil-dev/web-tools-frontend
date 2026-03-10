@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { FiDownload, FiUpload, FiFileText, FiAlertCircle, FiCheckCircle, FiX, FiInfo } from "react-icons/fi";
+import {
+    FiDownload,
+    FiUpload,
+    FiFileText,
+    FiAlertCircle,
+    FiCheckCircle,
+    FiX,
+    FiInfo,
+    FiCode,
+} from "react-icons/fi";
 import Select from "@/components/forms/Select";
 import { useImportExport } from "@/hooks/useImportExport";
 import { getResourceOptions } from "@/config/import-export.config";
@@ -28,14 +37,16 @@ export default function ImportExportPanel() {
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         await handleImport(file, importMode);
-
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
+
+    // Columns that are JSON type (show badge in preview)
+    const jsonColumns = new Set(
+        resourceConfig?.columns
+            .filter((c) => c.type === "json" || c.type === "array")
+            .map((c) => c.key) ?? []
+    );
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
@@ -60,10 +71,8 @@ export default function ImportExportPanel() {
                     }}>
                         Bulk Import / Export
                     </h2>
-                    <p style={{
-                        fontSize: "var(--font-sm)", color: "var(--text-tertiary)", margin: "4px 0 0",
-                    }}>
-                        Import and export data in CSV format
+                    <p style={{ fontSize: "var(--font-sm)", color: "var(--text-tertiary)", margin: "4px 0 0" }}>
+                        Import and export data in CSV format · JSON fields (features, faqs) supported
                     </p>
                 </div>
             </div>
@@ -89,18 +98,28 @@ export default function ImportExportPanel() {
                         border: "1px solid rgba(59,130,246,0.2)", display: "flex", gap: "10px",
                     }}>
                         <FiInfo size={16} style={{ color: "#3b82f6", flexShrink: 0, marginTop: "2px" }} />
-                        <p style={{ fontSize: "var(--font-sm)", color: "var(--text-secondary)", margin: 0 }}>
-                            {resourceConfig.description}
-                        </p>
+                        <div>
+                            <p style={{ fontSize: "var(--font-sm)", color: "var(--text-secondary)", margin: 0 }}>
+                                {resourceConfig.description}
+                            </p>
+                            {/* Show JSON columns hint if any */}
+                            {jsonColumns.size > 0 && (
+                                <p style={{
+                                    fontSize: "var(--font-xs)", color: "var(--text-tertiary)",
+                                    margin: "6px 0 0", display: "flex", alignItems: "center", gap: "6px",
+                                }}>
+                                    <FiCode size={12} />
+                                    JSON columns: {[...jsonColumns].join(", ")} — paste valid JSON strings in those cells
+                                </p>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
 
             {/* ── ACTIONS ── */}
             {resourceConfig && !importPreview && (
-                <div style={{
-                    display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)",
-                }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
 
                     {/* Export Card */}
                     <div style={{
@@ -126,7 +145,8 @@ export default function ImportExportPanel() {
                             fontSize: "var(--font-sm)", color: "var(--text-tertiary)",
                             marginBottom: "var(--space-5)", lineHeight: 1.6,
                         }}>
-                            Download all {resourceConfig.label.toLowerCase()} as a CSV file
+                            Download all {resourceConfig.label.toLowerCase()} as a CSV file.
+                            JSON fields export as JSON strings.
                         </p>
                         <button
                             onClick={handleExport}
@@ -170,7 +190,8 @@ export default function ImportExportPanel() {
                             fontSize: "var(--font-sm)", color: "var(--text-tertiary)",
                             marginBottom: "var(--space-4)", lineHeight: 1.6,
                         }}>
-                            Upload a CSV file to import {resourceConfig.label.toLowerCase()}
+                            Upload a CSV file to import {resourceConfig.label.toLowerCase()}.
+                            Download the template first for the correct column format.
                         </p>
 
                         {/* Import Mode */}
@@ -180,8 +201,8 @@ export default function ImportExportPanel() {
                                 value={importMode}
                                 onChange={(e) => setImportMode(e.target.value as ImportMode)}
                                 options={[
-                                    { value: "append", label: "Append - Add new records only" },
-                                    { value: "update", label: "Update - Update existing + add new" },
+                                    { value: "append", label: "Append — Add new records only" },
+                                    { value: "update", label: "Update — Update existing + add new" },
                                 ]}
                             />
                         </div>
@@ -250,8 +271,8 @@ export default function ImportExportPanel() {
                                 Import Preview
                             </h3>
                             <p style={{ fontSize: "var(--font-sm)", color: "var(--text-tertiary)", margin: 0 }}>
-                                {importPreview.filter(p => p.validation.valid).length} valid,{" "}
-                                {importPreview.filter(p => !p.validation.valid).length} errors
+                                {importPreview.filter((p) => p.validation.valid).length} valid ·{" "}
+                                {importPreview.filter((p) => !p.validation.valid).length} errors
                             </p>
                         </div>
                         <button
@@ -267,10 +288,11 @@ export default function ImportExportPanel() {
                         </button>
                     </div>
 
-                    {/* Preview Table */}
+                    {/* Preview Rows */}
                     <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                         {importPreview.map((preview, index) => {
                             const isValid = preview.validation.valid;
+
                             return (
                                 <div
                                     key={index}
@@ -279,44 +301,75 @@ export default function ImportExportPanel() {
                                         background: isValid ? "var(--bg-primary)" : "rgba(239,68,68,0.02)",
                                     }}
                                 >
+                                    {/* Row header */}
                                     <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
                                         {isValid ? (
                                             <FiCheckCircle size={16} style={{ color: "var(--color-success)", flexShrink: 0 }} />
                                         ) : (
                                             <FiAlertCircle size={16} style={{ color: "var(--color-error)", flexShrink: 0 }} />
                                         )}
-                                        <span style={{
-                                            fontSize: "var(--font-xs)", fontWeight: 700,
-                                            color: "var(--text-tertiary)",
-                                        }}>
+                                        <span style={{ fontSize: "var(--font-xs)", fontWeight: 700, color: "var(--text-tertiary)" }}>
                                             Row {preview.row}
                                         </span>
                                     </div>
 
-                                    {/* Data */}
+                                    {/* Field grid — show first 4 non-json columns */}
                                     <div style={{
-                                        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                                        gap: "var(--space-3)", marginBottom: isValid ? 0 : "var(--space-3)",
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                                        gap: "var(--space-3)",
+                                        marginBottom: isValid ? 0 : "var(--space-3)",
                                     }}>
-                                        {Object.entries(preview.data).slice(0, 4).map(([key, value]) => (
-                                            <div key={key}>
-                                                <div style={{
-                                                    fontSize: "var(--font-xs)", fontWeight: 600,
-                                                    color: "var(--text-tertiary)", marginBottom: "2px",
-                                                }}>
-                                                    {key}
+                                        {Object.entries(preview.data)
+                                            .filter(([key]) => !jsonColumns.has(key))
+                                            .slice(0, 4)
+                                            .map(([key, value]) => (
+                                                <div key={key}>
+                                                    <div style={{
+                                                        fontSize: "var(--font-xs)", fontWeight: 600,
+                                                        color: "var(--text-tertiary)", marginBottom: "2px",
+                                                    }}>
+                                                        {key}
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: "var(--font-sm)", color: "var(--text-primary)",
+                                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                                                    }}>
+                                                        {String(value || "—")}
+                                                    </div>
                                                 </div>
-                                                <div style={{
-                                                    fontSize: "var(--font-sm)", color: "var(--text-primary)",
-                                                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                                                }}>
-                                                    {String(value || "—")}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
 
-                                    {/* Errors */}
+                                    {/* JSON field indicators */}
+                                    {[...jsonColumns].some((col) => preview.data[col]) && (
+                                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "var(--space-2)" }}>
+                                            {[...jsonColumns].map((col) => {
+                                                const val = preview.data[col];
+                                                if (!val) return null;
+                                                let parsed = false;
+                                                try { JSON.parse(val); parsed = true; } catch { }
+                                                return (
+                                                    <span
+                                                        key={col}
+                                                        style={{
+                                                            fontSize: "var(--font-xs)", fontWeight: 600,
+                                                            padding: "2px 8px", borderRadius: "var(--radius-sm)",
+                                                            background: parsed ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
+                                                            color: parsed ? "#10b981" : "var(--color-error)",
+                                                            border: `1px solid ${parsed ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.25)"}`,
+                                                            display: "flex", alignItems: "center", gap: "4px",
+                                                        }}
+                                                    >
+                                                        <FiCode size={10} />
+                                                        {col}: {parsed ? "valid JSON" : "invalid JSON"}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Validation errors */}
                                     {!isValid && preview.validation.errors.length > 0 && (
                                         <div style={{ marginTop: "var(--space-3)" }}>
                                             {preview.validation.errors.map((error, i) => (

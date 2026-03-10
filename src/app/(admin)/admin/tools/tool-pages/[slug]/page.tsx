@@ -208,7 +208,7 @@ export default function ToolPageFormPage() {
     // ── Options ──
     const statusOptions = [
         { value: "draft", label: "Draft" },
-        { value: "published", label: "Published" },
+        { value: "active", label: "Published" },
         { value: "archived", label: "Archived" },
     ];
 
