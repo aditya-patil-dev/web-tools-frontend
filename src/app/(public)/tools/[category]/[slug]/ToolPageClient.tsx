@@ -187,7 +187,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                                 >
                                     {/* Universal icon for all features */}
                                     <div className="feature-icon">
-                                        <FiCheckCircle />
+                                        <FiCheckCircle style={{ color: '#ffffff' }} />
                                     </div>
                                     
                                     {/* Only show title if it exists */}
