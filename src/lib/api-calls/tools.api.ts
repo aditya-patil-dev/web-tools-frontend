@@ -1,4 +1,16 @@
+import { ToolItem } from "@/app/(public)/tools/tools.config";
 import { api } from "@/lib/api/api";
+import { toNumber } from "../api/apiHelpers";
+
+export type AllToolsResponse = {
+  categories: {
+    slug: string;
+    category_name: string | null;
+    page_title: string;
+    page_description: string;
+  }[];
+  tools: ToolItem[];
+};
 
 export type ToolPageDTO = {
   image_url: any;
@@ -165,3 +177,22 @@ export const toolsApi = {
     return response.data;
   },
 };
+
+// Fetch ALL tools across every category (no category filter)
+export async function fetchAllTools(): Promise<AllToolsResponse> {
+  const res = await api.get<{
+    success: boolean;
+    message: string;
+    data: AllToolsResponse;
+  }>("/tools/all"); // ← /tools/all, not /tools
+
+  return {
+    categories: res.data.categories || [],
+    tools: (res.data.tools || []).map((tool: ToolItem) => ({
+      ...tool,
+      users_count: toNumber(tool.users_count),
+      views: toNumber(tool.views),
+      rating: toNumber(tool.rating),
+    })),
+  };
+}

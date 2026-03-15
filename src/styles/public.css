@@ -1983,7 +1983,6 @@
 .section-header svg {
   width: 24px;
   height: 24px;
-  color: var(--color-primary);
 }
 
 .section-header h3 {
@@ -9187,9 +9186,6 @@
 }
 
 .result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: var(--space-3);
 }
 
@@ -9590,7 +9586,6 @@
 .upload-icon {
   width: 48px;
   height: 48px;
-  color: var(--text-tertiary);
   margin-bottom: var(--space-3);
 }
 
@@ -11770,7 +11765,6 @@
 .upload-icon {
   width: 64px;
   height: 64px;
-  color: var(--text-tertiary);
   margin-bottom: var(--space-4);
 }
 
@@ -13298,4 +13292,3 @@
     text-align: center;
   }
 }
-

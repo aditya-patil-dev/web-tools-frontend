@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { api } from "@/lib/api/api"; // ← centralized API client
 
-// ─────────────────────────────────────────────────────────────
 // TYPES
-// ─────────────────────────────────────────────────────────────
 type FormData = {
     firstName: string;
     lastName: string;
@@ -17,9 +16,7 @@ type FormData = {
 type FormErrors = Partial<Record<keyof FormData, string>>;
 type SubmitState = "idle" | "loading" | "success" | "error";
 
-// ─────────────────────────────────────────────────────────────
 // STATIC DATA
-// ─────────────────────────────────────────────────────────────
 const CATEGORIES = [
     { value: "", label: "Select a topic…" },
     { value: "general", label: "General Inquiry" },
@@ -39,34 +36,7 @@ const CONTACT_METHODS = [
         note: "Reply within 2 business hours",
         href: "mailto:adityapatil93564@gmail.com",
     },
-    // {
-    //     icon: "💼",
-    //     label: "Business & API",
-    //     value: "partnerships@fusiontools.com",
-    //     note: "Enterprise, white-label & API access",
-    //     href: "mailto:partnerships@fusiontools.com",
-    // },
-    // {
-    //     icon: "🔒",
-    //     label: "Privacy & Legal",
-    //     value: "privacy@fusiontools.com",
-    //     note: "Data requests & legal matters",
-    //     href: "mailto:privacy@fusiontools.com",
-    // },
-    // {
-    //     icon: "🐛",
-    //     label: "Bug Reports",
-    //     value: "bugs@fusiontools.com",
-    //     note: "Include steps to reproduce",
-    //     href: "mailto:bugs@fusiontools.com",
-    // },
 ];
-
-// const OFFICE_DETAILS = [
-//     { icon: "📍", label: "Address", value: "123 Tech Lane, Floor 4\nSan Francisco, CA 94107" },
-//     { icon: "🕐", label: "Hours", value: "Mon–Fri: 9 am – 6 pm PST\nWeekend: Closed" },
-//     { icon: "⚡", label: "Response", value: "Email: within 2 hours\nPriority: within 30 min" },
-// ];
 
 const FAQ_ITEMS = [
     {
@@ -83,9 +53,7 @@ const FAQ_ITEMS = [
     },
 ];
 
-// ─────────────────────────────────────────────────────────────
 // VALIDATION
-// ─────────────────────────────────────────────────────────────
 function validate(data: FormData): FormErrors {
     const e: FormErrors = {};
     if (!data.firstName.trim()) e.firstName = "First name is required";
@@ -98,9 +66,7 @@ function validate(data: FormData): FormErrors {
     return e;
 }
 
-// ─────────────────────────────────────────────────────────────
 // FAQ ACCORDION ITEM
-// ─────────────────────────────────────────────────────────────
 function FaqItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
     return (
@@ -121,14 +87,13 @@ function FaqItem({ q, a }: { q: string; a: string }) {
     );
 }
 
-// ─────────────────────────────────────────────────────────────
 // MAIN PAGE
-// ─────────────────────────────────────────────────────────────
 export default function ContactPage() {
     const [form, setForm] = useState<FormData>({ firstName: "", lastName: "", email: "", subject: "", category: "", message: "" });
     const [errors, setErrors] = useState<FormErrors>({});
     const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({});
     const [submitState, setSubmit] = useState<SubmitState>("idle");
+    const [apiError, setApiError] = useState<string>("");
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = e.target;
@@ -154,37 +119,37 @@ export default function ContactPage() {
             setTouched({ firstName: true, lastName: true, email: true, category: true, message: true });
             return;
         }
+
         setSubmit("loading");
+        setApiError("");
+
         try {
-            const res = await fetch("/api/v1/contact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    first_name: form.firstName.trim(),
-                    last_name: form.lastName.trim(),
-                    email: form.email.trim(),
-                    topic: form.category,
-                    subject: form.subject.trim(),
-                    message: form.message.trim(),
-                }),
+            await api.post("/contact", {
+                first_name: form.firstName.trim(),
+                last_name: form.lastName.trim(),
+                email: form.email.trim(),
+                topic: form.category,
+                subject: form.subject.trim(),
+                message: form.message.trim(),
             });
 
-            if (!res.ok) {
-                // Surface server error message if the API returns one
-                const errBody = await res.json().catch(() => ({}));
-                throw new Error(errBody?.message ?? `Server error ${res.status}`);
-            }
-
             setSubmit("success");
-        } catch (e: unknown) {
-            setApiError((e as Error)?.message ?? "Something went wrong. Please try again.");
+        } catch (err: unknown) {
+            const message =
+                (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+                ?? (err as Error)?.message
+                ?? "Something went wrong. Please try again.";
+            setApiError(message);
             setSubmit("error");
         }
     }
 
     function reset() {
         setForm({ firstName: "", lastName: "", email: "", subject: "", category: "", message: "" });
-        setErrors({}); setTouched({}); setSubmit("idle");
+        setErrors({});
+        setTouched({});
+        setSubmit("idle");
+        setApiError("");
     }
 
     const charCount = form.message.length;
@@ -192,12 +157,12 @@ export default function ContactPage() {
     const charPct = Math.min(charCount / charMax, 1);
     const charColor = charPct > 0.9 ? "var(--color-error)" : charPct > 0.7 ? "var(--color-warning)" : "var(--text-tertiary)";
 
-    // ── RENDER ────────────────────────────────────────────────
+    // RENDER
     return (
         <div className="tools-page-container">
             <main className="ctPage">
 
-                {/* ══ HERO ════════════════════════════════════════════ */}
+                {/*HERO*/}
                 <section className="ctHero">
                     <div className="ctHeroBg" aria-hidden="true" />
                     <div className="ctHeroInner">
@@ -212,18 +177,6 @@ export default function ContactPage() {
                             Have a question, feedback, or a big idea? Our team reads every
                             message and replies within 2 business days.
                         </p>
-                        {/* <div className="ctHeroStats">
-                            {[
-                                { num: "2h", label: "Avg response" },
-                                { num: "98%", label: "Satisfaction" },
-                                { num: "24/7", label: "Monitoring" },
-                            ].map((s, i) => (
-                                <div key={i} className="ctHeroStat">
-                                    <span className="ctHeroStatNum">{s.num}</span>
-                                    <span className="ctHeroStatLabel">{s.label}</span>
-                                </div>
-                            ))}
-                        </div> */}
                     </div>
                 </section>
 
@@ -254,26 +207,6 @@ export default function ContactPage() {
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Office */}
-                            {/* <div className="ctCard">
-                                <h2 className="ctCardTitle">Our office</h2>
-                                <div className="ctOfficeList">
-                                    {OFFICE_DETAILS.map(o => (
-                                        <div key={o.label} className="ctOfficeItem">
-                                            <span className="ctOfficeIcon">{o.icon}</span>
-                                            <div>
-                                                <span className="ctOfficeLabel">{o.label}</span>
-                                                <span className="ctOfficeValue">
-                                                    {o.value.split("\n").map((line, i) => (
-                                                        <span key={i}>{line}<br /></span>
-                                                    ))}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div> */}
 
                             {/* FAQ */}
                             <div className="ctCard">
@@ -307,7 +240,7 @@ export default function ContactPage() {
                                 {/* Error banner */}
                                 {submitState === "error" && (
                                     <div className="ctErrorBanner">
-                                        <span>⚠ Something went wrong. Please try again.</span>
+                                        <span>⚠ {apiError || "Something went wrong. Please try again."}</span>
                                         <button className="ctBtnRetry" onClick={() => setSubmit("idle")}>Retry</button>
                                     </div>
                                 )}

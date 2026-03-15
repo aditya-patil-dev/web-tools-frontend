@@ -72,11 +72,11 @@ export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
                             {config.primaryCta.text}
                         </Link>
                     </motion.div>
-                    <motion.div variants={ctaVariants}>
+                    {/* <motion.div variants={ctaVariants}>
                         <Link href={config.secondaryCta.href} className="hero-cta-secondary">
                             {config.secondaryCta.text}
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
                 </motion.div>
 
                 {/* ── Trust badges — DynamicIcon renders emoji OR React Icon ── */}

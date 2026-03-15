@@ -21,15 +21,8 @@
 
 /* Floating Card */
 .coffeeCard {
-  /* background: rgba(26, 26, 26, 0.95); */
-  /* backdrop-filter: blur(20px) saturate(180%); */
-  /* border: 1px solid rgba(255, 255, 255, 0.1); */
   border-radius: 20px;
   padding: 6px;
-  /* box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 1px 0 0 rgba(255, 255, 255, 0.1) inset; */
   position: relative;
 }
 
@@ -286,32 +279,59 @@
   transform: rotate(-45deg);
 }
 
-/* Responsive */
+/* Responsive — compact on mobile */
 @media (max-width: 768px) {
   .coffeeWidget {
-    bottom: 16px;
-    right: 16px;
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .coffeeCard {
+    padding: 4px;
   }
 
   .coffeeCardInner {
-    padding: 14px 18px;
-    gap: 10px;
+    padding: 7px 10px;
+    gap: 6px;
+    border-radius: 12px;
   }
 
   .coffeeIconWrapper {
-    width: 36px;
-    height: 36px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
   }
 
   .coffeeIcon {
-    font-size: 20px;
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Hide steam on mobile to reduce visual noise */
+  .steamContainer {
+    display: none;
   }
 
   .coffeeMessage {
-    font-size: 11px;
+    font-size: 9px;
   }
 
   .coffeeCta {
-    font-size: 14px;
+    font-size: 11px;
+  }
+
+  /* Always show close button on mobile (no hover state on touch) */
+  .closeBtn {
+    opacity: 1;
+    transform: scale(1);
+    width: 18px;
+    height: 18px;
+    top: -5px;
+    right: -5px;
+  }
+
+  /* Tone down glow animation on mobile for performance */
+  .glowPulse {
+    display: none;
   }
 }

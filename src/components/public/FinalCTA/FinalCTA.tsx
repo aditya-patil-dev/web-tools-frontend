@@ -78,11 +78,11 @@ export default function FinalCTA({ config = DEFAULT_CONFIG }: FinalCTAProps) {
                             {config.primaryCta.text}
                         </Link>
                     </motion.div>
-                    <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    {/* <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.2 }}>
                         <Link href={config.secondaryCta.href} className="cta-secondary">
                             {config.secondaryCta.text}
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
                 </motion.div>
 
                 {/* ── Footnote — supports both string and array format ── */}

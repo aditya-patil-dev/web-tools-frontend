@@ -4,7 +4,7 @@ export type NavItem = {
   children?: {
     label: string;
     href: string;
-    badge?: "new" | "beta";
+    badge?: "new" | "beta" | "pro" | "ai";
   }[];
 };
 

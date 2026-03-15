@@ -1,8 +1,4 @@
 "use client";
-// src/components/public/Navbar/Navbar.tsx
-// Accepts an optional `config` prop from the page editor.
-// Falls back to the static nav.config.ts when no config is passed
-// (i.e. in production before the DB record exists).
 
 import Link from "next/link";
 import { useState } from "react";
@@ -49,7 +45,7 @@ export default function Navbar({ config }: NavbarProps) {
 
                         {/* Desktop Actions */}
                         <div className="nav-actions desktop-only">
-                            <Link href={loginHref} className="nav-link">Login</Link>
+                            {/* <Link href={loginHref} className="nav-link">Login</Link> */}
                             <Link href={ctaHref} className="nav-cta">{ctaText}</Link>
                         </div>
 
@@ -165,7 +161,7 @@ export default function Navbar({ config }: NavbarProps) {
                 </ul>
 
                 <div className="mobile-actions">
-                    <Link href={loginHref} onClick={() => setMobileOpen(false)}>Login</Link>
+                    {/* <Link href={loginHref} onClick={() => setMobileOpen(false)}>Login</Link> */}
                     <Link href={ctaHref} className="nav-cta" onClick={() => setMobileOpen(false)}>{ctaText}</Link>
                 </div>
             </div>
