@@ -85,15 +85,12 @@ export function trackToolRun(toolId: string): void {
 
 // ── Convenience: track RECOMMENDATION_CLICK ───────────────────────────────────
 export function trackRecommendationClick({
-    clickedToolId,
-    currentToolId,
-    widget,
-    toPath,
+  clickedToolId, currentToolId, widget, toPath,
 }: {
-    clickedToolId: string;
-    currentToolId: string;
-    widget: WidgetType;
-    toPath: string;
+  clickedToolId: string;
+  currentToolId: string | number;
+  widget: WidgetType;
+  toPath: string;
 }): void {
     if (!hasConsented()) return;                  // ← consent check
 
@@ -104,7 +101,7 @@ export function trackRecommendationClick({
         tool_id: clickedToolId,
         event_type: "RECOMMENDATION_CLICK",
         session_id: sessionId,
-        ref_tool_id: currentToolId,
+        ref_tool_id: String(currentToolId),
         meta: {
             widget,
             from_path: location.pathname,

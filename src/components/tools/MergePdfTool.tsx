@@ -172,7 +172,7 @@ const MergePdfTool = () => {
 
             // Save the merged PDF
             const mergedPdfBytes = await mergedPdf.save();
-            const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+            const blob = new Blob([mergedPdfBytes as unknown as Uint8Array<ArrayBuffer>], { type: "application/pdf" });
 
             saveAs(blob, "merged.pdf");
 

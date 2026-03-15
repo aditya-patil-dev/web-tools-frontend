@@ -131,7 +131,7 @@ const ProtectPdfTool = () => {
 
             // For now, we'll save the PDF as-is and inform the user
             const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
+            const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
             const fileName = selectedFile.name.replace(".pdf", "_protected.pdf");
             saveAs(blob, fileName);
 

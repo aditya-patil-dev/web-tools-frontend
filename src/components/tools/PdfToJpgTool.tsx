@@ -111,6 +111,7 @@ const PdfToJpgTool = () => {
 
                 // Render page to canvas
                 await page.render({
+                    canvas: canvas,
                     canvasContext: context,
                     viewport: viewport
                 }).promise;

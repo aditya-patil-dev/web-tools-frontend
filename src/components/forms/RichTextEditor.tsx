@@ -10,6 +10,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Highlight from "@tiptap/extension-highlight";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import { Level } from "@tiptap/extension-heading";
 
 import clsx from "clsx";
 import { useEffect } from "react";
@@ -76,7 +77,7 @@ export default function RichTextEditor({
         if (!editor) return;
 
         if (value !== editor.getHTML()) {
-            editor.commands.setContent(value || "", false);
+            editor.commands.setContent(value || "", { emitUpdate: false });
         }
 
     }, [value, editor]);
@@ -110,7 +111,7 @@ export default function RichTextEditor({
                         if (level === 0)
                             editor.chain().focus().setParagraph().run();
                         else
-                            editor.chain().focus().toggleHeading({ level }).run();
+                            editor.chain().focus().toggleHeading({ level: level as Level }).run();
 
                     }}
                     value={

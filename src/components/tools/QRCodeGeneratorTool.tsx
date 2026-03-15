@@ -351,7 +351,7 @@ const QRCodeGeneratorTool = () => {
                                         className={`data-type-btn ${config.dataType === type.value ? "active" : ""}`}
                                         onClick={() => setConfig({ ...config, dataType: type.value, content: "" })}
                                     >
-                                        {Icon ? <Icon /> : <span className="emoji-icon">{type.icon}</span>}
+                                        {Icon ? <Icon /> : <span className="emoji-icon">{type.icon as string}</span>}
                                         <span>{type.label}</span>
                                     </button>
                                 );

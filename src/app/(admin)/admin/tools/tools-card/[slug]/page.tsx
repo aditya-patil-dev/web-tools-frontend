@@ -61,19 +61,22 @@ export default function ToolFormPage() {
     useEffect(() => {
         if (toolData && isEditMode) {
             const tool = toolData.tool;
-            setFormData({
-                title: tool.title,
-                slug: tool.slug,
-                category_slug: tool.category_slug,
-                tool_type: tool.tool_type,
-                tags: tool.tags || [],
-                short_description: tool.short_description || "",
-                badge: tool.badge,
-                access_level: tool.access_level,
-                tool_url: tool.tool_url,
-                status: tool.status,
-                is_featured: tool.is_featured,
-                sort_order: tool.sort_order,
+            setFormData((prev) => {
+                if (prev.slug === tool.slug && prev.title === tool.title) return prev;
+                return {
+                    title: tool.title,
+                    slug: tool.slug,
+                    category_slug: tool.category_slug,
+                    tool_type: tool.tool_type,
+                    tags: tool.tags || [],
+                    short_description: tool.short_description || "",
+                    badge: tool.badge,
+                    access_level: tool.access_level as AccessLevel,
+                    tool_url: tool.tool_url,
+                    status: tool.status as ToolStatus,
+                    is_featured: tool.is_featured,
+                    sort_order: tool.sort_order,
+                };
             });
             setTagsInput((tool.tags || []).join(", "));
         }
@@ -146,7 +149,7 @@ export default function ToolFormPage() {
         if (!validate()) return;
 
         // Prepare data in the format expected by API
-        const submitData = {
+        const submitData: any = {
             tool: formData,
             page: {
                 tool_slug: formData.slug,
@@ -155,12 +158,12 @@ export default function ToolFormPage() {
         };
 
         if (isEditMode && toolId) {
-            const success = await updateTool(toolId, submitData);
+            const success = await updateTool(toolId, submitData as any);
             if (success) {
                 router.push("/admin/tools/tools-card");
             }
         } else {
-            const success = await createTool(submitData);
+            const success = await createTool(submitData as any);
             // createTool already redirects on success
         }
     };
@@ -183,6 +186,7 @@ export default function ToolFormPage() {
         { value: "free", label: "Free" },
         { value: "pro", label: "Pro" },
         { value: "premium", label: "Premium" },
+        { value: "enterprise", label: "Enterprise" },
     ];
 
     const categoryOptions =

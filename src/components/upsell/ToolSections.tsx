@@ -81,7 +81,9 @@ function useTools(endpoint: string) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tool-sections", endpoint],
     queryFn: async () => {
-      const res = await api.get<ApiRes<Tool[]>>(endpoint);
+      const res = await api.get<ApiRes<Tool[]>>(
+        endpoint
+      );
       return res.data ?? [];
     },
     staleTime: 1000 * 60 * 5, // 5 min — no refetch on remount/focus
@@ -228,7 +230,12 @@ function ToolCard({
       className={`tc ${compact ? "tc--compact" : ""}`}
       style={{ animationDelay: `${index * 70}ms` }}
       onClick={() =>
-        trackRecommendationClick(tool.id, currentToolId, widget, href)
+        trackRecommendationClick({
+          clickedToolId: String(tool.id),
+          currentToolId: currentToolId,
+          widget: widget,
+          toPath: href
+        })
       }
     >
       <span className="tc__glow" aria-hidden />
@@ -296,7 +303,12 @@ function PopCard({
       className="pc"
       style={{ animationDelay: `${index * 55}ms` }}
       onClick={() =>
-        trackRecommendationClick(tool.id, currentToolId, "popular", href)
+        trackRecommendationClick({
+          clickedToolId: String(tool.id),
+          currentToolId: currentToolId,
+          widget: "popular",
+          toPath: href
+        })
       }
     >
       <span className="pc__stripe" aria-hidden />

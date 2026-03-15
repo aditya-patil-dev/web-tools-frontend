@@ -24,7 +24,7 @@ const UnlockPdfTool = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [unlocking, setUnlocking] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isPasswordProtected, setIsPasswordProtected] = useState<boolean | null>(null);
+    const [isPasswordProtected, setIsPasswordProtected] = useState<boolean | undefined>(undefined);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Handle file selection
@@ -47,7 +47,7 @@ const UnlockPdfTool = () => {
         setSelectedFile(file);
         setPassword("");
         setError(null);
-        setIsPasswordProtected(null);
+        setIsPasswordProtected(undefined);
 
         // Check if PDF is password protected
         await checkIfPasswordProtected(file);
@@ -87,7 +87,7 @@ const UnlockPdfTool = () => {
             const arrayBuffer = await selectedFile.arrayBuffer();
             const pdfDoc = await PDFDocument.load(arrayBuffer);
             const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
+            const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
             const fileName = selectedFile.name.replace(".pdf", "_unlocked.pdf");
             saveAs(blob, fileName);
             toast.success("PDF saved (no password protection)", "Success");
@@ -126,7 +126,7 @@ const UnlockPdfTool = () => {
             const pdfBytes = await pdfDoc.save();
 
             // Download unlocked PDF
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
+            const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
             const fileName = selectedFile.name.replace(".pdf", "_unlocked.pdf");
             saveAs(blob, fileName);
 
@@ -158,7 +158,7 @@ const UnlockPdfTool = () => {
         setSelectedFile(null);
         setPassword("");
         setError(null);
-        setIsPasswordProtected(null);
+        setIsPasswordProtected(undefined);
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -218,7 +218,7 @@ const UnlockPdfTool = () => {
                             <div className="file-name">{selectedFile.name}</div>
                             <div className="file-meta">
                                 <span>{(selectedFile.size / 1024).toFixed(2)} KB</span>
-                                {isPasswordProtected !== null && (
+                                {isPasswordProtected !== undefined && (
                                     <>
                                         <span>•</span>
                                         <span className={`protection-status ${isPasswordProtected ? "protected" : "unprotected"}`}>

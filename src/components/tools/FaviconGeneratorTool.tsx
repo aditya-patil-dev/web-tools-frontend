@@ -13,7 +13,8 @@ import {
     FiImage,
     FiMonitor,
     FiSmartphone,
-    FiTablet
+    FiTablet,
+    FiType
 } from "react-icons/fi";
 
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
@@ -391,7 +392,7 @@ const FaviconGeneratorTool = () => {
         return acc;
     }, {} as Record<string, FaviconSize[]>);
 
-    const platformIcons: Record<string, unknown> = {
+    const platformIcons: Record<string, React.ElementType> = {
         "Browser": FiMonitor,
         "Windows": FiMonitor,
         "iOS": FiSmartphone,
