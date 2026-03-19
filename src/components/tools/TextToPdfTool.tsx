@@ -412,21 +412,21 @@ const TextToPDFTool = () => {
                     continue;
                 }
 
-                // Heading sizes
+                // Heading sizes - Cast to FontSize to satisfy type constraints
                 let nodeFontSize = fontSize;
                 let nodeFontStyle = "normal";
                 let nodeSpacingBefore = 0;
 
                 if (node.type === "h1") {
-                    nodeFontSize = Math.min(fontSize * 1.8, 28);
+                    nodeFontSize = Math.min(fontSize * 1.8, 28)as FontSize;
                     nodeFontStyle = "bold";
                     nodeSpacingBefore = fontSize * 0.3527 * 1.5;
                 } else if (node.type === "h2") {
-                    nodeFontSize = Math.min(fontSize * 1.4, 22);
+                    nodeFontSize = Math.min(fontSize * 1.4, 22) as FontSize;
                     nodeFontStyle = "bold";
                     nodeSpacingBefore = fontSize * 0.3527 * 1.2;
                 } else if (node.type === "h3") {
-                    nodeFontSize = Math.min(fontSize * 1.15, 18);
+                    nodeFontSize = Math.min(fontSize * 1.15, 18) as FontSize;
                     nodeFontStyle = "bold";
                     nodeSpacingBefore = fontSize * 0.3527;
                 } else if (node.bold && node.italic) {
@@ -443,6 +443,7 @@ const TextToPDFTool = () => {
                 const lineH = nodeFontSize * 0.3527 * lineSpacing;
 
                 // List prefix
+                // eslint-disable-next-line prefer-const
                 let textToPrint = node.text;
                 let xOffset = marginLeft;
 
