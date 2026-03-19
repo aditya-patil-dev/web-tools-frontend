@@ -51,8 +51,14 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (typeof window !== "undefined" && error.response?.status === 401) {
-      // session expired
-      window.location.href = "/admin-login";
+      // Only redirect to admin-login for admin API calls.
+      // Public tool routes (tracking, speed-test, etc.) should never
+      // redirect a regular visitor away from the page.
+      const url = error.config?.url ?? "";
+      const isAdminCall = url.includes("/admin") || url.includes("/users/me");
+      if (isAdminCall) {
+        window.location.href = "/admin-login";
+      }
     }
     return Promise.reject(error);
   },
