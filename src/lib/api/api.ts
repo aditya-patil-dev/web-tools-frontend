@@ -23,17 +23,26 @@ const apiClient: AxiosInstance = axios.create({
 ---------------------------------- */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // When sending FormData, remove the default Content-Type header so that
-    // axios (via the browser) sets it automatically to:
-    //   multipart/form-data; boundary=----XYZ
-    // Without the boundary, multer on the server cannot parse the file.
+    if (typeof window !== "undefined") {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("admin_token="))
+        ?.split("=")[1];
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
     }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
+
 /* ---------------------------------
    Response Interceptor
    (handle auth errors)

@@ -19,7 +19,7 @@ export async function loginAction(
 
     // ── Secure httpOnly cookie — stores JWT (not accessible by JS) ──
     cookieStore.set("admin_token", result.token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
