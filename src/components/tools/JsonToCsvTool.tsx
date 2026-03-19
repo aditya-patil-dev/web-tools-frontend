@@ -1,214 +1,216 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Papa from "papaparse";
 import { saveAs } from "file-saver";
 import { toast } from "@/components/toast/toast";
 import {
-    FiCode,
-    FiCopy,
-    FiCheckCircle,
-    FiRefreshCw,
-    FiDownload,
-    FiAlertCircle,
-    FiTable,
-    FiFileText,
-    FiArrowRight
+    FiCode, FiCopy, FiCheckCircle, FiRefreshCw,
+    FiDownload, FiAlertCircle, FiTable, FiArrowRight,
+    FiRepeat, FiZap, FiDatabase, FiSettings,
 } from "react-icons/fi";
 
+/* ─────────────────────────────────────────
+   Types
+───────────────────────────────────────── */
 type ConversionMode = "json-to-csv" | "csv-to-json";
 
+interface ConversionResult {
+    output: string;
+    preview: any[];
+    headers: string[];
+    rowCount: number;
+    colCount: number;
+}
+
+/* ─────────────────────────────────────────
+   Helpers
+───────────────────────────────────────── */
+const fmtKb = (str: string) => `${(str.length / 1024).toFixed(2)} KB`;
+
+/* Simple JSON syntax highlighter */
+const JsonHighlight = ({ code }: { code: string }) => {
+    const highlighted = code
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+            (match) => {
+                let cls = "jc-num";
+                if (/^"/.test(match)) {
+                    cls = /:$/.test(match) ? "jc-key" : "jc-str";
+                } else if (/true|false/.test(match)) {
+                    cls = "jc-bool";
+                } else if (/null/.test(match)) {
+                    cls = "jc-null";
+                }
+                return `<span class="${cls}">${match}</span>`;
+            });
+    return <code dangerouslySetInnerHTML={{ __html: highlighted }} />;
+};
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
 const JsonToCsvTool = () => {
-    const [mode, setMode] = useState<ConversionMode>("json-to-csv");
-    const [inputData, setInputData] = useState("");
-    const [outputData, setOutputData] = useState("");
-    const [copied, setCopied] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [delimiter, setDelimiter] = useState(",");
+    const [mode,           setMode]           = useState<ConversionMode>("json-to-csv");
+    const [inputData,      setInputData]      = useState("");
+    const [result,         setResult]         = useState<ConversionResult | null>(null);
+    const [copied,         setCopied]         = useState(false);
+    const [error,          setError]          = useState<string | null>(null);
+    const [delimiter,      setDelimiter]      = useState(",");
     const [includeHeaders, setIncludeHeaders] = useState(true);
-    const [preview, setPreview] = useState<any[]>([]);
+    const [converting,     setConverting]     = useState(false);
 
-    // JSON to CSV conversion
-    const convertJsonToCsv = (jsonString: string): string => {
-        try {
-            // Parse JSON
-            let jsonData = JSON.parse(jsonString);
+    /* ── Live input stats ── */
+    const inputStats = useMemo(() => {
+        if (!inputData.trim()) return null;
+        return {
+            chars: inputData.length,
+            lines: inputData.split("\n").length,
+        };
+    }, [inputData]);
 
-            // Handle single object - convert to array
-            if (!Array.isArray(jsonData)) {
-                jsonData = [jsonData];
-            }
+    /* ── JSON → CSV ── */
+    const convertJsonToCsv = (json: string): ConversionResult => {
+        let data = JSON.parse(json);
+        if (!Array.isArray(data)) data = [data];
+        if (data.length === 0) throw new Error("JSON array is empty");
 
-            // Check if array is empty
-            if (jsonData.length === 0) {
-                throw new Error("JSON array is empty");
-            }
+        const csv = Papa.unparse(data, {
+            delimiter,
+            header: includeHeaders,
+            skipEmptyLines: true,
+        });
 
-            // Convert to CSV using PapaParse
-            const csv = Papa.unparse(jsonData, {
-                delimiter: delimiter,
-                header: includeHeaders,
-                skipEmptyLines: true,
-            });
+        const parsed = Papa.parse(csv, { delimiter, header: includeHeaders, preview: 6 });
+        const headers = includeHeaders && parsed.data.length > 0
+            ? Object.keys((parsed.data[0] as any) || {})
+            : [];
 
-            return csv;
-        } catch (err: any) {
-            if (err instanceof SyntaxError) {
-                throw new Error("Invalid JSON format");
-            }
-            throw new Error(err.message || "Failed to convert JSON to CSV");
-        }
+        return {
+            output:   csv,
+            preview:  parsed.data.slice(0, 5) as any[],
+            headers,
+            rowCount: data.length,
+            colCount: headers.length || (data[0] ? Object.keys(data[0]).length : 0),
+        };
     };
 
-    // CSV to JSON conversion
-    const convertCsvToJson = (csvString: string): string => {
-        try {
-            // Parse CSV using PapaParse
-            const result = Papa.parse(csvString, {
-                delimiter: delimiter === "auto" ? "" : delimiter,
-                header: includeHeaders,
-                skipEmptyLines: true,
-                dynamicTyping: true, // Convert numbers and booleans
-            });
+    /* ── CSV → JSON ── */
+    const convertCsvToJson = (csv: string): ConversionResult => {
+        const parsed = Papa.parse(csv, {
+            delimiter: delimiter === "auto" ? "" : delimiter,
+            header: includeHeaders,
+            skipEmptyLines: true,
+            dynamicTyping: true,
+        });
 
-            if (result.errors.length > 0) {
-                const firstError = result.errors[0];
-                throw new Error(`CSV parsing error: ${firstError.message}`);
-            }
+        if (parsed.errors.length > 0)
+            throw new Error(`CSV parse error: ${parsed.errors[0].message}`);
 
-            // Convert to JSON
-            const json = JSON.stringify(result.data, null, 2);
-            return json;
-        } catch (err: any) {
-            throw new Error(err.message || "Failed to convert CSV to JSON");
-        }
+        const json = JSON.stringify(parsed.data, null, 2);
+        const arr  = Array.isArray(parsed.data) ? parsed.data : [parsed.data];
+        const headers = arr.length > 0 && typeof arr[0] === "object" ? Object.keys(arr[0] as any) : [];
+
+        return {
+            output:   json,
+            preview:  arr.slice(0, 5),
+            headers,
+            rowCount: arr.length,
+            colCount: headers.length,
+        };
     };
 
-    // Handle conversion
+    /* ── Handle convert ── */
     const handleConvert = () => {
         setError(null);
-        setOutputData("");
-        setPreview([]);
+        setResult(null);
 
         if (!inputData.trim()) {
             setError("Please enter data to convert");
             return;
         }
 
-        try {
-            let result: string;
+        setConverting(true);
 
-            if (mode === "json-to-csv") {
-                result = convertJsonToCsv(inputData);
-                toast.success("JSON converted to CSV successfully!", "Success");
-
-                // Generate preview
-                const parsed = Papa.parse(result, {
-                    delimiter: delimiter,
-                    header: includeHeaders,
-                    preview: 5, // Show first 5 rows
-                });
-                setPreview(parsed.data);
-            } else {
-                result = convertCsvToJson(inputData);
-                toast.success("CSV converted to JSON successfully!", "Success");
-
-                // Generate preview
-                const jsonData = JSON.parse(result);
-                setPreview(Array.isArray(jsonData) ? jsonData.slice(0, 5) : [jsonData]);
+        // Use setTimeout to allow spinner to render before sync work
+        setTimeout(() => {
+            try {
+                const res = mode === "json-to-csv"
+                    ? convertJsonToCsv(inputData)
+                    : convertCsvToJson(inputData);
+                setResult(res);
+                toast.success(
+                    `Converted! ${res.rowCount.toLocaleString()} rows · ${res.colCount} columns`,
+                    "Success"
+                );
+            } catch (err: any) {
+                const msg = err instanceof SyntaxError ? "Invalid JSON format" : (err.message || "Conversion failed");
+                setError(msg);
+                toast.error(msg, "Failed");
+            } finally {
+                setConverting(false);
             }
-
-            setOutputData(result);
-        } catch (err: any) {
-            setError(err.message);
-            toast.error(err.message, "Conversion Failed");
-        }
+        }, 0);
     };
 
-    // Copy to clipboard
+    /* ── Copy ── */
     const handleCopy = async () => {
-        if (!outputData) return;
-
+        if (!result?.output) return;
         try {
-            await navigator.clipboard.writeText(outputData);
+            await navigator.clipboard.writeText(result.output);
             setCopied(true);
-            toast.success("Copied to clipboard!", "Success");
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            toast.error("Failed to copy", "Error");
-        }
+            toast.success("Copied to clipboard!", "Copied");
+            setTimeout(() => setCopied(false), 2500);
+        } catch { toast.error("Failed to copy", "Error"); }
     };
 
-    // Download file
+    /* ── Download ── */
     const handleDownload = () => {
-        if (!outputData) return;
-
-        const blob = new Blob([outputData], {
-            type: mode === "json-to-csv" ? "text/csv;charset=utf-8" : "application/json;charset=utf-8"
-        });
-
-        const fileName = mode === "json-to-csv" ? "converted.csv" : "converted.json";
-        saveAs(blob, fileName);
-
-        toast.success(`Downloaded as ${fileName}`, "Success");
+        if (!result?.output) return;
+        const ext  = mode === "json-to-csv" ? "csv" : "json";
+        const type = mode === "json-to-csv" ? "text/csv;charset=utf-8" : "application/json;charset=utf-8";
+        const blob = new Blob([result.output], { type });
+        saveAs(blob, `converted.${ext}`);
+        toast.success(`Downloaded as converted.${ext}`, "Downloaded");
     };
 
-    // Clear all
+    /* ── Clear ── */
     const handleClear = () => {
         setInputData("");
-        setOutputData("");
+        setResult(null);
         setError(null);
-        setPreview([]);
-        toast.info("Cleared", "Reset");
     };
 
-    // Load sample data
+    /* ── Load sample ── */
     const loadSample = () => {
         if (mode === "json-to-csv") {
-            const sampleJson = [
-                {
-                    id: 1,
-                    name: "John Doe",
-                    email: "john@example.com",
-                    age: 30,
-                    active: true
-                },
-                {
-                    id: 2,
-                    name: "Jane Smith",
-                    email: "jane@example.com",
-                    age: 28,
-                    active: true
-                },
-                {
-                    id: 3,
-                    name: "Bob Johnson",
-                    email: "bob@example.com",
-                    age: 35,
-                    active: false
-                }
-            ];
-            setInputData(JSON.stringify(sampleJson, null, 2));
+            setInputData(JSON.stringify([
+                { id: 1, name: "Alice Chen",    email: "alice@example.com",  age: 31, active: true  },
+                { id: 2, name: "Bob Martinez",  email: "bob@example.com",    age: 27, active: true  },
+                { id: 3, name: "Carol Johnson", email: "carol@example.com",  age: 35, active: false },
+                { id: 4, name: "David Kim",     email: "david@example.com",  age: 29, active: true  },
+            ], null, 2));
         } else {
-            const sampleCsv = `id,name,email,age,active
-1,John Doe,john@example.com,30,true
-2,Jane Smith,jane@example.com,28,true
-3,Bob Johnson,bob@example.com,35,false`;
-            setInputData(sampleCsv);
+            setInputData(`id,name,email,age,active\n1,Alice Chen,alice@example.com,31,true\n2,Bob Martinez,bob@example.com,27,true\n3,Carol Johnson,carol@example.com,35,false\n4,David Kim,david@example.com,29,true`);
         }
-        toast.success("Sample data loaded", "Success");
-    };
-
-    // Switch mode
-    const switchMode = () => {
-        setMode(mode === "json-to-csv" ? "csv-to-json" : "json-to-csv");
-        setInputData("");
-        setOutputData("");
+        setResult(null);
         setError(null);
-        setPreview([]);
     };
 
+    /* ── Switch mode ── */
+    const switchMode = () => {
+        setMode(m => m === "json-to-csv" ? "csv-to-json" : "json-to-csv");
+        setInputData("");
+        setResult(null);
+        setError(null);
+    };
+
+    /* ─────────────────────────────────────────
+       RENDER
+    ───────────────────────────────────────── */
     return (
         <motion.div
             className="tool-card"
@@ -216,87 +218,88 @@ const JsonToCsvTool = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Info Banner */}
-            <div className="tool-info-banner">
-                <FiCheckCircle />
-                <p>
-                    Convert between JSON and CSV formats instantly. Perfect for data import/export,
-                    spreadsheet integration, and API data transformation.
-                </p>
-            </div>
+        <div className="jc-root">
 
-            {/* Mode Switcher */}
-            <div className="converter-mode-section">
-                <div className="mode-switcher">
+            {/* ── Mode + Options bar ── */}
+            <div className="jc-topbar">
+                {/* Mode switcher */}
+                <div className="jc-mode-switcher">
                     <button
-                        className={`mode-btn ${mode === "json-to-csv" ? "active" : ""}`}
+                        type="button"
+                        className={`jc-mode-btn${mode === "json-to-csv" ? " jc-mode-btn--active" : ""}`}
                         onClick={() => mode !== "json-to-csv" && switchMode()}
                     >
-                        <FiCode />
-                        JSON to CSV
+                        <FiCode /> JSON → CSV
                     </button>
+
                     <button
-                        className="mode-switch-icon"
+                        type="button"
+                        className="jc-mode-swap"
                         onClick={switchMode}
-                        title="Switch mode"
+                        title="Swap mode"
                     >
-                        <FiRefreshCw />
+                        <motion.span
+                            animate={{ rotate: mode === "csv-to-json" ? 180 : 0 }}
+                            transition={{ duration: 0.35 }}
+                            style={{ display: "flex" }}
+                        >
+                            <FiRepeat />
+                        </motion.span>
                     </button>
+
                     <button
-                        className={`mode-btn ${mode === "csv-to-json" ? "active" : ""}`}
+                        type="button"
+                        className={`jc-mode-btn${mode === "csv-to-json" ? " jc-mode-btn--active" : ""}`}
                         onClick={() => mode !== "csv-to-json" && switchMode()}
                     >
-                        <FiTable />
-                        CSV to JSON
+                        <FiTable /> CSV → JSON
                     </button>
                 </div>
 
-                {/* Conversion Options */}
-                <div className="conversion-options">
-                    <div className="option-group">
-                        <label>Delimiter:</label>
+                {/* Options */}
+                <div className="jc-options">
+                    <div className="jc-option">
+                        <label className="jc-option-label"><FiSettings /> Delimiter</label>
                         <select
+                            className="jc-option-select"
                             value={delimiter}
-                            onChange={(e) => setDelimiter(e.target.value)}
-                            className="option-select"
+                            onChange={e => setDelimiter(e.target.value)}
                         >
                             <option value=",">Comma (,)</option>
                             <option value=";">Semicolon (;)</option>
-                            <option value="\t">Tab (\t)</option>
+                            <option value="\t">Tab</option>
                             <option value="|">Pipe (|)</option>
                             {mode === "csv-to-json" && <option value="auto">Auto-detect</option>}
                         </select>
                     </div>
 
-                    <div className="option-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                checked={includeHeaders}
-                                onChange={(e) => setIncludeHeaders(e.target.checked)}
-                            />
-                            <span>
-                                {mode === "json-to-csv" ? "Include column headers" : "First row is headers"}
-                            </span>
-                        </label>
-                    </div>
+                    <label className="jc-checkbox-row">
+                        <input
+                            type="checkbox"
+                            checked={includeHeaders}
+                            onChange={e => setIncludeHeaders(e.target.checked)}
+                        />
+                        <span>{mode === "json-to-csv" ? "Include headers" : "First row is headers"}</span>
+                    </label>
                 </div>
             </div>
 
-            <div className="converter-workspace">
-                {/* Input Section */}
-                <div className="converter-input-section">
-                    <div className="section-header">
-                        <h3>
+            {/* ── Editor columns ── */}
+            <div className="jc-editors">
+
+                {/* Input */}
+                <div className="jc-panel">
+                    <div className="jc-panel-header">
+                        <span className="jc-panel-title">
                             {mode === "json-to-csv" ? <FiCode /> : <FiTable />}
                             {mode === "json-to-csv" ? "JSON Input" : "CSV Input"}
-                        </h3>
-                        <div className="header-actions">
-                            <button className="btn-sample-converter" onClick={loadSample}>
-                                Load Sample
+                        </span>
+                        <div className="jc-panel-actions">
+                            <button type="button" className="jc-btn-ghost" onClick={loadSample}>
+                                <FiZap /> Sample
                             </button>
                             {inputData && (
-                                <button className="btn-clear-converter" onClick={handleClear}>
+                                <button type="button" className="jc-btn-ghost jc-btn-ghost--danger" onClick={handleClear}>
                                     <FiRefreshCw /> Clear
                                 </button>
                             )}
@@ -304,207 +307,204 @@ const JsonToCsvTool = () => {
                     </div>
 
                     <textarea
-                        className="converter-input-area"
+                        className="jc-textarea"
                         value={inputData}
-                        onChange={(e) => setInputData(e.target.value)}
+                        onChange={e => setInputData(e.target.value)}
                         placeholder={
                             mode === "json-to-csv"
-                                ? 'Paste your JSON here...\nExample: [{"name": "John", "age": 30}]'
-                                : 'Paste your CSV here...\nExample:\nname,age\nJohn,30'
+                                ? '[{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]'
+                                : "name,age\nAlice,30\nBob,25"
                         }
-                        rows={16}
                         spellCheck={false}
+                        autoComplete="off"
                     />
 
-                    {error && (
-                        <motion.div
-                            className="error-message"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            <FiAlertCircle />
-                            <span>{error}</span>
-                        </motion.div>
-                    )}
-
-                    {inputData && (
-                        <div className="input-stats">
-                            {mode === "json-to-csv" ? (
-                                <span>JSON: {inputData.length.toLocaleString()} characters</span>
-                            ) : (
-                                <span>CSV: {inputData.split('\n').length} lines</span>
-                            )}
+                    {/* Live stats */}
+                    {inputStats && (
+                        <div className="jc-input-stats">
+                            <span>{inputStats.chars.toLocaleString()} chars</span>
+                            <span className="jc-stats-sep">·</span>
+                            <span>{inputStats.lines.toLocaleString()} lines</span>
                         </div>
                     )}
-
-                    {/* Convert Button */}
-                    <motion.button
-                        className="btn-convert"
-                        onClick={handleConvert}
-                        disabled={!inputData.trim()}
-                        whileHover={{ scale: !inputData.trim() ? 1 : 1.02 }}
-                        whileTap={{ scale: !inputData.trim() ? 1 : 0.98 }}
-                    >
-                        <FiArrowRight />
-                        Convert to {mode === "json-to-csv" ? "CSV" : "JSON"}
-                    </motion.button>
                 </div>
 
-                {/* Output Section */}
-                <div className="converter-output-section">
-                    <div className="section-header">
-                        <h3>
+                {/* Output */}
+                <div className="jc-panel">
+                    <div className="jc-panel-header">
+                        <span className="jc-panel-title">
                             {mode === "json-to-csv" ? <FiTable /> : <FiCode />}
                             {mode === "json-to-csv" ? "CSV Output" : "JSON Output"}
-                        </h3>
-                        {outputData && (
-                            <div className="output-actions">
-                                <button className="btn-copy-converter" onClick={handleCopy}>
-                                    {copied ? (
-                                        <>
-                                            <FiCheckCircle /> Copied!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FiCopy /> Copy
-                                        </>
-                                    )}
+                        </span>
+                        {result && (
+                            <div className="jc-panel-actions">
+                                <button
+                                    type="button"
+                                    className={`jc-btn-ghost${copied ? " jc-btn-ghost--done" : ""}`}
+                                    onClick={handleCopy}
+                                >
+                                    {copied ? <><FiCheckCircle /> Copied!</> : <><FiCopy /> Copy</>}
                                 </button>
-                                <button className="btn-download-converter" onClick={handleDownload}>
+                                <button type="button" className="jc-btn-ghost" onClick={handleDownload}>
                                     <FiDownload /> Download
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    {!outputData ? (
-                        <div className="empty-output">
-                            {mode === "json-to-csv" ? <FiTable className="empty-icon" /> : <FiCode className="empty-icon" />}
+                    {!result ? (
+                        <div className="jc-empty-output">
+                            {mode === "json-to-csv"
+                                ? <FiTable className="jc-empty-icon" />
+                                : <FiCode className="jc-empty-icon" />}
                             <p>Output will appear here</p>
-                            <small>
-                                {mode === "json-to-csv"
-                                    ? "Enter JSON data and click Convert to CSV"
-                                    : "Enter CSV data and click Convert to JSON"}
-                            </small>
+                            <span>Click Convert to see results</span>
                         </div>
                     ) : (
                         <>
-                            <div className="converter-output-display">
+                            <div className="jc-output-code">
                                 <pre>
-                                    <code>{outputData}</code>
+                                    {mode === "csv-to-json"
+                                        ? <JsonHighlight code={result.output} />
+                                        : <code>{result.output}</code>
+                                    }
                                 </pre>
                             </div>
-
-                            {outputData && (
-                                <div className="output-stats">
-                                    {mode === "json-to-csv" ? (
-                                        <>
-                                            <span>CSV: {outputData.split('\n').length} lines</span>
-                                            <span>•</span>
-                                            <span>{(outputData.length / 1024).toFixed(2)} KB</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span>JSON: {outputData.length.toLocaleString()} characters</span>
-                                            <span>•</span>
-                                            <span>{(outputData.length / 1024).toFixed(2)} KB</span>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Preview Table */}
-                            {preview.length > 0 && mode === "json-to-csv" && (
-                                <div className="preview-section">
-                                    <h4>Preview (First 5 rows)</h4>
-                                    <div className="preview-table-container">
-                                        <table className="preview-table">
-                                            <tbody>
-                                                {preview.map((row: any, index: number) => (
-                                                    <tr key={index}>
-                                                        {Array.isArray(row) ? (
-                                                            row.map((cell: any, cellIndex: number) => (
-                                                                <td key={cellIndex}>{cell}</td>
-                                                            ))
-                                                        ) : (
-                                                            Object.values(row).map((cell: any, cellIndex: number) => (
-                                                                <td key={cellIndex}>{String(cell)}</td>
-                                                            ))
-                                                        )}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Preview JSON */}
-                            {preview.length > 0 && mode === "csv-to-json" && (
-                                <div className="preview-section">
-                                    <h4>Preview (First 5 records)</h4>
-                                    <div className="preview-json">
-                                        <pre>
-                                            <code>{JSON.stringify(preview, null, 2)}</code>
-                                        </pre>
-                                    </div>
-                                </div>
-                            )}
+                            <div className="jc-output-stats">
+                                <span>{result.rowCount.toLocaleString()} rows</span>
+                                <span className="jc-stats-sep">·</span>
+                                <span>{result.colCount} columns</span>
+                                <span className="jc-stats-sep">·</span>
+                                <span>{fmtKb(result.output)}</span>
+                            </div>
                         </>
                     )}
                 </div>
             </div>
 
-            {/* Info Section */}
-            {!inputData && !outputData && (
-                <div className="converter-info-section">
-                    <h3>About JSON & CSV Conversion</h3>
-                    <div className="info-grid">
-                        <div className="info-card">
-                            <h4>📊 JSON to CSV</h4>
-                            <p>
-                                Convert JSON arrays or objects to CSV format for spreadsheet applications like Excel,
-                                Google Sheets, or data analysis tools.
-                            </p>
+            {/* ── Error ── */}
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        className="jc-error"
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                    >
+                        <FiAlertCircle /><span>{error}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Convert button — full width ── */}
+            <motion.button
+                type="button"
+                className="jc-btn-convert"
+                onClick={handleConvert}
+                disabled={!inputData.trim() || converting}
+                whileHover={{ scale: !inputData.trim() || converting ? 1 : 1.01 }}
+                whileTap={{ scale: !inputData.trim() || converting ? 1 : 0.98 }}
+            >
+                {converting ? (
+                    <><span className="jc-spinner" /> Converting…</>
+                ) : (
+                    <><FiArrowRight /> Convert to {mode === "json-to-csv" ? "CSV" : "JSON"}</>
+                )}
+            </motion.button>
+
+            {/* ── Full-width Preview ── */}
+            <AnimatePresence>
+                {result && result.preview.length > 0 && (
+                    <motion.div
+                        className="jc-preview"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="jc-preview-header">
+                            <span className="jc-preview-title">
+                                {mode === "json-to-csv" ? <FiTable /> : <FiDatabase />}
+                                Data Preview
+                            </span>
+                            <span className="jc-preview-meta">
+                                Showing {Math.min(5, result.rowCount)} of {result.rowCount.toLocaleString()} rows
+                                {result.colCount > 0 && ` · ${result.colCount} columns`}
+                            </span>
                         </div>
-                        <div className="info-card">
-                            <h4>🔄 CSV to JSON</h4>
-                            <p>
-                                Convert CSV files to JSON format for APIs, web applications, and modern data processing.
-                                Automatically detects data types.
-                            </p>
+
+                        {/* Table preview (for JSON→CSV output or CSV→JSON with objects) */}
+                        {result.headers.length > 0 && (
+                            <div className="jc-table-wrap">
+                                <table className="jc-table">
+                                    <thead>
+                                        <tr>
+                                            <th className="jc-table-rownum">#</th>
+                                            {result.headers.map(h => (
+                                                <th key={h}>{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {result.preview.map((row: any, ri: number) => (
+                                            <tr key={ri}>
+                                                <td className="jc-table-rownum">{ri + 1}</td>
+                                                {result.headers.map(h => (
+                                                    <td key={h}>
+                                                        <span className={`jc-cell-val${typeof row[h] === "boolean" ? " jc-cell-bool" : typeof row[h] === "number" ? " jc-cell-num" : row[h] === null || row[h] === undefined ? " jc-cell-null" : ""}`}>
+                                                            {row[h] === null || row[h] === undefined
+                                                                ? <em>null</em>
+                                                                : typeof row[h] === "boolean"
+                                                                    ? row[h] ? "true" : "false"
+                                                                    : String(row[h])}
+                                                        </span>
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {/* Raw preview fallback for headerless data */}
+                        {result.headers.length === 0 && (
+                            <div className="jc-preview-raw">
+                                <pre><code>{JSON.stringify(result.preview, null, 2)}</code></pre>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Info cards (only when empty) ── */}
+            {!inputData && !result && (
+                <motion.div
+                    className="jc-info-grid"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    {[
+                        { icon: <FiTable />,    title: "JSON → CSV",           desc: "Convert JSON arrays to CSV for Excel, Google Sheets, and data analysis tools." },
+                        { icon: <FiCode />,     title: "CSV → JSON",           desc: "Convert CSV to JSON for APIs and web apps. Auto-detects numbers and booleans." },
+                        { icon: <FiSettings />, title: "Delimiter options",    desc: "Comma, semicolon, tab, pipe — or auto-detect mode for CSV input." },
+                        { icon: <FiDatabase />, title: "Smart type detection", desc: "Numbers, booleans, and nulls are automatically typed during conversion." },
+                        { icon: <FiDownload />, title: "Export ready",         desc: "Download as .csv or .json files, or copy directly to clipboard." },
+                        { icon: <FiZap />,      title: "Instant & private",    desc: "All conversion happens in your browser — data never leaves your device." },
+                    ].map(c => (
+                        <div key={c.title} className="jc-info-card">
+                            <div className="jc-info-icon">{c.icon}</div>
+                            <div>
+                                <p className="jc-info-title">{c.title}</p>
+                                <p className="jc-info-desc">{c.desc}</p>
+                            </div>
                         </div>
-                        <div className="info-card">
-                            <h4>⚙️ Delimiter Options</h4>
-                            <p>
-                                Support for comma, semicolon, tab, and pipe delimiters. Auto-detect mode available for
-                                CSV to JSON conversion.
-                            </p>
-                        </div>
-                        <div className="info-card">
-                            <h4>📝 Header Handling</h4>
-                            <p>
-                                Choose to include or exclude column headers. Headers become JSON object keys when
-                                converting CSV to JSON.
-                            </p>
-                        </div>
-                        <div className="info-card">
-                            <h4>🔢 Smart Type Detection</h4>
-                            <p>
-                                Automatically converts strings to numbers and booleans when appropriate during CSV to
-                                JSON conversion.
-                            </p>
-                        </div>
-                        <div className="info-card">
-                            <h4>💾 Export Options</h4>
-                            <p>
-                                Download converted data as .csv or .json files. Copy to clipboard for quick pasting
-                                into other applications.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                    ))}
+                </motion.div>
             )}
+
+        </div>
         </motion.div>
     );
 };

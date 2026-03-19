@@ -136,48 +136,6 @@ export const checkRedirect = async (url: string): Promise<RedirectResult> => {
     .then((res) => res.data);
 };
 
-// Speed Test Types
-export interface SpeedTestRequest {
-  url: string;
-}
-
-export interface SpeedTestResponse {
-  loadTime: number;
-  domContentLoaded: number;
-  firstContentfulPaint: number;
-  timeToInteractive: number;
-  totalSize: number;
-  requests: number;
-  imageSize: number;
-  scriptSize: number;
-  styleSize: number;
-  score: number;
-  grade: string;
-  recommendations: Array<{
-    severity: "critical" | "warning" | "info";
-    title: string;
-    description: string;
-  }>;
-}
-
-export const toolsApi = {
-  /**
-   * Test website speed
-   */
-  testWebsiteSpeed: async (
-    data: SpeedTestRequest,
-  ): Promise<SpeedTestResponse> => {
-    const response = await api.post<{
-      success: boolean;
-      message: string;
-      data: SpeedTestResponse;
-    }>("/tools/speed-test", data);
-
-    // Extract the actual data from the response wrapper
-    return response.data;
-  },
-};
-
 // Fetch ALL tools across every category (no category filter)
 export async function fetchAllTools(): Promise<AllToolsResponse> {
   const res = await api.get<{
@@ -196,3 +154,75 @@ export async function fetchAllTools(): Promise<AllToolsResponse> {
     })),
   };
 }
+
+// Speed Test Types
+export interface SpeedTestRequest {
+  url: string;
+}
+
+export interface CWVMetric {
+  value: number;
+  display: string;
+  score: number | null;
+}
+
+export interface DiagnosticMetric {
+  value: number;
+  display: string;
+  score: number | null;
+}
+
+export interface SpeedRecommendation {
+  severity: "critical" | "warning" | "info";
+  title: string;
+  description: string;
+  savingsMs?: number;
+  savingsBytes?: number;
+  savingsDisplay?: string;
+}
+
+export interface SpeedTestResponse {
+  loadTime: number;
+  domContentLoaded: number;
+  firstContentfulPaint: number;
+  timeToInteractive: number;
+  totalSize: number;
+  requests: number;
+  imageSize: number;
+  scriptSize: number;
+  styleSize: number;
+  score: number;
+  grade: string;
+  coreWebVitals: {
+    lcp: CWVMetric;
+    cls: CWVMetric;
+    tbt: CWVMetric;
+    fcp: CWVMetric;
+    speedIndex: CWVMetric;
+  };
+  diagnostics: {
+    ttfb: DiagnosticMetric;
+    domSize: DiagnosticMetric;
+    bootupTime: DiagnosticMetric;
+    mainThreadWork: DiagnosticMetric;
+    thirdPartyBytes: DiagnosticMetric;
+  };
+  recommendations: SpeedRecommendation[];
+  passedAuditsCount: number;
+}
+
+export const toolsApi = {
+  /**
+   * Test website speed via Google PageSpeed Insights
+   */
+  testWebsiteSpeed: async (
+    data: SpeedTestRequest,
+  ): Promise<SpeedTestResponse> => {
+    const response = await api.post<{
+      success: boolean;
+      message: string;
+      data: SpeedTestResponse;
+    }>("/tools/speed-test", data);
+    return response.data;
+  },
+};

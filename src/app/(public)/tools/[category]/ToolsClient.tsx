@@ -17,16 +17,17 @@ import {
     ToolItem,
     CategoryPage,
 } from "../tools.config";
+import AppLink from '@/components/common/AppLink';
 
 /* -----------------------------
    Star Rating Component
 ------------------------------ */
 function StarRating({ rating }: { rating: number }) {
     const safeRating = Number(rating) || 0;
-    
+
     // Don't render if rating is 0 or null
     if (!safeRating) return null;
-    
+
     const fullStars = Math.floor(safeRating);
 
     return (
@@ -71,7 +72,7 @@ export default function ToolsListing() {
         (sum, tool) => sum + Number(tool.users_count || 0),
         0,
     );
-    
+
     // Calculate available tools count (only tools with data)
     const validToolsCount = tools.filter(tool => tool.title).length;
 
@@ -166,7 +167,7 @@ export default function ToolsListing() {
 
                             {/* Title - always show (required field) */}
                             <h3>{tool.title}</h3>
-                            
+
                             {/* Only show description if it exists */}
                             {tool.short_description && (
                                 <p className="tool-desc">{tool.short_description}</p>
@@ -190,7 +191,7 @@ export default function ToolsListing() {
                                             <AiOutlineEye /> {tool.views.toLocaleString()}
                                         </span>
                                     )}
-                                    
+
                                     {/* Only show users_count if > 0 */}
                                     {tool.users_count > 0 && (
                                         <span>
@@ -204,14 +205,14 @@ export default function ToolsListing() {
                             <StarRating rating={tool.rating} />
 
                             {/* CTA - always show (required for functionality) */}
-                            <Link
+                            <AppLink
                                 href={tool.tool_url}
                                 className="tool-cta-wrapper"
                             >
                                 <div className="tool-cta">
                                     Try Free <AiOutlineArrowRight />
                                 </div>
-                            </Link>
+                            </AppLink>
                         </div>
                     ))}
                 </div>

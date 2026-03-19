@@ -1,19 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    FiFileText,
-    FiDownload,
-    FiCheckCircle,
-    FiAlertCircle,
-    FiRefreshCw,
-    FiSettings,
-    FiType,
-    FiAlignLeft,
+    FiFileText, FiDownload, FiCheckCircle, FiAlertCircle,
+    FiRefreshCw, FiSettings, FiChevronDown, FiChevronUp,
+    FiX, FiZap, FiInfo,
 } from "react-icons/fi";
 import jsPDF from "jspdf";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align";
+import Highlight from "@tiptap/extension-highlight";
+import { Level } from "@tiptap/extension-heading";
 
+/* ─────────────────────────────────────────
+   Types
+───────────────────────────────────────── */
 type PageSize = "A4" | "Letter" | "Legal" | "A5";
 type PageOrientation = "portrait" | "landscape";
 type FontFamily = "helvetica" | "times" | "courier";
@@ -36,628 +42,983 @@ interface PDFSettings {
     footerText: string;
 }
 
-const TextToPDFTool = () => {
-    const [inputText, setInputText] = useState<string>("");
-    const [fileName, setFileName] = useState<string>("document");
-    const [generating, setGenerating] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-    const [previewGenerated, setPreviewGenerated] = useState(false);
+interface Preset {
+    id: string;
+    label: string;
+    icon: string;
+    settings: Partial<PDFSettings>;
+}
 
-    const [settings, setSettings] = useState<PDFSettings>({
-        pageSize: "A4",
-        orientation: "portrait",
-        fontFamily: "helvetica",
-        fontSize: 12,
-        lineSpacing: 1.5,
-        marginTop: 20,
-        marginRight: 20,
-        marginBottom: 20,
-        marginLeft: 20,
-        addPageNumbers: true,
-        addTimestamp: false,
-        headerText: "",
-        footerText: "",
+interface Toast {
+    id: string;
+    type: "success" | "error";
+    message: string;
+}
+
+/* ─────────────────────────────────────────
+   Constants
+───────────────────────────────────────── */
+const PAGE_SIZES = {
+    A4: { width: 210, height: 297 },
+    Letter: { width: 216, height: 279 },
+    Legal: { width: 216, height: 356 },
+    A5: { width: 148, height: 210 },
+};
+
+const PRESETS: Preset[] = [
+    {
+        id: "resume",
+        label: "Resume",
+        icon: "👤",
+        settings: { pageSize: "Letter", orientation: "portrait", fontFamily: "times", fontSize: 11, lineSpacing: 1.15, marginTop: 18, marginBottom: 18, marginLeft: 18, marginRight: 18, addPageNumbers: false },
+    },
+    {
+        id: "letter",
+        label: "Letter",
+        icon: "✉️",
+        settings: { pageSize: "Letter", orientation: "portrait", fontFamily: "times", fontSize: 12, lineSpacing: 1.5, marginTop: 25, marginBottom: 25, marginLeft: 30, marginRight: 30, addPageNumbers: false },
+    },
+    {
+        id: "report",
+        label: "Report",
+        icon: "📊",
+        settings: { pageSize: "A4", orientation: "portrait", fontFamily: "helvetica", fontSize: 11, lineSpacing: 1.5, marginTop: 25, marginBottom: 25, marginLeft: 25, marginRight: 20, addPageNumbers: true },
+    },
+    {
+        id: "code",
+        label: "Code Doc",
+        icon: "💻",
+        settings: { pageSize: "A4", orientation: "landscape", fontFamily: "courier", fontSize: 10, lineSpacing: 1.15, marginTop: 15, marginBottom: 15, marginLeft: 15, marginRight: 15, addPageNumbers: true },
+    },
+];
+
+const DEFAULT_SETTINGS: PDFSettings = {
+    pageSize: "A4",
+    orientation: "portrait",
+    fontFamily: "helvetica",
+    fontSize: 12,
+    lineSpacing: 1.5,
+    marginTop: 20,
+    marginRight: 20,
+    marginBottom: 20,
+    marginLeft: 20,
+    addPageNumbers: true,
+    addTimestamp: false,
+    headerText: "",
+    footerText: "",
+};
+
+const WORD_SOFT_LIMIT = 5000;
+const CHAR_HARD_LIMIT = 50000;
+
+/* ─────────────────────────────────────────
+   HTML → PDF renderer (respects formatting)
+───────────────────────────────────────── */
+interface RenderNode {
+    type: "h1" | "h2" | "h3" | "p" | "li" | "hr" | "blank";
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    listStyle?: "bullet" | "ordered";
+    listIndex?: number;
+}
+
+function parseHTMLToNodes(html: string): RenderNode[] {
+    const nodes: RenderNode[] = [];
+    if (!html || html === "<p></p>") return nodes;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    function extractInlineText(el: Element): { text: string; bold: boolean; italic: boolean; underline: boolean } {
+        let text = "";
+        let bold = false;
+        let italic = false;
+        let underline = false;
+
+        function walk(node: Node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                text += node.textContent || "";
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = (node as Element).tagName.toLowerCase();
+                if (tag === "strong" || tag === "b") bold = true;
+                if (tag === "em" || tag === "i") italic = true;
+                if (tag === "u") underline = true;
+                node.childNodes.forEach(walk);
+            }
+        }
+        walk(el);
+        return { text, bold, italic, underline };
+    }
+
+    function processEl(el: Element) {
+        const tag = el.tagName.toLowerCase();
+
+        if (tag === "h1" || tag === "h2" || tag === "h3") {
+            nodes.push({ type: tag as "h1" | "h2" | "h3", text: el.textContent?.trim() || "", bold: true });
+            return;
+        }
+
+        if (tag === "p") {
+            const text = el.textContent?.trim() || "";
+            if (!text) { nodes.push({ type: "blank", text: "" }); return; }
+            const inline = extractInlineText(el);
+            nodes.push({ type: "p", text, bold: inline.bold, italic: inline.italic, underline: inline.underline });
+            return;
+        }
+
+        if (tag === "ul") {
+            el.querySelectorAll("li").forEach((li) => {
+                nodes.push({ type: "li", text: li.textContent?.trim() || "", listStyle: "bullet" });
+            });
+            return;
+        }
+
+        if (tag === "ol") {
+            el.querySelectorAll("li").forEach((li, i) => {
+                nodes.push({ type: "li", text: li.textContent?.trim() || "", listStyle: "ordered", listIndex: i + 1 });
+            });
+            return;
+        }
+
+        if (tag === "hr") {
+            nodes.push({ type: "hr", text: "" });
+            return;
+        }
+
+        // Recurse into divs etc
+        el.childNodes.forEach((child) => {
+            if (child.nodeType === Node.ELEMENT_NODE) processEl(child as Element);
+        });
+    }
+
+    doc.body.childNodes.forEach((child) => {
+        if (child.nodeType === Node.ELEMENT_NODE) processEl(child as Element);
     });
 
-    // Page dimensions in mm
-    const pageSizes = {
-        A4: { width: 210, height: 297 },
-        Letter: { width: 216, height: 279 },
-        Legal: { width: 216, height: 356 },
-        A5: { width: 148, height: 210 },
+    return nodes;
+}
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
+const TextToPDFTool = () => {
+    const [fileName, setFileName] = useState("document");
+    const [generating, setGenerating] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [activePreset, setActivePreset] = useState<string | null>(null);
+    const [toasts, setToasts] = useState<Toast[]>([]);
+    const [progress, setProgress] = useState(0);
+    const [wordCount, setWordCount] = useState(0);
+    const [charCount, setCharCount] = useState(0);
+    const [settings, setSettings] = useState<PDFSettings>(DEFAULT_SETTINGS);
+    const fileNameRef = useRef<HTMLInputElement>(null);
+
+    /* ── Editor ── */
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Placeholder.configure({ placeholder: "Start writing your document here…" }),
+            Underline,
+            Highlight,
+            Link.configure({ openOnClick: false }),
+            TextAlign.configure({ types: ["heading", "paragraph"] }),
+        ],
+        content: "",
+        onUpdate({ editor }) {
+            const text = editor.getText();
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            setWordCount(words);
+            setCharCount(text.length);
+            // Auto-suggest filename from first heading/line
+            const firstLine = text.split("\n").find((l) => l.trim());
+            if (firstLine && fileName === "document") {
+                const slug = firstLine.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40).replace(/-$/, "");
+                if (slug) setFileName(slug);
+            }
+        },
+        immediatelyRender: false,
+    });
+
+    /* ── Keyboard shortcut: Cmd/Ctrl+Enter → generate ── */
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                generatePDF();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+                e.preventDefault();
+                setShowSettings((v) => !v);
+            }
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [editor, settings, fileName]);
+
+    /* ── Toast helpers ── */
+    const addToast = (type: Toast["type"], message: string) => {
+        const id = Math.random().toString(36).slice(2);
+        setToasts((prev) => [...prev, { id, type, message }]);
+        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
     };
 
-    // Calculate text statistics
-    const stats = {
-        characters: inputText.length,
-        words: inputText.trim() ? inputText.trim().split(/\s+/).length : 0,
-        lines: inputText.split("\n").length,
-        paragraphs: inputText.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length,
+    /* ── Settings helpers ── */
+    const updateSetting = <K extends keyof PDFSettings>(key: K, value: PDFSettings[K]) => {
+        setSettings((prev) => ({ ...prev, [key]: value }));
+        setActivePreset(null);
     };
 
-    // Estimate page count
+    const applyPreset = (preset: Preset) => {
+        setSettings({
+            ...DEFAULT_SETTINGS,
+            ...preset.settings,
+        } as PDFSettings);
+        setActivePreset(preset.id);
+        setShowSettings(true);
+        addToast("success", `"${preset.label}" preset applied!`);
+    };
+
+    /* ── Stats ── */
     const estimatePages = (): number => {
-        if (!inputText.trim()) return 0;
-
+        if (!editor || !editor.getText().trim()) return 0;
         const { pageSize, orientation, fontSize, lineSpacing, marginTop, marginBottom, marginLeft, marginRight } = settings;
-        const dims = pageSizes[pageSize];
-        const pageWidth = orientation === "portrait" ? dims.width : dims.height;
-        const pageHeight = orientation === "portrait" ? dims.height : dims.width;
-
-        // Calculate usable area
-        const usableWidth = pageWidth - marginLeft - marginRight;
-        const usableHeight = pageHeight - marginTop - marginBottom;
-
-        // Approximate characters per line and lines per page
-        const charsPerLine = Math.floor(usableWidth / (fontSize * 0.6));
-        const lineHeight = fontSize * 0.3527 * lineSpacing; // Convert pt to mm
-        const linesPerPage = Math.floor(usableHeight / lineHeight);
-
-        const totalLines = Math.ceil(inputText.length / charsPerLine);
-        const estimatedPages = Math.ceil(totalLines / linesPerPage);
-
-        return Math.max(1, estimatedPages);
+        const dims = PAGE_SIZES[pageSize];
+        const pw = orientation === "portrait" ? dims.width : dims.height;
+        const ph = orientation === "portrait" ? dims.height : dims.width;
+        const uw = pw - marginLeft - marginRight;
+        const uh = ph - marginTop - marginBottom;
+        const cpl = Math.floor(uw / (fontSize * 0.5));
+        const lh = fontSize * 0.3527 * lineSpacing;
+        const lpp = Math.floor(uh / lh);
+        const totalLines = Math.ceil(charCount / cpl);
+        return Math.max(1, Math.ceil(totalLines / lpp));
     };
 
-    // Generate PDF
-    const generatePDF = () => {
-        if (!inputText.trim()) return;
+    const estimateFileSize = (): string => {
+        const kb = Math.max(10, Math.round(charCount * 0.05 + estimatePages() * 8));
+        return kb > 1024 ? `~${(kb / 1024).toFixed(1)} MB` : `~${kb} KB`;
+    };
+
+    /* ── Clear ── */
+    const handleClear = () => {
+        editor?.commands.clearContent();
+        setFileName("document");
+        setWordCount(0);
+        setCharCount(0);
+    };
+
+    /* ── Load Sample ── */
+    const loadSample = () => {
+        editor?.commands.setContent(`<h1>Sample Document</h1>
+<p>This is a <strong>sample document</strong> to demonstrate the <em>Text to PDF</em> converter with rich formatting support.</p>
+<h2>Key Features</h2>
+<ul>
+<li>Rich text editing with bold, italic, underline</li>
+<li>Headings (H1, H2, H3) preserved in PDF</li>
+<li>Bullet and numbered lists rendered correctly</li>
+<li>Custom fonts, margins, and page sizes</li>
+<li>Page numbers and headers/footers</li>
+</ul>
+<h2>Getting Started</h2>
+<p>Replace this content with your own text. Use the toolbar above to format your document, then click <strong>Generate PDF</strong> to download.</p>
+<h3>Tips</h3>
+<ol>
+<li>Use headings to structure your document</li>
+<li>Apply <strong>bold</strong> for emphasis</li>
+<li>Choose a preset for quick formatting</li>
+</ol>`);
+    };
+
+    /* ── Generate PDF ── */
+    const generatePDF = async () => {
+        if (!editor || !editor.getText().trim() || generating) return;
 
         setGenerating(true);
+        setProgress(0);
 
         try {
-            const { pageSize, orientation, fontFamily, fontSize, lineSpacing, marginTop, marginRight, marginBottom, marginLeft, addPageNumbers, addTimestamp, headerText, footerText } = settings;
+            const html = editor.getHTML();
+            const nodes = parseHTMLToNodes(html);
 
-            const dims = pageSizes[pageSize];
+            const { pageSize, orientation, fontFamily, fontSize, lineSpacing,
+                marginTop, marginRight, marginBottom, marginLeft,
+                addPageNumbers, addTimestamp, headerText, footerText } = settings;
+
+            const dims = PAGE_SIZES[pageSize];
             const pageWidth = orientation === "portrait" ? dims.width : dims.height;
             const pageHeight = orientation === "portrait" ? dims.height : dims.width;
 
-            const doc = new jsPDF({
-                orientation,
-                unit: "mm",
-                format: pageSize,
-            });
-
-            doc.setFont(fontFamily);
-            doc.setFontSize(fontSize);
+            const doc = new jsPDF({ orientation, unit: "mm", format: pageSize });
 
             const usableWidth = pageWidth - marginLeft - marginRight;
-            const lineHeight = fontSize * 0.3527 * lineSpacing; // Convert points to mm
-
             let currentY = marginTop;
             let pageNumber = 1;
 
-            // Split text into lines
-            const lines = doc.splitTextToSize(inputText, usableWidth);
+            setProgress(20);
 
-            // Add header if specified
-            const addHeader = (page: number) => {
+            const addHeader = () => {
                 if (headerText) {
-                    doc.setFontSize(10);
+                    doc.setFontSize(9);
                     doc.setFont(fontFamily, "normal");
-                    doc.text(headerText, pageWidth / 2, marginTop - 10, { align: "center" });
-                    doc.setFontSize(fontSize);
+                    doc.setTextColor(120, 120, 120);
+                    doc.text(headerText, pageWidth / 2, marginTop - 8, { align: "center" });
+                    doc.setTextColor(0, 0, 0);
                 }
             };
 
-            // Add footer if specified
             const addFooter = (page: number) => {
-                const footerY = pageHeight - marginBottom + 10;
-
-                if (footerText) {
-                    doc.setFontSize(10);
-                    doc.setFont(fontFamily, "normal");
-                    doc.text(footerText, pageWidth / 2, footerY, { align: "center" });
-                }
-
-                if (addPageNumbers) {
-                    doc.setFontSize(10);
-                    doc.setFont(fontFamily, "normal");
-                    const pageText = `Page ${page}`;
-                    doc.text(pageText, pageWidth - marginRight, footerY, { align: "right" });
-                }
-
-                if (addTimestamp) {
-                    doc.setFontSize(8);
-                    doc.setFont(fontFamily, "normal");
-                    const timestamp = new Date().toLocaleString();
-                    doc.text(timestamp, marginLeft, footerY, { align: "left" });
-                }
-
-                doc.setFontSize(fontSize);
+                const footerY = pageHeight - marginBottom + 8;
+                doc.setFontSize(9);
+                doc.setFont(fontFamily, "normal");
+                doc.setTextColor(120, 120, 120);
+                if (footerText) doc.text(footerText, pageWidth / 2, footerY, { align: "center" });
+                if (addPageNumbers) doc.text(`Page ${page}`, pageWidth - marginRight, footerY, { align: "right" });
+                if (addTimestamp) doc.text(new Date().toLocaleString(), marginLeft, footerY, { align: "left" });
+                doc.setTextColor(0, 0, 0);
             };
 
-            // Add first page header
-            addHeader(pageNumber);
-
-            // Add lines to PDF
-            lines.forEach((line: string, index: number) => {
-                // Check if we need a new page
-                if (currentY + lineHeight > pageHeight - marginBottom) {
-                    // Add footer to current page
+            const checkNewPage = (neededHeight: number) => {
+                if (currentY + neededHeight > pageHeight - marginBottom) {
                     addFooter(pageNumber);
-
-                    // Create new page
                     doc.addPage();
                     pageNumber++;
                     currentY = marginTop;
+                    addHeader();
+                }
+            };
 
-                    // Add header to new page
-                    addHeader(pageNumber);
+            addHeader();
+
+            setProgress(40);
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const progress = 40 + Math.round((i / nodes.length) * 40);
+                setProgress(progress);
+
+                if (node.type === "blank") {
+                    currentY += fontSize * 0.3527 * lineSpacing * 0.5;
+                    continue;
                 }
 
-                doc.text(line, marginLeft, currentY);
-                currentY += lineHeight;
-            });
+                if (node.type === "hr") {
+                    checkNewPage(6);
+                    doc.setDrawColor(180, 180, 180);
+                    doc.line(marginLeft, currentY, marginLeft + usableWidth, currentY);
+                    doc.setDrawColor(0, 0, 0);
+                    currentY += 6;
+                    continue;
+                }
 
-            // Add footer to last page
+                // Heading sizes
+                let nodeFontSize = fontSize;
+                let nodeFontStyle = "normal";
+                let nodeSpacingBefore = 0;
+
+                if (node.type === "h1") {
+                    nodeFontSize = Math.min(fontSize * 1.8, 28);
+                    nodeFontStyle = "bold";
+                    nodeSpacingBefore = fontSize * 0.3527 * 1.5;
+                } else if (node.type === "h2") {
+                    nodeFontSize = Math.min(fontSize * 1.4, 22);
+                    nodeFontStyle = "bold";
+                    nodeSpacingBefore = fontSize * 0.3527 * 1.2;
+                } else if (node.type === "h3") {
+                    nodeFontSize = Math.min(fontSize * 1.15, 18);
+                    nodeFontStyle = "bold";
+                    nodeSpacingBefore = fontSize * 0.3527;
+                } else if (node.bold && node.italic) {
+                    nodeFontStyle = "bolditalic";
+                } else if (node.bold) {
+                    nodeFontStyle = "bold";
+                } else if (node.italic) {
+                    nodeFontStyle = "italic";
+                }
+
+                doc.setFont(fontFamily, nodeFontStyle);
+                doc.setFontSize(nodeFontSize);
+
+                const lineH = nodeFontSize * 0.3527 * lineSpacing;
+
+                // List prefix
+                let textToPrint = node.text;
+                let xOffset = marginLeft;
+
+                if (node.type === "li") {
+                    xOffset = marginLeft + 5;
+                    const usableListWidth = usableWidth - 5;
+                    const prefix = node.listStyle === "bullet" ? "• " : `${node.listIndex}. `;
+                    const lines = doc.splitTextToSize(textToPrint, usableListWidth - 6);
+
+                    checkNewPage(lineH * lines.length + nodeSpacingBefore);
+                    if (nodeSpacingBefore > 0) currentY += nodeSpacingBefore;
+                    doc.text(prefix, xOffset, currentY);
+                    lines.forEach((line: string, li: number) => {
+                        if (li === 0) {
+                            doc.text(line, xOffset + 6, currentY);
+                        } else {
+                            currentY += lineH;
+                            doc.text(line, xOffset + 6, currentY);
+                        }
+                    });
+                    currentY += lineH;
+                    continue;
+                }
+
+                const lines = doc.splitTextToSize(textToPrint, usableWidth);
+                checkNewPage(lineH * lines.length + nodeSpacingBefore);
+
+                if (nodeSpacingBefore > 0) currentY += nodeSpacingBefore;
+
+                lines.forEach((line: string) => {
+                    doc.text(line, xOffset, currentY);
+                    // Underline simulation
+                    if (node.underline) {
+                        const tw = doc.getTextWidth(line);
+                        doc.setDrawColor(0, 0, 0);
+                        doc.line(xOffset, currentY + 0.5, xOffset + tw, currentY + 0.5);
+                    }
+                    currentY += lineH;
+                });
+
+                // Extra spacing after headings
+                if (node.type === "h1" || node.type === "h2" || node.type === "h3") {
+                    currentY += lineH * 0.3;
+                }
+            }
+
             addFooter(pageNumber);
 
-            // Save PDF
+            setProgress(90);
+
             const safeFileName = fileName.trim() || "document";
             doc.save(`${safeFileName}.pdf`);
 
-            setPreviewGenerated(true);
-            setTimeout(() => setPreviewGenerated(false), 3000);
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            alert("Failed to generate PDF. Please try again.");
+            setProgress(100);
+            addToast("success", `"${safeFileName}.pdf" generated successfully!`);
+        } catch (err) {
+            console.error(err);
+            addToast("error", "Failed to generate PDF. Please try again.");
         } finally {
-            setGenerating(false);
+            setTimeout(() => {
+                setGenerating(false);
+                setProgress(0);
+            }, 600);
         }
     };
 
-    // Update settings
-    const updateSetting = <K extends keyof PDFSettings>(key: K, value: PDFSettings[K]) => {
-        setSettings((prev) => ({ ...prev, [key]: value }));
-    };
+    const isEmpty = !editor || !editor.getText().trim();
+    const isOverLimit = charCount > CHAR_HARD_LIMIT;
+    const isNearLimit = wordCount >= WORD_SOFT_LIMIT;
 
-    // Clear all
-    const handleClear = () => {
-        setInputText("");
-        setFileName("document");
-        setPreviewGenerated(false);
-    };
+    /* ─── Toolbar Button helper ─── */
+    const ToolbarBtn = ({
+        onClick, active, title, children,
+    }: { onClick: () => void; active?: boolean; title: string; children: React.ReactNode }) => (
+        <button
+            type="button"
+            onClick={onClick}
+            title={title}
+            className={`rte-btn${active ? " rte-btn--active" : ""}`}
+        >
+            {children}
+        </button>
+    );
 
-    // Load sample text
-    const loadSample = (type: "short" | "long") => {
-        const samples = {
-            short: `Sample Document
-
-This is a sample text to demonstrate the Text to PDF converter.
-
-Key Features:
-- Customizable fonts and sizes
-- Adjustable margins
-- Page numbers and timestamps
-- Headers and footers
-- Multiple page sizes
-
-You can replace this text with your own content and generate a professional PDF document instantly.`,
-            long: `Lorem Ipsum Document
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Introduction
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Section 1: Background
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Section 2: Analysis
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-Conclusion
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.`,
-        };
-        setInputText(samples[type]);
-    };
-
+    /* ─────────────────────────────────────────
+       RENDER
+    ───────────────────────────────────────── */
     return (
         <motion.div
             className="tool-card"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Info Banner */}
-            <div className="tool-info-banner">
-                <FiCheckCircle className="info-icon" />
-                <p>
-                    Convert your text to professional PDF documents with customizable formatting, fonts, margins, and page settings.
-                </p>
-            </div>
+            <div className="t2p-root">
 
-            {/* Top Controls */}
-            <div className="pdf-top-controls">
-                <div className="file-name-input">
-                    <FiFileText />
-                    <input
-                        type="text"
-                        placeholder="Enter file name..."
-                        value={fileName}
-                        onChange={(e) => setFileName(e.target.value)}
-                        className="pdf-filename-field"
-                    />
-                    <span className="file-extension">.pdf</span>
+                {/* ── Toast Stack ── */}
+                <div className="t2p-toasts">
+                    <AnimatePresence>
+                        {toasts.map((toast) => (
+                            <motion.div
+                                key={toast.id}
+                                className={`t2p-toast t2p-toast--${toast.type}`}
+                                initial={{ opacity: 0, x: 60 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 60 }}
+                            >
+                                {toast.type === "success" ? <FiCheckCircle /> : <FiAlertCircle />}
+                                <span>{toast.message}</span>
+                                <button onClick={() => setToasts((p) => p.filter((t) => t.id !== toast.id))}>
+                                    <FiX />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
 
-                <div className="control-buttons">
-                    <button className="btn-sample" onClick={() => loadSample("short")}>
-                        Load Sample
-                    </button>
-                    <button className="btn-sample" onClick={() => loadSample("long")}>
-                        Load Long Text
-                    </button>
-                    <button
-                        className="btn-settings-toggle"
-                        onClick={() => setShowSettings(!showSettings)}
-                    >
-                        <FiSettings /> {showSettings ? "Hide" : "Show"} Settings
-                    </button>
-                    {inputText && (
-                        <button className="btn-clear-pdf" onClick={handleClear}>
-                            <FiRefreshCw /> Clear
+                {/* ── Header Bar ── */}
+                <div className="t2p-header">
+                    <div className="t2p-filename-wrap">
+                        <FiFileText className="t2p-filename-icon" />
+                        <input
+                            ref={fileNameRef}
+                            type="text"
+                            className="t2p-filename-input"
+                            value={fileName}
+                            onChange={(e) => setFileName(e.target.value)}
+                            placeholder="document"
+                            aria-label="File name"
+                        />
+                        <span className="t2p-filename-ext">.pdf</span>
+                        {!isEmpty && (
+                            <span className="t2p-filesize">{estimateFileSize()}</span>
+                        )}
+                    </div>
+
+                    <div className="t2p-header-actions">
+                        <button className="t2p-btn-ghost" onClick={loadSample} title="Load sample content">
+                            <FiZap /> Sample
                         </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Settings Panel */}
-            <AnimatePresence>
-                {showSettings && (
-                    <motion.div
-                        className="pdf-settings-panel"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                    >
-                        <h3>
-                            <FiSettings /> PDF Settings
-                        </h3>
-
-                        <div className="settings-grid">
-                            {/* Page Settings */}
-                            <div className="setting-group">
-                                <h4>Page</h4>
-
-                                <div className="setting-item">
-                                    <label>Size:</label>
-                                    <select
-                                        value={settings.pageSize}
-                                        onChange={(e) => updateSetting("pageSize", e.target.value as PageSize)}
-                                    >
-                                        <option value="A4">A4 (210 × 297 mm)</option>
-                                        <option value="Letter">Letter (8.5 × 11 in)</option>
-                                        <option value="Legal">Legal (8.5 × 14 in)</option>
-                                        <option value="A5">A5 (148 × 210 mm)</option>
-                                    </select>
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Orientation:</label>
-                                    <select
-                                        value={settings.orientation}
-                                        onChange={(e) => updateSetting("orientation", e.target.value as PageOrientation)}
-                                    >
-                                        <option value="portrait">Portrait</option>
-                                        <option value="landscape">Landscape</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Font Settings */}
-                            <div className="setting-group">
-                                <h4>Font</h4>
-
-                                <div className="setting-item">
-                                    <label>Family:</label>
-                                    <select
-                                        value={settings.fontFamily}
-                                        onChange={(e) => updateSetting("fontFamily", e.target.value as FontFamily)}
-                                    >
-                                        <option value="helvetica">Helvetica</option>
-                                        <option value="times">Times New Roman</option>
-                                        <option value="courier">Courier</option>
-                                    </select>
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Size:</label>
-                                    <select
-                                        value={settings.fontSize}
-                                        onChange={(e) => updateSetting("fontSize", Number(e.target.value) as FontSize)}
-                                    >
-                                        <option value={10}>10 pt</option>
-                                        <option value={11}>11 pt</option>
-                                        <option value={12}>12 pt</option>
-                                        <option value={14}>14 pt</option>
-                                        <option value={16}>16 pt</option>
-                                        <option value={18}>18 pt</option>
-                                        <option value={20}>20 pt</option>
-                                        <option value={24}>24 pt</option>
-                                    </select>
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Line Spacing:</label>
-                                    <select
-                                        value={settings.lineSpacing}
-                                        onChange={(e) => updateSetting("lineSpacing", Number(e.target.value) as LineSpacing)}
-                                    >
-                                        <option value={1}>Single (1.0)</option>
-                                        <option value={1.15}>1.15</option>
-                                        <option value={1.5}>1.5</option>
-                                        <option value={2}>Double (2.0)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Margins */}
-                            <div className="setting-group">
-                                <h4>Margins (mm)</h4>
-
-                                <div className="margins-grid">
-                                    <div className="setting-item">
-                                        <label>Top:</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="50"
-                                            value={settings.marginTop}
-                                            onChange={(e) => updateSetting("marginTop", Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div className="setting-item">
-                                        <label>Right:</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="50"
-                                            value={settings.marginRight}
-                                            onChange={(e) => updateSetting("marginRight", Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div className="setting-item">
-                                        <label>Bottom:</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="50"
-                                            value={settings.marginBottom}
-                                            onChange={(e) => updateSetting("marginBottom", Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div className="setting-item">
-                                        <label>Left:</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="50"
-                                            value={settings.marginLeft}
-                                            onChange={(e) => updateSetting("marginLeft", Number(e.target.value))}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Additional Options */}
-                            <div className="setting-group">
-                                <h4>Options</h4>
-
-                                <div className="setting-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        id="pageNumbers"
-                                        checked={settings.addPageNumbers}
-                                        onChange={(e) => updateSetting("addPageNumbers", e.target.checked)}
-                                    />
-                                    <label htmlFor="pageNumbers">Add page numbers</label>
-                                </div>
-
-                                <div className="setting-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        id="timestamp"
-                                        checked={settings.addTimestamp}
-                                        onChange={(e) => updateSetting("addTimestamp", e.target.checked)}
-                                    />
-                                    <label htmlFor="timestamp">Add timestamp</label>
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Header:</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Optional header text"
-                                        value={settings.headerText}
-                                        onChange={(e) => updateSetting("headerText", e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Footer:</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Optional footer text"
-                                        value={settings.footerText}
-                                        onChange={(e) => updateSetting("footerText", e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Main Workspace */}
-            <div className="pdf-workspace">
-                {/* Left - Text Input */}
-                <div className="pdf-input-section">
-                    <div className="section-header">
-                        <h3>
-                            <FiType /> Your Text
-                        </h3>
-                    </div>
-
-                    <textarea
-                        className="pdf-text-area"
-                        placeholder="Type or paste your text here..."
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                        rows={20}
-                    />
-
-                    {/* Statistics */}
-                    {inputText && (
-                        <motion.div
-                            className="pdf-stats"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                        {!isEmpty && (
+                            <button className="t2p-btn-ghost t2p-btn-danger" onClick={handleClear} title="Clear document">
+                                <FiRefreshCw /> Clear
+                            </button>
+                        )}
+                        <button
+                            className={`t2p-btn-ghost${showSettings ? " t2p-btn-active" : ""}`}
+                            onClick={() => setShowSettings((v) => !v)}
+                            title="Toggle settings (⌘,)"
                         >
-                            <div className="stat-item">
-                                <span className="stat-label">Characters:</span>
-                                <span className="stat-value">{stats.characters.toLocaleString()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Words:</span>
-                                <span className="stat-value">{stats.words.toLocaleString()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Lines:</span>
-                                <span className="stat-value">{stats.lines.toLocaleString()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Paragraphs:</span>
-                                <span className="stat-value">{stats.paragraphs.toLocaleString()}</span>
-                            </div>
-                            <div className="stat-item highlight">
-                                <span className="stat-label">Est. Pages:</span>
-                                <span className="stat-value">{estimatePages()}</span>
-                            </div>
-                        </motion.div>
-                    )}
-                </div>
-
-                {/* Right - Preview Info */}
-                <div className="pdf-preview-section">
-                    <div className="section-header">
-                        <h3>
-                            <FiAlignLeft /> Preview Info
-                        </h3>
+                            <FiSettings />
+                            Settings
+                            {showSettings ? <FiChevronUp /> : <FiChevronDown />}
+                        </button>
                     </div>
-
-                    {!inputText ? (
-                        <div className="empty-preview">
-                            <FiFileText className="empty-icon" />
-                            <p>Enter text to generate PDF</p>
-                            <p className="empty-hint">Your PDF preview info will appear here</p>
-                        </div>
-                    ) : (
-                        <div className="preview-info-card">
-                            <div className="preview-info-item">
-                                <strong>File Name:</strong>
-                                <span>{fileName || "document"}.pdf</span>
-                            </div>
-                            <div className="preview-info-item">
-                                <strong>Page Size:</strong>
-                                <span>{settings.pageSize} ({settings.orientation})</span>
-                            </div>
-                            <div className="preview-info-item">
-                                <strong>Font:</strong>
-                                <span>{settings.fontFamily} {settings.fontSize}pt</span>
-                            </div>
-                            <div className="preview-info-item">
-                                <strong>Line Spacing:</strong>
-                                <span>{settings.lineSpacing}x</span>
-                            </div>
-                            <div className="preview-info-item">
-                                <strong>Margins:</strong>
-                                <span>
-                                    T:{settings.marginTop} R:{settings.marginRight} B:{settings.marginBottom} L:{settings.marginLeft}
-                                </span>
-                            </div>
-                            <div className="preview-info-item">
-                                <strong>Page Numbers:</strong>
-                                <span>{settings.addPageNumbers ? "Yes" : "No"}</span>
-                            </div>
-                            {settings.headerText && (
-                                <div className="preview-info-item">
-                                    <strong>Header:</strong>
-                                    <span>{settings.headerText}</span>
-                                </div>
-                            )}
-                            {settings.footerText && (
-                                <div className="preview-info-item">
-                                    <strong>Footer:</strong>
-                                    <span>{settings.footerText}</span>
-                                </div>
-                            )}
-
-                            <div className="estimated-pages-card">
-                                <FiFileText />
-                                <div>
-                                    <div className="pages-count">{estimatePages()}</div>
-                                    <div className="pages-label">Estimated Pages</div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
-            </div>
 
-            {/* Generate Button */}
-            <div className="pdf-action-section">
-                <motion.button
-                    className="btn-generate-pdf"
-                    onClick={generatePDF}
-                    disabled={!inputText.trim() || generating}
-                    whileHover={{ scale: !inputText.trim() || generating ? 1 : 1.02 }}
-                    whileTap={{ scale: !inputText.trim() || generating ? 1 : 0.98 }}
-                >
-                    {generating ? (
-                        <>
-                            <span className="spinner" />
-                            Generating PDF...
-                        </>
-                    ) : (
-                        <>
-                            <FiDownload />
-                            Generate PDF
-                        </>
-                    )}
-                </motion.button>
+                {/* ── Presets Row ── */}
+                <div className="t2p-presets">
+                    <span className="t2p-presets-label">Quick presets:</span>
+                    {PRESETS.map((p) => (
+                        <button
+                            type="button"
+                            key={p.id}
+                            className={`t2p-preset-btn${activePreset === p.id ? " t2p-preset-btn--active" : ""}`}
+                            onClick={(e) => { e.preventDefault(); applyPreset(p); }}
+                        >
+                            <span>{p.icon}</span> {p.label}
+                        </button>
+                    ))}
+                </div>
 
+                {/* ── Settings Panel ── */}
                 <AnimatePresence>
-                    {previewGenerated && (
+                    {showSettings && (
                         <motion.div
-                            className="success-message"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
+                            className="t2p-settings"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25 }}
                         >
-                            <FiCheckCircle />
-                            PDF generated successfully! Check your downloads.
+                            <div className="t2p-settings-inner">
+
+                                {/* Page */}
+                                <div className="t2p-setting-group">
+                                    <p className="t2p-setting-group-title">Page</p>
+                                    <div className="t2p-setting-row">
+                                        <label>Size</label>
+                                        <select value={settings.pageSize} onChange={(e) => updateSetting("pageSize", e.target.value as PageSize)}>
+                                            <option value="A4">A4</option>
+                                            <option value="Letter">Letter</option>
+                                            <option value="Legal">Legal</option>
+                                            <option value="A5">A5</option>
+                                        </select>
+                                    </div>
+                                    <div className="t2p-setting-row">
+                                        <label>Orientation</label>
+                                        <select value={settings.orientation} onChange={(e) => updateSetting("orientation", e.target.value as PageOrientation)}>
+                                            <option value="portrait">Portrait</option>
+                                            <option value="landscape">Landscape</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Font */}
+                                <div className="t2p-setting-group">
+                                    <p className="t2p-setting-group-title">Font</p>
+                                    <div className="t2p-setting-row">
+                                        <label>Family</label>
+                                        <select value={settings.fontFamily} onChange={(e) => updateSetting("fontFamily", e.target.value as FontFamily)}>
+                                            <option value="helvetica">Helvetica</option>
+                                            <option value="times">Times New Roman</option>
+                                            <option value="courier">Courier</option>
+                                        </select>
+                                    </div>
+                                    <div className="t2p-setting-row">
+                                        <label>Size</label>
+                                        <select value={settings.fontSize} onChange={(e) => updateSetting("fontSize", Number(e.target.value) as FontSize)}>
+                                            {[10, 11, 12, 14, 16, 18, 20, 24].map((s) => (
+                                                <option key={s} value={s}>{s} pt</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="t2p-setting-row">
+                                        <label>Line spacing</label>
+                                        <select value={settings.lineSpacing} onChange={(e) => updateSetting("lineSpacing", Number(e.target.value) as LineSpacing)}>
+                                            <option value={1}>Single (1.0)</option>
+                                            <option value={1.15}>1.15</option>
+                                            <option value={1.5}>1.5</option>
+                                            <option value={2}>Double (2.0)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Margins */}
+                                <div className="t2p-setting-group">
+                                    <p className="t2p-setting-group-title">Margins (mm)</p>
+                                    <div className="t2p-margins-visual">
+                                        <div className="t2p-margin-outer">
+                                            <input type="number" min="0" max="60" value={settings.marginTop}
+                                                onChange={(e) => updateSetting("marginTop", Number(e.target.value))}
+                                                title="Top margin" className="t2p-margin-top" />
+                                            <div className="t2p-margin-middle">
+                                                <input type="number" min="0" max="60" value={settings.marginLeft}
+                                                    onChange={(e) => updateSetting("marginLeft", Number(e.target.value))}
+                                                    title="Left margin" className="t2p-margin-left" />
+                                                <div className="t2p-margin-page">
+                                                    <FiFileText />
+                                                </div>
+                                                <input type="number" min="0" max="60" value={settings.marginRight}
+                                                    onChange={(e) => updateSetting("marginRight", Number(e.target.value))}
+                                                    title="Right margin" className="t2p-margin-right" />
+                                            </div>
+                                            <input type="number" min="0" max="60" value={settings.marginBottom}
+                                                onChange={(e) => updateSetting("marginBottom", Number(e.target.value))}
+                                                title="Bottom margin" className="t2p-margin-bottom" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Options */}
+                                <div className="t2p-setting-group">
+                                    <p className="t2p-setting-group-title">Options</p>
+                                    <label className="t2p-checkbox-row">
+                                        <input type="checkbox" checked={settings.addPageNumbers}
+                                            onChange={(e) => updateSetting("addPageNumbers", e.target.checked)} />
+                                        Page numbers
+                                    </label>
+                                    <label className="t2p-checkbox-row">
+                                        <input type="checkbox" checked={settings.addTimestamp}
+                                            onChange={(e) => updateSetting("addTimestamp", e.target.checked)} />
+                                        Add timestamp
+                                    </label>
+                                    <div className="t2p-setting-row">
+                                        <label>Header text</label>
+                                        <input type="text" placeholder="Optional header…"
+                                            value={settings.headerText}
+                                            onChange={(e) => updateSetting("headerText", e.target.value)} />
+                                    </div>
+                                    <div className="t2p-setting-row">
+                                        <label>Footer text</label>
+                                        <input type="text" placeholder="Optional footer…"
+                                            value={settings.footerText}
+                                            onChange={(e) => updateSetting("footerText", e.target.value)} />
+                                    </div>
+                                </div>
+
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* ── Main Workspace ── */}
+                <div className="t2p-workspace">
+
+                    {/* Full-width Rich Text Editor */}
+                    <div className="t2p-editor-panel">
+
+                        {/* Toolbar */}
+                        {editor && (
+                            <div className="t2p-toolbar">
+                                <div className="t2p-toolbar-group">
+                                    <select
+                                        className="t2p-toolbar-select"
+                                        onChange={(e) => {
+                                            const lv = Number(e.target.value);
+                                            if (lv === 0) editor.chain().focus().setParagraph().run();
+                                            else editor.chain().focus().toggleHeading({ level: lv as Level }).run();
+                                        }}
+                                        value={
+                                            editor.isActive("heading", { level: 1 }) ? 1 :
+                                                editor.isActive("heading", { level: 2 }) ? 2 :
+                                                    editor.isActive("heading", { level: 3 }) ? 3 : 0
+                                        }
+                                        title="Text style"
+                                    >
+                                        <option value="0">Paragraph</option>
+                                        <option value="1">Heading 1</option>
+                                        <option value="2">Heading 2</option>
+                                        <option value="3">Heading 3</option>
+                                    </select>
+                                </div>
+
+                                <div className="t2p-toolbar-divider" />
+
+                                <div className="t2p-toolbar-group">
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (⌘B)">
+                                        <strong>B</strong>
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic (⌘I)">
+                                        <em>I</em>
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline (⌘U)">
+                                        <u>U</u>
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough">
+                                        <s>S</s>
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive("highlight")} title="Highlight">
+                                        <span style={{ background: "#fef08a", padding: "0 3px", borderRadius: 2 }}>H</span>
+                                    </ToolbarBtn>
+                                </div>
+
+                                <div className="t2p-toolbar-divider" />
+
+                                <div className="t2p-toolbar-group">
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet list">
+                                        ≡
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbered list">
+                                        №
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Blockquote">
+                                        "
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title="Code block">
+                                        {"</>"}
+                                    </ToolbarBtn>
+                                </div>
+
+                                <div className="t2p-toolbar-divider" />
+
+                                <div className="t2p-toolbar-group">
+                                    <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Align left">
+                                        ⬅
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Center">
+                                        ↔
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align right">
+                                        ➡
+                                    </ToolbarBtn>
+                                </div>
+
+                                <div className="t2p-toolbar-divider" />
+
+                                <div className="t2p-toolbar-group">
+                                    <ToolbarBtn
+                                        onClick={() => {
+                                            const url = prompt("Enter URL:");
+                                            if (url) editor.chain().focus().setLink({ href: url }).run();
+                                        }}
+                                        active={editor.isActive("link")}
+                                        title="Insert link"
+                                    >
+                                        🔗
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().unsetLink().run()} title="Remove link">
+                                        🔗̸
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">
+                                        —
+                                    </ToolbarBtn>
+                                </div>
+
+                                <div className="t2p-toolbar-spacer" />
+
+                                <div className="t2p-toolbar-group">
+                                    <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} title="Undo (⌘Z)">
+                                        ↩
+                                    </ToolbarBtn>
+                                    <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} title="Redo (⌘⇧Z)">
+                                        ↪
+                                    </ToolbarBtn>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Editor content */}
+                        <div className="t2p-editor-body">
+                            <EditorContent editor={editor} className="t2p-editor-content" />
+                        </div>
+
+                        {/* Word / char counters */}
+                        <div className="t2p-editor-footer">
+                            <div className="t2p-stats">
+                                <span>{wordCount.toLocaleString()} words</span>
+                                <span className="t2p-stats-sep">·</span>
+                                <span className={isOverLimit ? "t2p-stat-danger" : isNearLimit ? "t2p-stat-warn" : ""}>
+                                    {charCount.toLocaleString()} chars
+                                </span>
+                                {!isEmpty && (
+                                    <>
+                                        <span className="t2p-stats-sep">·</span>
+                                        <span>~{estimatePages()} {estimatePages() === 1 ? "page" : "pages"}</span>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Char limit bar */}
+                            {charCount > 0 && (
+                                <div className="t2p-limit-bar">
+                                    <div
+                                        className={`t2p-limit-fill${isOverLimit ? " t2p-limit-fill--danger" : isNearLimit ? " t2p-limit-fill--warn" : ""}`}
+                                        style={{ width: `${Math.min(100, (charCount / CHAR_HARD_LIMIT) * 100)}%` }}
+                                    />
+                                </div>
+                            )}
+
+                            {isNearLimit && !isOverLimit && (
+                                <p className="t2p-limit-msg t2p-limit-msg--warn">
+                                    <FiInfo /> Approaching character limit ({CHAR_HARD_LIMIT.toLocaleString()} max)
+                                </p>
+                            )}
+                            {isOverLimit && (
+                                <p className="t2p-limit-msg t2p-limit-msg--danger">
+                                    <FiAlertCircle /> Over character limit — PDF output may be truncated
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* ── Full-width Document Summary Strip ── */}
+                <AnimatePresence>
+                    {!isEmpty && (
+                        <motion.div
+                            className="t2p-summary-strip"
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {/* Left: mini page thumbnail */}
+                            <div className="t2p-summary-thumb-wrap">
+                                <div
+                                    className="t2p-summary-thumb"
+                                    style={{
+                                        aspectRatio: settings.orientation === "portrait"
+                                            ? `${PAGE_SIZES[settings.pageSize].width} / ${PAGE_SIZES[settings.pageSize].height}`
+                                            : `${PAGE_SIZES[settings.pageSize].height} / ${PAGE_SIZES[settings.pageSize].width}`,
+                                    }}
+                                >
+                                    <div
+                                        className="t2p-summary-thumb-area"
+                                        style={{
+                                            top: `${(settings.marginTop / (settings.orientation === "portrait" ? PAGE_SIZES[settings.pageSize].height : PAGE_SIZES[settings.pageSize].width)) * 100}%`,
+                                            right: `${(settings.marginRight / (settings.orientation === "portrait" ? PAGE_SIZES[settings.pageSize].width : PAGE_SIZES[settings.pageSize].height)) * 100}%`,
+                                            bottom: `${(settings.marginBottom / (settings.orientation === "portrait" ? PAGE_SIZES[settings.pageSize].height : PAGE_SIZES[settings.pageSize].width)) * 100}%`,
+                                            left: `${(settings.marginLeft / (settings.orientation === "portrait" ? PAGE_SIZES[settings.pageSize].width : PAGE_SIZES[settings.pageSize].height)) * 100}%`,
+                                        }}
+                                    >
+                                        {Array.from({ length: 7 }).map((_, i) => (
+                                            <div key={i} className="t2p-summary-thumb-line" style={{ width: `${55 + Math.sin(i * 2.5) * 35}%` }} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Center: stat pills */}
+                            <div className="t2p-summary-stats">
+                                <div className="t2p-summary-stat">
+                                    <span className="t2p-summary-stat-val">{estimatePages()}</span>
+                                    <span className="t2p-summary-stat-lbl">{estimatePages() === 1 ? "Page" : "Pages"}</span>
+                                </div>
+                                <div className="t2p-summary-divider" />
+                                <div className="t2p-summary-stat">
+                                    <span className="t2p-summary-stat-val">{wordCount.toLocaleString()}</span>
+                                    <span className="t2p-summary-stat-lbl">Words</span>
+                                </div>
+                                <div className="t2p-summary-divider" />
+                                <div className="t2p-summary-stat">
+                                    <span className="t2p-summary-stat-val">{charCount.toLocaleString()}</span>
+                                    <span className="t2p-summary-stat-lbl">Chars</span>
+                                </div>
+                                <div className="t2p-summary-divider" />
+                                <div className="t2p-summary-stat">
+                                    <span className="t2p-summary-stat-val">{estimateFileSize()}</span>
+                                    <span className="t2p-summary-stat-lbl">Est. size</span>
+                                </div>
+                            </div>
+
+                            {/* Right: settings pills */}
+                            <div className="t2p-summary-pills">
+                                <span className="t2p-summary-pill">
+                                    {settings.pageSize} · {settings.orientation === "portrait" ? "↕" : "↔"}
+                                </span>
+                                <span className="t2p-summary-pill">
+                                    {settings.fontFamily} {settings.fontSize}pt
+                                </span>
+                                <span className="t2p-summary-pill">
+                                    {settings.lineSpacing}× spacing
+                                </span>
+                                <span className="t2p-summary-pill">
+                                    {settings.addPageNumbers ? "# pages" : "no page #"}
+                                </span>
+                                {settings.headerText && (
+                                    <span className="t2p-summary-pill t2p-summary-pill--accent">
+                                        Header: {settings.headerText.slice(0, 16)}{settings.headerText.length > 16 ? "…" : ""}
+                                    </span>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* ── Generate Button ── */}
+                <div className="t2p-action">
+                    <div className="t2p-action-hint">
+                        <FiInfo /> Press <kbd>⌘ Enter</kbd> to generate · <kbd>⌘ ,</kbd> for settings
+                    </div>
+
+                    <motion.button
+                        className="t2p-btn-generate"
+                        onClick={generatePDF}
+                        disabled={isEmpty || generating || isOverLimit}
+                        whileHover={{ scale: isEmpty || generating ? 1 : 1.02 }}
+                        whileTap={{ scale: isEmpty || generating ? 1 : 0.97 }}
+                        title={isEmpty ? "Add some text first" : isOverLimit ? "Content exceeds limit" : "Generate PDF (⌘ Enter)"}
+                    >
+                        {generating ? (
+                            <span className="t2p-generating-inner">
+                                <span className="t2p-spinner" />
+                                Generating…
+                            </span>
+                        ) : (
+                            <span className="t2p-generating-inner">
+                                <FiDownload />
+                                Generate PDF
+                            </span>
+                        )}
+                        {/* Progress bar overlay */}
+                        {generating && progress > 0 && (
+                            <span
+                                className="t2p-btn-progress"
+                                style={{ width: `${progress}%` }}
+                            />
+                        )}
+                    </motion.button>
+                </div>
+
             </div>
         </motion.div>
     );
 };
 
 export default TextToPDFTool;
-

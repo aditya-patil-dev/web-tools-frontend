@@ -134,6 +134,7 @@ export default function AllToolsClient() {
         }
 
         return result;
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [tools, activeCategory, search]);
 
     // ─────────────────────────────────────────────────────────

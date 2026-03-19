@@ -131,7 +131,7 @@ const MetaTagGeneratorTool = () => {
             html += `<meta name="robots" content="${metaTags.robots}">\n`;
         }
         if (metaTags.canonical) {
-            html += `<link rel="canonical" href="${metaTags.canonical}">\n`;
+            html += `<Link rel="canonical" href="${metaTags.canonical}">\n`;
         }
 
         // Open Graph
