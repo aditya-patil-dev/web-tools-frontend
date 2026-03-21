@@ -265,4 +265,28 @@ export const toolsApi = {
     const blob = new Blob([response.data], { type: "application/pdf" });
     return { blob, fileName };
   },
+
+  unlockPdf: async (opts: {
+    file: File;
+    password: string;
+  }): Promise<{ blob: Blob; fileName: string }> => {
+    const { default: apiClient } = await import("@/lib/api/api");
+
+    const formData = new FormData();
+    formData.append("pdf", opts.file);
+    formData.append("password", opts.password);
+
+    const response = await apiClient.post("/tools/unlock-pdf", formData, {
+      responseType: "blob",
+    });
+
+    const disposition = response.headers["content-disposition"] || "";
+    const nameMatch = disposition.match(/filename="?([^";\n]+)"?/);
+    const fileName = nameMatch
+      ? nameMatch[1]
+      : opts.file.name.replace(/\.pdf$/i, "_unlocked.pdf");
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    return { blob, fileName };
+  },
 };
