@@ -7976,12 +7976,8 @@
   justify-content: center;
   gap: var(--space-3);
   padding: var(--space-12) var(--space-8);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary-light) 0%,
-    var(--bg-primary) 100%
-  );
-  border: 2px dashed var(--color-primary);
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-primary);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -7991,9 +7987,8 @@
 
 .pp-dropzone:hover,
 .pp-dropzone:focus-visible {
+  border-color: var(--color-primary);
   background: var(--color-primary-light);
-  border-style: solid;
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
 }
 
 .pp-dropzone--active {
@@ -8018,14 +8013,16 @@
 .pp-dropzone-icon {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
-  background: var(--bg-primary);
-  border: 2px solid var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  background: var(--gradient-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-2);
+  transition: transform var(--transition-base);
+}
+
+.pp-dropzone-icon:hover {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .pp-dropzone-icon svg {
