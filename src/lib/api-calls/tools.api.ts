@@ -225,4 +225,44 @@ export const toolsApi = {
     }>("/tools/speed-test", data);
     return response.data;
   },
+
+  /**
+   * Protect PDF with AES-256 encryption via server-side qpdf.
+   * Uses apiClient directly (not api helper) because we need
+   * responseType: "blob" to receive the binary PDF back.
+   */
+  protectPdf: async (opts: {
+    file: File;
+    password: string;
+    ownerPassword: string;
+    allowPrint: boolean;
+    allowCopy: boolean;
+    allowModify: boolean;
+  }): Promise<{ blob: Blob; fileName: string }> => {
+    // Import apiClient locally — it already handles FormData headers
+    // (removes Content-Type so the browser sets the multipart boundary)
+    const { default: apiClient } = await import("@/lib/api/api");
+
+    const formData = new FormData();
+    formData.append("pdf", opts.file);
+    formData.append("password", opts.password);
+    formData.append("ownerPassword", opts.ownerPassword);
+    formData.append("allowPrint", String(opts.allowPrint));
+    formData.append("allowCopy", String(opts.allowCopy));
+    formData.append("allowModify", String(opts.allowModify));
+
+    const response = await apiClient.post("/tools/protect-pdf", formData, {
+      responseType: "blob",
+    });
+
+    // Extract filename from Content-Disposition header if present
+    const disposition = response.headers["content-disposition"] || "";
+    const nameMatch = disposition.match(/filename="?([^";\n]+)"?/);
+    const fileName = nameMatch
+      ? nameMatch[1]
+      : opts.file.name.replace(/\.pdf$/i, "_protected.pdf");
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    return { blob, fileName };
+  },
 };

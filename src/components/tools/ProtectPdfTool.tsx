@@ -1,166 +1,178 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/toast/toast";
-import { PDFDocument, StandardFonts } from "pdf-lib";
-import { saveAs } from "file-saver";
 import {
-    FiUpload,
-    FiDownload,
-    FiCheckCircle,
-    FiAlertCircle,
-    FiFileText,
-    FiTrash2,
-    FiLock,
-    FiShield,
-    FiEye,
-    FiEyeOff
+    FiUpload, FiDownload, FiCheckCircle, FiAlertCircle,
+    FiFileText, FiTrash2, FiLock, FiShield, FiEye,
+    FiEyeOff, FiX, FiCheck, FiPlus, FiPrinter,
+    FiCopy, FiEdit,
 } from "react-icons/fi";
+import { toolsApi } from "@/lib/api-calls/tools.api";
 
+/* ─────────────────────────────────────────
+   Types
+───────────────────────────────────────── */
 interface PasswordStrength {
-    score: number;
+    score: number;      // 0–7
     label: string;
     color: string;
+    tips: string[];
 }
 
+interface Permissions {
+    allowPrint: boolean;
+    allowCopy: boolean;
+    allowModify: boolean;
+}
+
+/* ─────────────────────────────────────────
+   Helpers
+───────────────────────────────────────── */
+const fmtSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const getPasswordStrength = (pwd: string): PasswordStrength => {
+    if (!pwd) return { score: 0, label: "", color: "var(--color-slate-300)", tips: [] };
+
+    let score = 0;
+    const tips: string[] = [];
+
+    if (pwd.length >= 8) score += 1; else tips.push("Use at least 8 characters");
+    if (pwd.length >= 12) score += 1;
+    if (pwd.length >= 16) score += 1;
+    if (/[a-z]/.test(pwd)) score += 1; else tips.push("Add lowercase letters");
+    if (/[A-Z]/.test(pwd)) score += 1; else tips.push("Add uppercase letters");
+    if (/[0-9]/.test(pwd)) score += 1; else tips.push("Add numbers");
+    if (/[^a-zA-Z0-9]/.test(pwd)) score += 1; else tips.push("Add symbols (!@#$%)");
+
+    if (score <= 2) return { score, label: "Weak", color: "#ef4444", tips };
+    if (score <= 4) return { score, label: "Fair", color: "#f59e0b", tips };
+    if (score <= 5) return { score, label: "Good", color: "#3b82f6", tips };
+    return { score, label: "Strong", color: "#10b981", tips };
+};
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
 const ProtectPdfTool = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [ownerPassword, setOwnerPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
     const [protecting, setProtecting] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [permissions, setPermissions] = useState<Permissions>({
+        allowPrint: true,
+        allowCopy: false,
+        allowModify: false,
+    });
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Handle file selection
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const strength = getPasswordStrength(password);
+    const passwordsMatch = password && confirmPassword && password === confirmPassword;
+    const passwordMismatch = !!confirmPassword && password !== confirmPassword;
+    const canProtect = !!selectedFile && !!password && password.length >= 6 && passwordsMatch && !protecting;
 
-        // Validate file type
+    /* ── File handling ── */
+    const processFile = useCallback((file: File) => {
         if (file.type !== "application/pdf") {
             toast.error("Please select a PDF file", "Invalid File");
             return;
         }
-
-        // Check file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            toast.error("PDF file must be less than 10MB", "File Too Large");
+        if (file.size > 20 * 1024 * 1024) {
+            toast.error("PDF must be less than 20 MB", "File Too Large");
             return;
         }
-
         setSelectedFile(file);
         setPassword("");
         setConfirmPassword("");
+        setOwnerPassword("");
         setError(null);
+        setSuccess(false);
+        toast.success(`"${file.name}" loaded`, "PDF Ready");
+    }, []);
 
-        toast.success(`PDF loaded: ${file.name}`, "Success");
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) processFile(file);
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    // Calculate password strength
-    const getPasswordStrength = (pwd: string): PasswordStrength => {
-        if (!pwd) {
-            return { score: 0, label: "", color: "#94a3b8" };
-        }
-
-        let score = 0;
-
-        // Length
-        if (pwd.length >= 8) score += 1;
-        if (pwd.length >= 12) score += 1;
-        if (pwd.length >= 16) score += 1;
-
-        // Character variety
-        if (/[a-z]/.test(pwd)) score += 1;
-        if (/[A-Z]/.test(pwd)) score += 1;
-        if (/[0-9]/.test(pwd)) score += 1;
-        if (/[^a-zA-Z0-9]/.test(pwd)) score += 1;
-
-        if (score <= 2) {
-            return { score, label: "Weak", color: "#ef4444" };
-        } else if (score <= 4) {
-            return { score, label: "Medium", color: "#f59e0b" };
-        } else {
-            return { score, label: "Strong", color: "#10b981" };
-        }
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) processFile(file);
     };
 
-    const passwordStrength = getPasswordStrength(password);
-
-    // Protect PDF (Note: pdf-lib has limited password support)
+    /* ── Protect PDF ── */
     const protectPdf = async () => {
-        if (!selectedFile) return;
-
-        if (!password.trim()) {
-            toast.error("Please enter a password", "Password Required");
-            setError("Password is required");
-            return;
-        }
-
-        if (password.length < 6) {
-            toast.error("Password must be at least 6 characters", "Password Too Short");
-            setError("Password must be at least 6 characters");
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            toast.error("Passwords do not match", "Password Mismatch");
-            setError("Passwords do not match");
-            return;
-        }
+        if (!canProtect || !selectedFile) return;
 
         setProtecting(true);
         setError(null);
+        setSuccess(false);
 
         try {
-            const arrayBuffer = await selectedFile.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
+            const { blob, fileName } = await toolsApi.protectPdf({
+                file: selectedFile,
+                password,
+                ownerPassword: ownerPassword || password,
+                allowPrint: permissions.allowPrint,
+                allowCopy: permissions.allowCopy,
+                allowModify: permissions.allowModify,
+            });
 
-            // Note: pdf-lib doesn't support adding password encryption natively
-            // We'll create a workaround by adding a watermark page with password info
-            // For real password protection, server-side processing or libraries like PDFtk are needed
+            // Trigger download
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
-            // Alternative: We'll use a different approach - just inform the user
-            // that browser-based encryption is limited
+            setSuccess(true);
+            toast.success(`"${fileName}" downloaded with AES-256 encryption!`, "Protected!");
 
-            toast.warning(
-                "Browser-based PDF encryption is limited. For full password protection, please use desktop software like Adobe Acrobat.",
-                "Limited Support"
-            );
-
-            // For now, we'll save the PDF as-is and inform the user
-            const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
-            const fileName = selectedFile.name.replace(".pdf", "_protected.pdf");
-            saveAs(blob, fileName);
-
-            toast.info(
-                "PDF saved. Note: Password protection requires desktop software. This is a copy of your PDF.",
-                "Info"
-            );
+            setTimeout(() => setSuccess(false), 4000);
 
         } catch (err: any) {
-            console.error("Protection error:", err);
-            setError("Failed to process PDF. Please try desktop software for password protection.");
-            toast.error("Failed to protect PDF", "Error");
+            const msg = err?.response?.data?.message
+                || err?.message
+                || "Failed to protect PDF. Please try again.";
+            setError(msg);
+            toast.error(msg, "Error");
         } finally {
             setProtecting(false);
         }
     };
 
-    // Clear/reset
+    /* ── Clear ── */
     const handleClear = () => {
         setSelectedFile(null);
         setPassword("");
         setConfirmPassword("");
+        setOwnerPassword("");
         setError(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-        toast.info("Cleared", "Reset");
+        setSuccess(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    /* ─────────────────────────────────────────
+       RENDER
+    ───────────────────────────────────────── */
     return (
         <motion.div
             className="tool-card"
@@ -168,283 +180,308 @@ const ProtectPdfTool = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Info Banner */}
-            <div className="tool-info-banner">
-                <FiCheckCircle />
-                <p>
-                    Add password protection to PDF files. Secure your PDFs with encryption to prevent unauthorized access, editing, and printing.
-                </p>
-            </div>
+            <div className="pp-root">
 
-            {/* Important Notice */}
-            <div className="protection-notice">
-                <FiAlertCircle />
-                <div className="notice-content">
-                    <strong>Important:</strong> Browser-based PDF encryption is limited due to security restrictions.
-                    For full password protection with AES-256 encryption, please use desktop software like Adobe Acrobat, PDFtk, or similar tools.
-                    This tool demonstrates the concept but cannot add real encryption in the browser.
-                </div>
-            </div>
-
-            {/* Upload Section */}
-            {!selectedFile ? (
-                <div className="protect-pdf-upload-section">
+                {/* ── Drop zone ── */}
+                <div
+                    className={`pp-dropzone${dragOver ? " pp-dropzone--active" : ""}${selectedFile ? " pp-dropzone--compact" : ""}`}
+                    onDrop={handleDrop}
+                    onDragEnter={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={e => { e.preventDefault(); setDragOver(false); }}
+                    onDragOver={e => e.preventDefault()}
+                    onClick={() => !selectedFile && fileInputRef.current?.click()}
+                    role={selectedFile ? undefined : "button"}
+                    tabIndex={selectedFile ? undefined : 0}
+                    onKeyDown={e => !selectedFile && e.key === "Enter" && fileInputRef.current?.click()}
+                >
                     <input
                         ref={fileInputRef}
                         type="file"
                         accept="application/pdf"
                         onChange={handleFileSelect}
-                        className="file-input-hidden"
-                        id="protectPdfInput"
+                        className="pp-file-input"
                     />
-                    <label htmlFor="protectPdfInput" className="protect-pdf-upload-area">
-                        <FiUpload className="upload-icon" />
-                        <h3>Click to upload PDF</h3>
-                        <p>or drag and drop</p>
-                        <small>PDF files to protect • Maximum 10MB</small>
-                    </label>
+
+                    {!selectedFile ? (
+                        <>
+                            <motion.div
+                                className="pp-dropzone-icon"
+                                animate={{ y: dragOver ? -6 : 0 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                            >
+                                {dragOver ? <FiPlus /> : <FiUpload />}
+                            </motion.div>
+                            <div className="pp-dropzone-text">
+                                <p className="pp-dropzone-cta">{dragOver ? "Drop PDF here!" : "Click or drag a PDF file here"}</p>
+                                <p className="pp-dropzone-hint">Max 20 MB · AES-256 encryption</p>
+                            </div>
+                        </>
+                    ) : (
+                        /* Compact file info row */
+                        <div className="pp-file-row">
+                            <div className="pp-file-icon">
+                                <FiFileText />
+                                <span className="pp-file-pdf-lbl">PDF</span>
+                            </div>
+                            <div className="pp-file-info">
+                                <p className="pp-file-name" title={selectedFile.name}>{selectedFile.name}</p>
+                                <p className="pp-file-meta">{fmtSize(selectedFile.size)}</p>
+                            </div>
+                            <div className={`pp-file-status${success ? " pp-file-status--ok" : ""}`}>
+                                {success
+                                    ? <><FiCheckCircle /> Protected!</>
+                                    : <><FiShield /> Ready to protect</>}
+                            </div>
+                            <button type="button" className="pp-btn-remove" onClick={handleClear} title="Remove file">
+                                <FiTrash2 />
+                            </button>
+                        </div>
+                    )}
                 </div>
-            ) : (
-                <div className="protect-pdf-file-section">
-                    <div className="file-info-card">
-                        <div className="file-icon">
-                            <FiFileText />
-                        </div>
-                        <div className="file-details">
-                            <div className="file-name">{selectedFile.name}</div>
-                            <div className="file-meta">
-                                <span>{(selectedFile.size / 1024).toFixed(2)} KB</span>
-                                <span>•</span>
-                                <span className="protection-status unprotected">
-                                    <FiShield /> Ready to Protect
-                                </span>
-                            </div>
-                        </div>
-                        <button className="btn-remove-file" onClick={handleClear}>
-                            <FiTrash2 />
-                        </button>
-                    </div>
 
-                    {/* Password Input */}
-                    <div className="password-protection-section">
-                        <div className="password-input-group">
-                            <label htmlFor="newPassword">Set Password</label>
-                            <div className="password-input-wrapper">
-                                <input
-                                    id="newPassword"
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter password (min. 6 characters)"
-                                    className="password-input"
-                                    autoComplete="new-password"
-                                />
-                                <button
-                                    className="btn-toggle-password"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    type="button"
-                                >
-                                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                                </button>
-                            </div>
-
-                            {/* Password Strength Indicator */}
-                            {password && (
-                                <div className="password-strength">
-                                    <div className="strength-bar-container">
-                                        <div
-                                            className="strength-bar"
-                                            style={{
-                                                width: `${(passwordStrength.score / 7) * 100}%`,
-                                                backgroundColor: passwordStrength.color
-                                            }}
-                                        />
-                                    </div>
-                                    <span
-                                        className="strength-label"
-                                        style={{ color: passwordStrength.color }}
+                {/* ── Password fields — only shown when file selected ── */}
+                <AnimatePresence>
+                    {selectedFile && (
+                        <motion.div
+                            className="pp-form"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25 }}
+                        >
+                            {/* Password */}
+                            <div className="pp-field">
+                                <label className="pp-label" htmlFor="pp-password">
+                                    <FiLock /> User Password
+                                    <span className="pp-label-hint">Required to open the PDF</span>
+                                </label>
+                                <div className={`pp-input-wrap${passwordMismatch || (password && password.length < 6) ? " pp-input-wrap--err" : ""}`}>
+                                    <input
+                                        id="pp-password"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        placeholder="Enter password (min. 6 characters)"
+                                        className="pp-input"
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="pp-eye-btn"
+                                        onClick={() => setShowPassword(v => !v)}
+                                        tabIndex={-1}
                                     >
-                                        {passwordStrength.label}
-                                    </span>
+                                        {showPassword ? <FiEyeOff /> : <FiEye />}
+                                    </button>
                                 </div>
-                            )}
 
-                            <small className="password-hint">
-                                Use a mix of uppercase, lowercase, numbers, and symbols for stronger security
-                            </small>
-                        </div>
-
-                        <div className="password-input-group">
-                            <label htmlFor="confirmPassword">Confirm Password</label>
-                            <div className="password-input-wrapper">
-                                <input
-                                    id="confirmPassword"
-                                    type={showPassword ? "text" : "password"}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Re-enter password"
-                                    className="password-input"
-                                    autoComplete="new-password"
-                                />
-                                {confirmPassword && password === confirmPassword && (
-                                    <div className="password-match-icon">
-                                        <FiCheckCircle />
+                                {/* Strength meter */}
+                                {password && (
+                                    <div className="pp-strength">
+                                        <div className="pp-strength-track">
+                                            <motion.div
+                                                className="pp-strength-fill"
+                                                style={{ background: strength.color }}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${(strength.score / 7) * 100}%` }}
+                                                transition={{ duration: 0.35 }}
+                                            />
+                                        </div>
+                                        <span className="pp-strength-label" style={{ color: strength.color }}>
+                                            {strength.label}
+                                        </span>
                                     </div>
+                                )}
+
+                                {/* Tips */}
+                                {password && strength.tips.length > 0 && (
+                                    <p className="pp-strength-tip">{strength.tips[0]}</p>
                                 )}
                             </div>
 
-                            {confirmPassword && password !== confirmPassword && (
-                                <small className="password-error">
-                                    Passwords do not match
-                                </small>
-                            )}
-                        </div>
-                    </div>
+                            {/* Confirm password */}
+                            <div className="pp-field">
+                                <label className="pp-label" htmlFor="pp-confirm">
+                                    <FiLock /> Confirm Password
+                                </label>
+                                <div className={`pp-input-wrap${passwordMismatch ? " pp-input-wrap--err" : passwordsMatch ? " pp-input-wrap--ok" : ""}`}>
+                                    <input
+                                        id="pp-confirm"
+                                        type={showPassword ? "text" : "password"}
+                                        value={confirmPassword}
+                                        onChange={e => setConfirmPassword(e.target.value)}
+                                        placeholder="Re-enter password"
+                                        className="pp-input"
+                                        autoComplete="new-password"
+                                    />
+                                    {passwordsMatch && (
+                                        <span className="pp-input-check"><FiCheck /></span>
+                                    )}
+                                    {passwordMismatch && (
+                                        <span className="pp-input-x"><FiX /></span>
+                                    )}
+                                </div>
+                                {passwordMismatch && (
+                                    <p className="pp-field-err">Passwords do not match</p>
+                                )}
+                            </div>
 
-                    {/* Error Message */}
-                    {error && (
-                        <motion.div
-                            className="error-message"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            <FiAlertCircle />
-                            <span>{error}</span>
+                            {/* Permissions */}
+                            <div className="pp-permissions">
+                                <p className="pp-permissions-title"><FiShield /> Document Permissions</p>
+                                <div className="pp-permissions-grid">
+                                    {([
+                                        { key: "allowPrint", icon: <FiPrinter />, label: "Allow Printing", desc: "Users can print the PDF" },
+                                        { key: "allowCopy", icon: <FiCopy />, label: "Allow Copying", desc: "Users can copy text" },
+                                        { key: "allowModify", icon: <FiEdit />, label: "Allow Editing", desc: "Users can modify content" },
+                                    ] as { key: keyof Permissions; icon: React.ReactNode; label: string; desc: string }[]).map(p => (
+                                        <label key={p.key} className={`pp-perm-card${permissions[p.key] ? " pp-perm-card--on" : ""}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={permissions[p.key]}
+                                                onChange={e => setPermissions(prev => ({ ...prev, [p.key]: e.target.checked }))}
+                                                className="pp-perm-checkbox"
+                                            />
+                                            <div className="pp-perm-icon">{p.icon}</div>
+                                            <div className="pp-perm-text">
+                                                <span className="pp-perm-label">{p.label}</span>
+                                                <span className="pp-perm-desc">{p.desc}</span>
+                                            </div>
+                                            <div className={`pp-perm-toggle${permissions[p.key] ? " pp-perm-toggle--on" : ""}`}>
+                                                {permissions[p.key] ? <FiCheck /> : <FiX />}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Advanced — owner password */}
+                            <div className="pp-advanced">
+                                <button
+                                    type="button"
+                                    className="pp-advanced-toggle"
+                                    onClick={() => setShowAdvanced(v => !v)}
+                                >
+                                    <span>{showAdvanced ? "▾" : "▸"} Advanced Options</span>
+                                    <span className="pp-advanced-hint">Owner password, permissions override</span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {showAdvanced && (
+                                        <motion.div
+                                            className="pp-advanced-body"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <div className="pp-field">
+                                                <label className="pp-label" htmlFor="pp-owner">
+                                                    <FiShield /> Owner Password
+                                                    <span className="pp-label-hint">
+                                                        Allows changing permissions (defaults to user password)
+                                                    </span>
+                                                </label>
+                                                <div className="pp-input-wrap">
+                                                    <input
+                                                        id="pp-owner"
+                                                        type={showPassword ? "text" : "password"}
+                                                        value={ownerPassword}
+                                                        onChange={e => setOwnerPassword(e.target.value)}
+                                                        placeholder="Leave blank to use same as user password"
+                                                        className="pp-input"
+                                                        autoComplete="new-password"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="pp-advanced-note">
+                                                <FiAlertCircle />
+                                                <span>The owner password lets PDF editors override restrictions.
+                                                    Use a different, stronger password than the user password for maximum security.</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Error */}
+                            <AnimatePresence>
+                                {error && (
+                                    <motion.div
+                                        className="pp-error"
+                                        initial={{ opacity: 0, y: -8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -8 }}
+                                    >
+                                        <FiAlertCircle /><span>{error}</span>
+                                        <button type="button" onClick={() => setError(null)}><FiX /></button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Protect button */}
+                            <motion.button
+                                type="button"
+                                className={`pp-btn-protect${success ? " pp-btn-protect--done" : ""}`}
+                                onClick={protectPdf}
+                                disabled={!canProtect}
+                                whileHover={{ scale: canProtect ? 1.01 : 1 }}
+                                whileTap={{ scale: canProtect ? 0.97 : 1 }}
+                            >
+                                {protecting ? (
+                                    <>
+                                        <motion.span
+                                            animate={{ rotate: 360 }}
+                                            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                            style={{ display: "flex" }}
+                                        >
+                                            <FiShield />
+                                        </motion.span>
+                                        Encrypting PDF…
+                                    </>
+                                ) : success ? (
+                                    <><FiCheckCircle /> Protected & Downloaded!</>
+                                ) : (
+                                    <><FiDownload /> Protect & Download PDF</>
+                                )}
+                            </motion.button>
+
+                            {/* Encryption info badge */}
+                            <div className="pp-encrypt-badge">
+                                <FiLock />
+                                <span>AES-256 encryption · Processed securely on server · File deleted after download</span>
+                            </div>
+
                         </motion.div>
                     )}
+                </AnimatePresence>
 
-                    {/* Protect Button */}
-                    {!protecting && (
-                        <motion.button
-                            className="btn-protect-pdf"
-                            onClick={protectPdf}
-                            disabled={!password || !confirmPassword || password !== confirmPassword}
-                            whileHover={{
-                                scale: (!password || !confirmPassword || password !== confirmPassword) ? 1 : 1.02
-                            }}
-                            whileTap={{
-                                scale: (!password || !confirmPassword || password !== confirmPassword) ? 1 : 0.98
-                            }}
-                        >
-                            <FiLock />
-                            Protect & Download PDF
-                        </motion.button>
-                    )}
+                {/* ── Feature cards (empty state) ── */}
+                {!selectedFile && (
+                    <motion.div
+                        className="pp-features"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        {[
+                            { icon: <FiLock />, title: "AES-256 Encryption", desc: "Industry-standard encryption — the same used by banks and governments." },
+                            { icon: <FiShield />, title: "Permission Controls", desc: "Restrict printing, copying text, and editing independently." },
+                            { icon: <FiCheckCircle />, title: "100% Private", desc: "PDF is deleted from our server immediately after download." },
+                            { icon: <FiDownload />, title: "Instant Download", desc: "Encrypted PDF downloads directly to your device." },
+                        ].map(f => (
+                            <div key={f.title} className="pp-feature-card">
+                                <div className="pp-feature-icon">{f.icon}</div>
+                                <div>
+                                    <p className="pp-feature-title">{f.title}</p>
+                                    <p className="pp-feature-desc">{f.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
 
-                    {protecting && (
-                        <div className="protecting-status">
-                            <FiShield className="shield-icon spinning" />
-                            <span>Protecting PDF...</span>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* How It Works */}
-            {!selectedFile && (
-                <div className="how-it-works">
-                    <h3>How It Works (Desktop Software Recommended)</h3>
-                    <div className="steps-grid">
-                        <div className="step-item">
-                            <div className="step-number">1</div>
-                            <h4>Upload PDF</h4>
-                            <p>Select the PDF to protect</p>
-                        </div>
-                        <div className="step-item">
-                            <div className="step-number">2</div>
-                            <h4>Set Password</h4>
-                            <p>Create a strong password</p>
-                        </div>
-                        <div className="step-item">
-                            <div className="step-number">3</div>
-                            <h4>Confirm</h4>
-                            <p>Re-enter password to verify</p>
-                        </div>
-                        <div className="step-item">
-                            <div className="step-number">4</div>
-                            <h4>Download</h4>
-                            <p>Use desktop software for encryption</p>
-                        </div>
-                    </div>
-
-                    <div className="protection-info">
-                        <h4>Browser Limitations:</h4>
-                        <ul className="info-list limitations">
-                            <li>
-                                <FiAlertCircle className="warning-icon" />
-                                <span>Web browsers cannot add real PDF encryption for security reasons</span>
-                            </li>
-                            <li>
-                                <FiAlertCircle className="warning-icon" />
-                                <span>JavaScript-based encryption is not secure for sensitive documents</span>
-                            </li>
-                            <li>
-                                <FiAlertCircle className="warning-icon" />
-                                <span>Industry-standard AES-256 encryption requires desktop software</span>
-                            </li>
-                        </ul>
-
-                        <h4>Recommended Desktop Software:</h4>
-                        <ul className="info-list">
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span><strong>Adobe Acrobat Pro</strong> - Industry standard with AES-256 encryption</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span><strong>PDFtk</strong> - Free command-line tool for PDF encryption</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span><strong>PDF-XChange Editor</strong> - Affordable alternative with encryption</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span><strong>LibreOffice</strong> - Free office suite with PDF password protection</span>
-                            </li>
-                        </ul>
-
-                        <h4>What Desktop Software Can Do:</h4>
-                        <ul className="info-list">
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span>Add user password (required to open PDF)</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span>Add owner password (restrict editing/printing)</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span>Use AES-256 encryption (industry standard)</span>
-                            </li>
-                            <li>
-                                <FiCheckCircle className="check-icon" />
-                                <span>Set specific permissions (copy, print, modify)</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="feature-highlights">
-                        <div className="feature-item">
-                            <FiLock />
-                            <span>Password strength checker</span>
-                        </div>
-                        <div className="feature-item">
-                            <FiShield />
-                            <span>Security recommendations</span>
-                        </div>
-                        <div className="feature-item">
-                            <FiCheckCircle />
-                            <span>100% private processing</span>
-                        </div>
-                        <div className="feature-item">
-                            <FiAlertCircle />
-                            <span>Desktop software recommended</span>
-                        </div>
-                    </div>
-                </div>
-            )}
+            </div>
         </motion.div>
     );
 };
