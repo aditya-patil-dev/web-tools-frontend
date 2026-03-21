@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import DynamicIcon from "@/components/ui/DynamicIcon";
@@ -74,14 +75,14 @@ export default function FinalCTA({ config = DEFAULT_CONFIG }: FinalCTAProps) {
                     transition={{ duration: 0.5, delay: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
                 >
                     <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.2 }}>
-                        <Link href={config.primaryCta.href} className="cta-primary">
+                        <AppLink href={config.primaryCta.href} className="cta-primary">
                             {config.primaryCta.text}
-                        </Link>
+                        </AppLink>
                     </motion.div>
                     {/* <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.2 }}>
-                        <Link href={config.secondaryCta.href} className="cta-secondary">
+                        <AppLink href={config.secondaryCta.href} className="cta-secondary">
                             {config.secondaryCta.text}
-                        </Link>
+                        </AppLink>
                     </motion.div> */}
                 </motion.div>
 

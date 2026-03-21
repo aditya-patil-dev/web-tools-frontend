@@ -1,8 +1,5 @@
-// src/components/public/Footer/Footer.tsx
-// Accepts an optional `config` prop from the page editor.
-// Falls back to the static footer.config.ts when no config is passed.
-
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { FOOTER_SECTIONS } from "./footer.config";
 import type { FooterData } from "@/features/online-store/sections/footer";
 
@@ -36,7 +33,7 @@ export default function Footer({ config }: FooterProps) {
                             <ul>
                                 {section.links.map((link) => (
                                     <li key={link.href}>
-                                        <Link href={link.href}>{link.label}</Link>
+                                        <AppLink href={link.href}>{link.label}</AppLink>
                                     </li>
                                 ))}
                             </ul>

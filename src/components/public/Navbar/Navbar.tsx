@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { useState } from "react";
 import { TOP_NAV_ITEMS, TOOLS_NAV_ITEMS } from "./nav.config";
 import type { NavbarData } from "@/features/online-store/sections/navbar";
@@ -30,23 +31,23 @@ export default function Navbar({ config }: NavbarProps) {
                 <div className="nav-top-row">
                     <div className="nav-container">
                         {/* Logo */}
-                        <Link href="/" className="nav-logo">
+                        <AppLink href="/" className="nav-logo">
                             {logoText}<span>{logoHighlight}</span>
-                        </Link>
+                        </AppLink>
 
                         {/* Desktop Top Navigation */}
                         <div className="nav-top-links desktop-only">
                             {topNavItems.map((item) => (
-                                <Link key={item.label} href={item.href} className="nav-top-link">
+                                <AppLink key={item.label} href={item.href} className="nav-top-link">
                                     {item.label}
-                                </Link>
+                                </AppLink>
                             ))}
                         </div>
 
                         {/* Desktop Actions */}
                         <div className="nav-actions desktop-only">
-                            {/* <Link href={loginHref} className="nav-link">Login</Link> */}
-                            <Link href={ctaHref} className="nav-cta">{ctaText}</Link>
+                            {/* <AppLink href={loginHref} className="nav-link">Login</AppLink> */}
+                            <AppLink href={ctaHref} className="nav-cta">{ctaText}</AppLink>
                         </div>
 
                         {/* Mobile Hamburger */}
@@ -75,24 +76,24 @@ export default function Navbar({ config }: NavbarProps) {
                                     >
                                         {hasDropdown ? (
                                             <div className="nav-item-wrapper">
-                                                <Link href={item.href!} className="nav-item-link">{item.label}</Link>
+                                                <AppLink href={item.href!} className="nav-item-link">{item.label}</AppLink>
                                                 <button className="dropdown-trigger-btn" aria-label={`Open ${item.label} menu`}>
                                                     <span className="caret" />
                                                 </button>
                                             </div>
                                         ) : (
-                                            <Link href={item.href!}>{item.label}</Link>
+                                            <AppLink href={item.href!}>{item.label}</AppLink>
                                         )}
 
                                         {hasDropdown && (
                                             <div className="dropdown-menu">
                                                 {item.children!.map((child) => (
-                                                    <Link key={child.href} href={child.href}>
+                                                    <AppLink key={child.href} href={child.href}>
                                                         {child.label}
                                                         {child.badge && (
                                                             <span className={`badge badge-${child.badge}`}>{child.badge}</span>
                                                         )}
-                                                    </Link>
+                                                    </AppLink>
                                                 ))}
                                             </div>
                                         )}
@@ -114,9 +115,9 @@ export default function Navbar({ config }: NavbarProps) {
                 <ul className="mobile-menu">
                     {topNavItems.map((item) => (
                         <li key={item.label}>
-                            <Link href={item.href} className="mobile-link" onClick={() => setMobileOpen(false)}>
+                            <AppLink href={item.href} className="mobile-link" onClick={() => setMobileOpen(false)}>
                                 {item.label}
-                            </Link>
+                            </AppLink>
                         </li>
                     ))}
                     <li className="mobile-divider">Tools</li>
@@ -128,9 +129,9 @@ export default function Navbar({ config }: NavbarProps) {
                                 {hasChildren ? (
                                     <>
                                         <div className="mobile-link-wrapper">
-                                            <Link href={item.href!} className="mobile-link" onClick={() => setMobileOpen(false)}>
+                                            <AppLink href={item.href!} className="mobile-link" onClick={() => setMobileOpen(false)}>
                                                 {item.label}
-                                            </Link>
+                                            </AppLink>
                                             <button
                                                 className="mobile-dropdown-btn"
                                                 onClick={() => setMobileSub(isOpen ? null : index)}
@@ -141,19 +142,19 @@ export default function Navbar({ config }: NavbarProps) {
                                         </div>
                                         <div className={`mobile-submenu ${isOpen ? "open" : ""}`}>
                                             {item.children!.map((child) => (
-                                                <Link key={child.href} href={child.href} onClick={() => setMobileOpen(false)}>
+                                                <AppLink key={child.href} href={child.href} onClick={() => setMobileOpen(false)}>
                                                     {child.label}
                                                     {child.badge && (
                                                         <span className={`badge badge-${child.badge}`}>{child.badge}</span>
                                                     )}
-                                                </Link>
+                                                </AppLink>
                                             ))}
                                         </div>
                                     </>
                                 ) : (
-                                    <Link href={item.href!} className="mobile-link" onClick={() => setMobileOpen(false)}>
+                                    <AppLink href={item.href!} className="mobile-link" onClick={() => setMobileOpen(false)}>
                                         {item.label}
-                                    </Link>
+                                    </AppLink>
                                 )}
                             </li>
                         );
@@ -161,8 +162,8 @@ export default function Navbar({ config }: NavbarProps) {
                 </ul>
 
                 <div className="mobile-actions">
-                    {/* <Link href={loginHref} onClick={() => setMobileOpen(false)}>Login</Link> */}
-                    <Link href={ctaHref} className="nav-cta" onClick={() => setMobileOpen(false)}>{ctaText}</Link>
+                    {/* <AppLink href={loginHref} onClick={() => setMobileOpen(false)}>Login</AppLink> */}
+                    <AppLink href={ctaHref} className="nav-cta" onClick={() => setMobileOpen(false)}>{ctaText}</AppLink>
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { motion } from "framer-motion";
 import { POPULAR_TOOLS } from "./tools.config";
 import DynamicIcon from "@/components/ui/DynamicIcon";
@@ -70,7 +71,7 @@ export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsPr
                             variants={itemVariants}
                             whileHover={{ y: -8, transition: { duration: 0.2 } }}
                         >
-                            <Link href={tool.href}>
+                            <AppLink href={tool.href}>
                                 <motion.div
                                     className="tool-icon"
                                     whileHover={{ scale: 1.1, rotate: 5, transition: { duration: 0.3 } }}
@@ -87,7 +88,7 @@ export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsPr
                                     </h3>
                                     <p>{tool.description}</p>
                                 </div>
-                            </Link>
+                            </AppLink>
                         </motion.div>
                     ))}
                 </motion.div>
@@ -97,9 +98,9 @@ export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsPr
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                    <Link href={config.footer.href} className="tools-view-all">
+                    <AppLink href={config.footer.href} className="tools-view-all">
                         {config.footer.text}
-                    </Link>
+                    </AppLink>
                 </motion.div>
             </div>
         </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
@@ -84,11 +85,11 @@ function ToolCard({ tool, index }: { tool: ToolItem; index: number }) {
 
             <StarRating rating={tool.rating} />
 
-            <Link href={tool.tool_url} className="tool-cta-wrapper">
+            <AppLink href={tool.tool_url} className="tool-cta-wrapper">
                 <div className="tool-cta">
                     Try Free <AiOutlineArrowRight />
                 </div>
-            </Link>
+            </AppLink>
         </motion.div>
     );
 }

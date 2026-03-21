@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import AppLink from '@/components/common/AppLink';
 import { motion } from "framer-motion";
 import { HeroConfig, DEFAULT_HERO_CONFIG } from "./hero.config";
-import DynamicIcon from "@/components/ui/DynamicIcon"; // ← ADD
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 const badgeVariants = {
     hidden: { opacity: 0, y: -20, scale: 0.8 },
@@ -68,14 +69,14 @@ export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
                 <motion.div className="hero-actions"
                     initial="hidden" animate="visible" variants={ctaContainerVariants}>
                     <motion.div variants={ctaVariants}>
-                        <Link href={config.primaryCta.href} className="hero-cta-primary">
+                        <AppLink href={config.primaryCta.href} className="hero-cta-primary">
                             {config.primaryCta.text}
-                        </Link>
+                        </AppLink>
                     </motion.div>
                     {/* <motion.div variants={ctaVariants}>
-                        <Link href={config.secondaryCta.href} className="hero-cta-secondary">
+                        <AppLink href={config.secondaryCta.href} className="hero-cta-secondary">
                             {config.secondaryCta.text}
-                        </Link>
+                        </AppLink>
                     </motion.div> */}
                 </motion.div>
 
