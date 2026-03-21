@@ -23,14 +23,16 @@ export default function ToolsPage() {
         globalFilter: "",
     });
 
-    // ✅ FIXED: Use useToolsList hook (not useTools)
-    const { tools, isLoading, error, pagination, refetch } = useToolsList({
+    // FIXED: Use useToolsList hook (not useTools)
+    const apiParams = useMemo(() => ({
         page: query.pageIndex + 1,
         limit: query.pageSize,
         search: query.globalFilter,
         sort_by: (query.sorting[0]?.id as any) || "created_at",
-        sort_order: query.sorting[0]?.desc ? "desc" : "asc",
-    });
+        sort_order: (query.sorting[0]?.desc ? "desc" : "asc") as "asc" | "desc",
+    }), [query]);
+
+    const { tools, isLoading, error, pagination, refetch } = useToolsList(apiParams);
 
     // ── Bulk operations hook ──
     const { bulkDelete, isProcessing } = useBulkOperations();

@@ -28,14 +28,14 @@ interface UseToolsListReturn {
   setParams: (params: Partial<ToolListParams>) => void;
 }
 
-export function useToolsList(initialParams?: ToolListParams): UseToolsListReturn {
+export function useToolsList(
+  params: ToolListParams = { page: 1, limit: 20 },
+): UseToolsListReturn {
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [pagination, setPagination] = useState<UseToolsListReturn["pagination"]>(null);
-  const [params, setParamsState] = useState<ToolListParams>(
-    initialParams || { page: 1, limit: 20 }
-  );
+  const [pagination, setPagination] =
+    useState<UseToolsListReturn["pagination"]>(null);
 
   const fetchTools = useCallback(async () => {
     setIsLoading(true);
@@ -51,15 +51,11 @@ export function useToolsList(initialParams?: ToolListParams): UseToolsListReturn
     } finally {
       setIsLoading(false);
     }
-  }, [params]);
+  }, [JSON.stringify(params)]);
 
   useEffect(() => {
     fetchTools();
   }, [fetchTools]);
-
-  const setParams = useCallback((newParams: Partial<ToolListParams>) => {
-    setParamsState((prev) => ({ ...prev, ...newParams }));
-  }, []);
 
   return {
     tools,
@@ -67,7 +63,7 @@ export function useToolsList(initialParams?: ToolListParams): UseToolsListReturn
     error,
     pagination,
     refetch: fetchTools,
-    setParams,
+    setParams: () => {},
   };
 }
 
@@ -123,7 +119,11 @@ interface UseToolMutationsReturn {
   createTool: (data: CompleteToolData) => Promise<boolean>;
   updateTool: (id: number, data: Partial<CompleteToolData>) => Promise<boolean>;
   deleteTool: (id: number, permanent?: boolean) => Promise<boolean>;
-  duplicateTool: (id: number, newSlug: string, newTitle?: string) => Promise<boolean>;
+  duplicateTool: (
+    id: number,
+    newSlug: string,
+    newTitle?: string,
+  ) => Promise<boolean>;
   restoreTool: (id: number) => Promise<boolean>;
   isSubmitting: boolean;
 }
@@ -153,7 +153,7 @@ export function useToolMutations(): UseToolMutationsReturn {
 
   const updateTool = async (
     id: number,
-    data: Partial<CompleteToolData>
+    data: Partial<CompleteToolData>,
   ): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({ message: "Updating tool..." });
@@ -172,7 +172,10 @@ export function useToolMutations(): UseToolMutationsReturn {
     }
   };
 
-  const deleteTool = async (id: number, permanent = false): Promise<boolean> => {
+  const deleteTool = async (
+    id: number,
+    permanent = false,
+  ): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({
       message: permanent ? "Permanently deleting tool..." : "Deleting tool...",
@@ -197,7 +200,7 @@ export function useToolMutations(): UseToolMutationsReturn {
   const duplicateTool = async (
     id: number,
     newSlug: string,
-    newTitle?: string
+    newTitle?: string,
   ): Promise<boolean> => {
     setIsSubmitting(true);
     loading.show({ message: "Duplicating tool..." });
@@ -266,7 +269,7 @@ export function useBulkOperations(): UseBulkOperationsReturn {
       const response = await toolsApi.bulkUpdate(payload);
       toast.success(
         response.message ||
-        `${response.data.updated_count} tools updated successfully!`
+          `${response.data.updated_count} tools updated successfully!`,
       );
       return true;
     } catch (err) {
@@ -291,7 +294,7 @@ export function useBulkOperations(): UseBulkOperationsReturn {
       const response = await toolsApi.bulkDelete(payload);
       toast.success(
         response.message ||
-        `${response.data.deleted_count} tools deleted successfully!`
+          `${response.data.deleted_count} tools deleted successfully!`,
       );
       return true;
     } catch (err) {

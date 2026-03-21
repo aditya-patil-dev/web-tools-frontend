@@ -24,13 +24,15 @@ export default function ToolPagesPage() {
     });
 
     // ── Fetch ──
-    const { toolPages, isLoading, error, pagination, refetch, setParams } = useToolPagesList({
+    const apiParams = useMemo(() => ({
         page: query.pageIndex + 1,
         limit: query.pageSize,
         search: query.globalFilter,
         sort_by: query.sorting[0]?.id || "created_at",
-        sort_order: query.sorting[0]?.desc ? "desc" : "asc",
-    });
+        sort_order: (query.sorting[0]?.desc ? "desc" : "asc") as "desc" | "asc",
+    }), [query]);
+
+    const { toolPages, isLoading, error, pagination, refetch } = useToolPagesList(apiParams);
 
     // ── Selected pages for bulk actions ──
     const [selectedPages, setSelectedPages] = useState<ToolPageWithTool[]>([]);
@@ -92,7 +94,7 @@ export default function ToolPagesPage() {
                 cell: ({ row }) => <code className="dtCode">{row.original.tool_slug}</code>,
                 enableSorting: true,
             },
-            
+
             {
                 id: "status",
                 accessorKey: "status",
