@@ -9943,3 +9943,720 @@ a {
     align-self: center;
   }
 }
+
+/* ============================================================
+   TOOL SECTIONS — UPSELL / DISCOVERY
+   ============================================================ */
+
+/* ─────────────────────────────────────────
+   Keyframes
+───────────────────────────────────────── */
+@keyframes ts-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes ts-card-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ts-num-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─────────────────────────────────────────
+   Root wrapper (when using ToolPageSections)
+───────────────────────────────────────── */
+.ts-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding-top: var(--space-8);
+}
+
+/* ─────────────────────────────────────────
+   Section — fade up on scroll
+───────────────────────────────────────── */
+.ts-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ts-section--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────
+   Section header
+───────────────────────────────────────── */
+.ts-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.ts-section__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ts-section__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ts-section__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ts-section__title {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ts-section__sub {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.ts-section__action {
+  flex-shrink: 0;
+}
+
+/* View all link */
+.ts-viewall {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-full);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.ts-viewall:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.ts-viewall svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* ─────────────────────────────────────────
+   Skeleton shimmer
+───────────────────────────────────────── */
+.ts-skeleton {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--color-slate-100) 0%,
+    var(--color-slate-200) 50%,
+    var(--color-slate-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: ts-shimmer 1.5s ease-in-out infinite;
+  height: 60px;
+}
+
+.ts-skeleton--tall {
+  height: 160px;
+}
+
+/* ══════════════════════════════════════════
+   RELATED TOOLS — R4: Dark Hero + Grid
+══════════════════════════════════════════ */
+.ts-grid--cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* ── Base card (light tiles) ── */
+.tc {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  animation: ts-card-pop 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.tc:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ── Hero card — full width, dark bg ── */
+.tc--hero {
+  grid-column: 1 / -1;
+  gap: var(--space-5);
+  background: linear-gradient(
+    135deg,
+    var(--color-slate-900) 0%,
+    var(--color-slate-800) 100%
+  );
+  border-color: var(--color-slate-700);
+  padding: var(--space-5) var(--space-6);
+}
+
+.tc--hero:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
+  transform: translateY(-3px);
+}
+
+/* Hero badge */
+.tc__hero-badge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+}
+
+/* Hero text overrides */
+.tc--hero .tc__name {
+  font-size: var(--font-xl);
+  color: var(--color-slate-50);
+}
+
+.tc--hero:hover .tc__name {
+  color: var(--color-primary);
+}
+
+.tc--hero .tc__desc {
+  font-size: var(--font-sm);
+  color: var(--color-slate-400);
+  line-height: 1.5;
+  margin-top: var(--space-1);
+  display: block;
+}
+
+.tc--hero .tc__cat {
+  color: var(--color-slate-500);
+}
+.tc--hero .tc__uses {
+  color: var(--color-slate-500);
+}
+
+.tc--hero .tc__arrow {
+  color: var(--color-primary);
+  margin-left: auto;
+}
+
+/* Card body */
+.tc__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tc__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tc__name {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast);
+}
+
+.tc:not(.tc--hero):hover .tc__name {
+  color: var(--color-primary);
+}
+
+.tc__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tc__desc {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: none; /* only shown on hero */
+}
+
+.tc__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: 2px;
+}
+
+.tc__cat {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tc__uses {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.tc__uses svg {
+  width: 10px;
+  height: 10px;
+}
+
+.tc__arrow {
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.tc:not(.tc--hero):hover .tc__arrow {
+  color: var(--color-primary);
+  transform: translateX(3px);
+}
+
+.tc__arrow svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ══════════════════════════════════════════
+   POPULAR TOOLS — P3: Stat Cards
+══════════════════════════════════════════ */
+.ts-grid--popular {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.pc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+  overflow: hidden;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  animation: ts-card-pop 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.pc:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 24px rgba(255, 107, 53, 0.12);
+  transform: translateY(-3px);
+}
+
+/* Animated top bar on hover */
+.pc::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.pc:hover::after {
+  transform: scaleX(1);
+}
+
+/* Rank — top left */
+.pc__rank {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-3);
+}
+
+.pc__medal {
+  font-size: 16px;
+  line-height: 1;
+  display: block;
+}
+
+.pc__num {
+  font-size: var(--font-xs);
+  font-weight: 800;
+  color: var(--text-tertiary);
+  font-family: "SF Mono", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+}
+
+/* Body */
+.pc__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.pc__name {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.3;
+  margin-bottom: var(--space-3);
+  transition: color var(--transition-fast);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc:hover .pc__name {
+  color: var(--color-primary);
+}
+
+/* Usage number — the hero of P3 */
+.pc__bar-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+}
+
+.pc__count {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  font-family: "SF Mono", "Fira Code", monospace;
+  line-height: 1;
+  animation: ts-num-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.pc__bar {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  display: block;
+}
+
+/* Badge — top right */
+.pc__badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════
+   PEOPLE ALSO USED — A3: Compact Chain
+══════════════════════════════════════════ */
+.ts-grid--compact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tc--compact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+  animation: ts-card-pop 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.tc--compact:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-primary);
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.08);
+}
+
+/* Left chain accent bar */
+.tc--compact::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--border-secondary);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+
+.tc--compact:hover::before {
+  background: var(--color-primary);
+}
+
+/* Body */
+.tc--compact .tc__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tc--compact .tc__name {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast);
+}
+
+.tc--compact:hover .tc__name {
+  color: var(--color-primary);
+}
+
+.tc--compact .tc__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tc--compact .tc__cat {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.tc--compact .tc__uses {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.tc--compact .tc__uses svg {
+  width: 10px;
+  height: 10px;
+}
+
+.tc--compact .tc__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tc--compact .tc__arrow {
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.tc--compact:hover .tc__arrow {
+  color: var(--color-primary);
+  transform: translateX(3px);
+}
+
+.tc--compact .tc__arrow svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ─────────────────────────────────────────
+   Responsive
+───────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .ts-grid--popular {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .ts-root {
+    gap: var(--space-8);
+  }
+
+  .ts-grid--cards {
+    grid-template-columns: 1fr;
+  }
+
+  .tc--hero {
+    grid-column: 1;
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .ts-grid--popular {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ts-section__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .ts-grid--popular {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pc__count {
+    font-size: var(--font-xl);
+  }
+
+  .tc--hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .tc--hero .tc__arrow {
+    display: none;
+  }
+  .tc__hero-badge {
+    top: var(--space-2);
+    right: var(--space-3);
+  }
+}

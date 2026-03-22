@@ -7,7 +7,7 @@ import { SlArrowRight } from "react-icons/sl";
 import { FiCheckCircle } from "react-icons/fi";
 import { ToolPageDTO } from "@/lib/api-calls/tools.api";
 import { trackPageView } from "@/lib/api-calls/tracking";
-import { ToolPageSections } from "@/components/upsell/ToolSections";
+import { RelatedTools, PopularTools, PeopleAlsoUsed } from "@/components/upsell/ToolSections";
 
 // ── Tool components ───────────────────────────────────────────────────────────
 import JpgToPngTool from "@/components/tools/JpgToPngTool";
@@ -148,6 +148,10 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     {tool.tool_type === "protect-pdf" && <ProtectPdfTool />}
                 </motion.div>
 
+                <div className="my-4">
+                    <PeopleAlsoUsed toolSlug={tool.slug} toolId={tool.id} />
+                </div>
+
                 {/* Long Content Section - Only if exists */}
                 {tool.long_content && (
                     <motion.section
@@ -189,10 +193,10 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                                     <div className="feature-icon">
                                         <FiCheckCircle style={{ color: '#ffffff' }} />
                                     </div>
-                                    
+
                                     {/* Only show title if it exists */}
                                     {feature.title && <h3>{feature.title}</h3>}
-                                    
+
                                     {/* Only show description if it exists */}
                                     {feature.description && <p>{feature.description}</p>}
                                 </motion.div>
@@ -200,6 +204,10 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                         </motion.div>
                     </motion.section>
                 )}
+
+                <div className="my-4">
+                    <RelatedTools toolSlug={tool.slug} toolId={tool.id} />
+                </div>
 
                 {/* FAQ - Only if array has items */}
                 {tool.faqs && tool.faqs.length > 0 && (
@@ -219,7 +227,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                                 <motion.div key={index} className="faq-item" variants={itemVariants}>
                                     {/* Only show question if it exists */}
                                     {faq.question && <h3>{faq.question}</h3>}
-                                    
+
                                     {/* Only show answer if it exists */}
                                     {faq.answer && <p>{faq.answer}</p>}
                                 </motion.div>
@@ -229,10 +237,9 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                 )}
 
                 {/* ── Upsell / Discovery Sections */}
-                <ToolPageSections
-                    toolSlug={slug}
-                    toolId={tool.id}
-                />
+                <div className="my-4">
+                    <PopularTools currentToolId={tool.id} />
+                </div>
 
             </div>{/* /.tool-container */}
 
