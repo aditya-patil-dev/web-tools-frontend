@@ -471,16 +471,45 @@ const BackgroundRemoverTool = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
                                 >
-                                    <div className="bgr-model-progress-label">
-                                        <span>Downloading AI model (cached after first use)…</span>
-                                        <span className="bgr-model-pct">{modelProgress}%</span>
-                                    </div>
-                                    <div className="bgr-model-progress-track">
+                                    <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
                                         <motion.div
-                                            className="bgr-model-progress-fill"
-                                            animate={{ width: `${modelProgress}%` }}
-                                            transition={{ duration: 0.3 }}
-                                        />
+                                            className="bgr-model-icon"
+                                            animate={{ y: [0, -5, 0] }}
+                                            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                        >
+                                            ✨
+                                        </motion.div>
+                                        <div style={{ flex: 1 }}>
+                                            <motion.p
+                                                key={Math.floor(modelProgress / 20)}
+                                                className="bgr-model-title"
+                                                initial={{ opacity: 0, y: 4 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                            >
+                                                {[
+                                                    "Loading the scissors...",
+                                                    "Waking up the AI...",
+                                                    "Teaching pixels to disappear...",
+                                                    "Fetching the background-slayer...",
+                                                    "Almost there, promise...",
+                                                ][Math.min(4, Math.floor(modelProgress / 20))]}
+                                            </motion.p>
+                                            <p className="bgr-model-sub">
+                                                {modelProgress < 50
+                                                    ? "Hold tight — this only downloads once, then it's instant"
+                                                    : "Almost done! Future images will start immediately"}
+                                            </p>
+                                            <div className="bgr-model-progress-track">
+                                                <motion.div
+                                                    className="bgr-model-progress-fill"
+                                                    animate={{ width: `${modelProgress}%` }}
+                                                    transition={{ duration: 0.4 }}
+                                                />
+                                            </div>
+                                            <p className="bgr-model-hint">
+                                                Cached in your browser after this · {modelProgress}% complete
+                                            </p>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
