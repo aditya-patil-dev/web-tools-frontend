@@ -7483,3 +7483,402 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   BACKGROUND REMOVER
+   ============================================================ */
+
+/* ── Custom colour picker row ── */
+.bgr-custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  overflow: hidden;
+}
+
+.bgr-custom-color-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.bgr-color-input {
+  width: 44px;
+  height: 32px;
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: 2px;
+  background: var(--bg-primary);
+}
+
+.bgr-color-hex {
+  font-size: var(--font-xs);
+  font-family: "SF Mono", monospace;
+  color: var(--text-tertiary);
+}
+
+/* ── Model download progress ── */
+.bgr-model-progress {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-light);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bgr-model-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+
+.bgr-model-pct {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-family: "SF Mono", monospace;
+}
+
+.bgr-model-progress-track {
+  height: 5px;
+  background: var(--bg-secondary);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bgr-model-progress-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 99px;
+}
+
+/* ── "Processing: filename" label ── */
+.bgr-processing-label {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Thumbnail nav (multiple results) ── */
+.bgr-thumb-nav {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.bgr-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-primary);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  transition: border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.bgr-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bgr-thumb--active {
+  border-color: var(--color-primary);
+}
+.bgr-thumb:hover {
+  border-color: var(--color-primary);
+}
+
+/* ── Before/After drag slider ── */
+.bgr-slider-wrap {
+  position: relative;
+  width: 100%;
+  max-height: 520px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: ew-resize;
+  user-select: none;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-primary);
+}
+
+/* After image — full width, sits beneath */
+.bgr-slider-after {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bgr-slider-after img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Checkered pattern for transparent bg */
+.bgr-checkered,
+.bgr-slider-after.bgr-checkered {
+  background-image:
+    linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  background-color: #ffffff;
+}
+
+/* Before image — clips to left of handle */
+.bgr-slider-before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bgr-slider-before img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Force same width as the parent .bgr-slider-wrap */
+  min-width: calc(100vw); /* overridden by JS via sliderRef */
+}
+
+/* Fix: before image should match full container width not clip width */
+.bgr-slider-wrap .bgr-slider-before img {
+  width: auto;
+  min-width: unset;
+}
+
+/* Better approach — use a pseudo full-width wrapper */
+.bgr-slider-before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.bgr-slider-before img {
+  position: relative;
+  display: block;
+  height: 100%;
+  width: auto;
+  max-height: 520px;
+  object-fit: contain;
+}
+
+/* Labels */
+.bgr-slider-label {
+  position: absolute;
+  top: var(--space-2);
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.bgr-slider-label--left {
+  left: var(--space-3);
+}
+.bgr-slider-label--right {
+  right: var(--space-3);
+}
+
+/* Drag handle */
+.bgr-slider-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bgr-slider-line {
+  width: 2px;
+  flex: 1;
+  background: white;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.bgr-slider-knob {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+}
+
+/* Drag hint text */
+.bgr-drag-hint {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+/* ── File info row ── */
+.bgr-file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+}
+
+.bgr-file-name {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "SF Mono", monospace;
+}
+
+.bgr-file-sizes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-xs);
+  font-family: "SF Mono", monospace;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.bgr-arrow {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Per-image download button */
+.bgr-btn-single-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bgr-btn-single-dl:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.bgr-btn-single-dl svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── "Process new images" reset link ── */
+.bgr-btn-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  background: none;
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.bgr-btn-reset:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.bgr-btn-reset svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .bgr-slider-wrap {
+    max-height: 320px;
+  }
+  .bgr-slider-after img,
+  .bgr-slider-before img {
+    max-height: 320px;
+  }
+  .bgr-thumb {
+    width: 48px;
+    height: 48px;
+  }
+  .bgr-file-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

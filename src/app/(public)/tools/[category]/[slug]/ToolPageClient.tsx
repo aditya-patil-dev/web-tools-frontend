@@ -3,46 +3,65 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { SlArrowRight } from "react-icons/sl";
 import { FiCheckCircle } from "react-icons/fi";
 import { ToolPageDTO } from "@/lib/api-calls/tools.api";
 import { trackPageView } from "@/lib/api-calls/tracking";
 import { RelatedTools, PopularTools, PeopleAlsoUsed } from "@/components/upsell/ToolSections";
 
-// ── Tool components ───────────────────────────────────────────────────────────
-import JpgToPngTool from "@/components/tools/JpgToPngTool";
-import PngToJpgTool from "@/components/tools/PngToJpgTool";
-import WebpToJpgPngTool from "@/components/tools/WebpToJpgPngTool";
-import ImageToBase64Tool from "@/components/tools/ImageToBase64Tool";
-import ImageCompressorTool from "@/components/tools/ImageCompressorTool";
-import ImageResizerTool from "@/components/tools/ImageResizerTool";
-import BackgroundRemoverTool from "@/components/tools/BackgroundRemoverTool";
-import UniversalImageConverterTool from "@/components/tools/UniversalImageConverterTool";
-import FaviconGeneratorTool from "@/components/tools/FaviconGeneratorTool";
-import QRCodeGeneratorTool from "@/components/tools/QRCodeGeneratorTool";
-import ColorPickerTool from "@/components/tools/ColorPickerTool";
-import CaseConTool from "@/components/tools/CaseConTool";
-import JSONFormatterTool from "@/components/tools/JSONFormatterTool";
-import TextToPdfTool from "@/components/tools/TextToPdfTool";
-import MetaTagGeneratorTool from "@/components/tools/MetaTagGeneratorTool";
-import OpenGraphCheckerTool from "@/components/tools/OpenGraphCheckerTool";
-import RobotsTxtGeneratorTool from "@/components/tools/RobotsTxtGeneratorTool";
-import RedirectCheckerTool from "@/components/tools/RedirectCheckerTool";
-import SitemapGeneratorTool from "@/components/tools/SitemapGeneratorTool";
-import WebsiteSpeedTestTool from "@/components/tools/WebsiteSpeedTestTool";
-import HashGeneratorTool from "@/components/tools/HashGeneratorTool";
-import Base64Tool from "@/components/tools/Base64Tool";
-import JwtDecoderTool from "@/components/tools/JwtDecoderTool";
-import HeicConverterTool from "@/components/tools/HeicConverterTool";
-import JsonToCsvTool from "@/components/tools/JsonToCsvTool";
-import UnixTimestampTool from "@/components/tools/UnixTimestampTool";
-import PdfToJpgTool from "@/components/tools/PdfToJpgTool";
-import JpgToPdfTool from "@/components/tools/JpgToPdfTool";
-import MergePdfTool from "@/components/tools/MergePdfTool";
-import PdfToWordTool from "@/components/tools/PdfToWordTool";
-import PdfToExcelTool from "@/components/tools/PdfToExcelTool";
-import UnlockPdfTool from "@/components/tools/UnlockPdfTool";
-import ProtectPdfTool from "@/components/tools/ProtectPdfTool";
+// ── Lazy-loaded tool components ───────────────────────────────────────────────
+// Each tool is only downloaded when the user actually visits that tool's page.
+// ssr: false because all tools rely on browser APIs (canvas, File, URL.createObjectURL)
+const JpgToPngTool = dynamic(() => import("@/components/tools/JpgToPngTool"), { ssr: false, loading: () => <ToolLoader /> });
+const PngToJpgTool = dynamic(() => import("@/components/tools/PngToJpgTool"), { ssr: false, loading: () => <ToolLoader /> });
+const WebpToJpgPngTool = dynamic(() => import("@/components/tools/WebpToJpgPngTool"), { ssr: false, loading: () => <ToolLoader /> });
+const ImageToBase64Tool = dynamic(() => import("@/components/tools/ImageToBase64Tool"), { ssr: false, loading: () => <ToolLoader /> });
+const ImageCompressorTool = dynamic(() => import("@/components/tools/ImageCompressorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const ImageResizerTool = dynamic(() => import("@/components/tools/ImageResizerTool"), { ssr: false, loading: () => <ToolLoader /> });
+const BackgroundRemoverTool = dynamic(() => import("@/components/tools/BackgroundRemoverTool"), { ssr: false, loading: () => <ToolLoader /> });
+const UniversalImageConverterTool = dynamic(() => import("@/components/tools/UniversalImageConverterTool"), { ssr: false, loading: () => <ToolLoader /> });
+const FaviconGeneratorTool = dynamic(() => import("@/components/tools/FaviconGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const QRCodeGeneratorTool = dynamic(() => import("@/components/tools/QRCodeGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const ColorPickerTool = dynamic(() => import("@/components/tools/ColorPickerTool"), { ssr: false, loading: () => <ToolLoader /> });
+const CaseConTool = dynamic(() => import("@/components/tools/CaseConTool"), { ssr: false, loading: () => <ToolLoader /> });
+const JSONFormatterTool = dynamic(() => import("@/components/tools/JSONFormatterTool"), { ssr: false, loading: () => <ToolLoader /> });
+const TextToPdfTool = dynamic(() => import("@/components/tools/TextToPdfTool"), { ssr: false, loading: () => <ToolLoader /> });
+const MetaTagGeneratorTool = dynamic(() => import("@/components/tools/MetaTagGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const OpenGraphCheckerTool = dynamic(() => import("@/components/tools/OpenGraphCheckerTool"), { ssr: false, loading: () => <ToolLoader /> });
+const RobotsTxtGeneratorTool = dynamic(() => import("@/components/tools/RobotsTxtGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const RedirectCheckerTool = dynamic(() => import("@/components/tools/RedirectCheckerTool"), { ssr: false, loading: () => <ToolLoader /> });
+const SitemapGeneratorTool = dynamic(() => import("@/components/tools/SitemapGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const WebsiteSpeedTestTool = dynamic(() => import("@/components/tools/WebsiteSpeedTestTool"), { ssr: false, loading: () => <ToolLoader /> });
+const HashGeneratorTool = dynamic(() => import("@/components/tools/HashGeneratorTool"), { ssr: false, loading: () => <ToolLoader /> });
+const Base64Tool = dynamic(() => import("@/components/tools/Base64Tool"), { ssr: false, loading: () => <ToolLoader /> });
+const JwtDecoderTool = dynamic(() => import("@/components/tools/JwtDecoderTool"), { ssr: false, loading: () => <ToolLoader /> });
+const HeicConverterTool = dynamic(() => import("@/components/tools/HeicConverterTool"), { ssr: false, loading: () => <ToolLoader /> });
+const JsonToCsvTool = dynamic(() => import("@/components/tools/JsonToCsvTool"), { ssr: false, loading: () => <ToolLoader /> });
+const UnixTimestampTool = dynamic(() => import("@/components/tools/UnixTimestampTool"), { ssr: false, loading: () => <ToolLoader /> });
+const PdfToJpgTool = dynamic(() => import("@/components/tools/PdfToJpgTool"), { ssr: false, loading: () => <ToolLoader /> });
+const JpgToPdfTool = dynamic(() => import("@/components/tools/JpgToPdfTool"), { ssr: false, loading: () => <ToolLoader /> });
+const MergePdfTool = dynamic(() => import("@/components/tools/MergePdfTool"), { ssr: false, loading: () => <ToolLoader /> });
+const PdfToWordTool = dynamic(() => import("@/components/tools/PdfToWordTool"), { ssr: false, loading: () => <ToolLoader /> });
+const PdfToExcelTool = dynamic(() => import("@/components/tools/PdfToExcelTool"), { ssr: false, loading: () => <ToolLoader /> });
+const UnlockPdfTool = dynamic(() => import("@/components/tools/UnlockPdfTool"), { ssr: false, loading: () => <ToolLoader /> });
+const ProtectPdfTool = dynamic(() => import("@/components/tools/ProtectPdfTool"), { ssr: false, loading: () => <ToolLoader /> });
+
+// ── Skeleton shown while a tool chunk is downloading ─────────────────────────
+function ToolLoader() {
+    return (
+        <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 200,
+            color: "#888",
+            fontSize: 14,
+        }}>
+            Loading tool…
+        </div>
+    );
+}
 
 // ── Animation variants ────────────────────────────────────────────────────────
 const fadeInUp = {
@@ -103,11 +122,10 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     variants={fadeInUp}
                 >
                     <h1>{tool.page_title || tool.title}</h1>
-                    {/* Only show intro if it exists */}
                     {tool.page_intro && <p>{tool.page_intro}</p>}
                 </motion.header>
 
-                {/* Tool Runtime */}
+                {/* Tool Runtime — only the matching chunk is downloaded */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -152,7 +170,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     <PeopleAlsoUsed toolSlug={tool.slug} toolId={tool.id} />
                 </div>
 
-                {/* Long Content Section - Only if exists */}
+                {/* Long Content Section */}
                 {tool.long_content && (
                     <motion.section
                         className="tool-content-section"
@@ -168,7 +186,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     </motion.section>
                 )}
 
-                {/* Features - Only if array has items */}
+                {/* Features */}
                 {tool.features && tool.features.length > 0 && (
                     <motion.section
                         className="tool-features-section"
@@ -178,7 +196,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                         variants={fadeInUp}
                     >
                         <div className="section-header">
-                            <h2>Features & Benefits</h2>
+                            <h2>Features &amp; Benefits</h2>
                             <p>Everything you need to know about this tool</p>
                         </div>
                         <motion.div className="features-grid" variants={staggerContainer}>
@@ -189,15 +207,10 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                                     variants={itemVariants}
                                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
                                 >
-                                    {/* Universal icon for all features */}
                                     <div className="feature-icon">
-                                        <FiCheckCircle style={{ color: '#ffffff' }} />
+                                        <FiCheckCircle style={{ color: "#ffffff" }} />
                                     </div>
-
-                                    {/* Only show title if it exists */}
                                     {feature.title && <h3>{feature.title}</h3>}
-
-                                    {/* Only show description if it exists */}
                                     {feature.description && <p>{feature.description}</p>}
                                 </motion.div>
                             ))}
@@ -209,7 +222,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     <RelatedTools toolSlug={tool.slug} toolId={tool.id} />
                 </div>
 
-                {/* FAQ - Only if array has items */}
+                {/* FAQ */}
                 {tool.faqs && tool.faqs.length > 0 && (
                     <motion.section
                         className="tool-faq-section"
@@ -225,10 +238,7 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                         <motion.div className="faq-list" variants={staggerContainer}>
                             {tool.faqs.map((faq, index) => (
                                 <motion.div key={index} className="faq-item" variants={itemVariants}>
-                                    {/* Only show question if it exists */}
                                     {faq.question && <h3>{faq.question}</h3>}
-
-                                    {/* Only show answer if it exists */}
                                     {faq.answer && <p>{faq.answer}</p>}
                                 </motion.div>
                             ))}
@@ -236,13 +246,11 @@ export default function ToolPageClient({ tool, category, slug }: ToolPageClientP
                     </motion.section>
                 )}
 
-                {/* ── Upsell / Discovery Sections */}
                 <div className="my-4">
                     <PopularTools currentToolId={tool.id} />
                 </div>
 
-            </div>{/* /.tool-container */}
-
+            </div>
         </div>
     );
 }

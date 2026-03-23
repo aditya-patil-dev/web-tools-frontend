@@ -1,432 +1,307 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as tf from "@tensorflow/tfjs";
-import * as bodyPix from "@tensorflow-models/body-pix";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { toast } from "@/components/toast/toast";
 import {
-    FiUpload,
-    FiDownload,
-    FiX,
-    FiCheckCircle,
-    FiTrash2,
-    FiScissors,
-    FiCpu,
-    FiLayers,
-    FiInfo
+    FiUpload, FiDownload, FiX, FiCheckCircle,
+    FiTrash2, FiScissors, FiLayers, FiInfo,
+    FiAlertCircle,
 } from "react-icons/fi";
 
-const MAX_FILES = 10; // Reduced for performance
+/* ─────────────────────────────────────────
+   Constants
+───────────────────────────────────────── */
+const MAX_FILES = 10;
+const MAX_SIZE_MB = 10;
+const MAX_SIZE = MAX_SIZE_MB * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
-type BackgroundColor = "transparent" | "white" | "black" | "blur";
+type BackgroundColor = "transparent" | "white" | "black" | "custom";
 
 interface ProcessedResult {
     original: File;
-    processed: File;
+    processed: Blob;
     originalPreview: string;
     processedPreview: string;
     fileName: string;
+    originalSize: number;
+    processedSize: number;
 }
 
+/* ─────────────────────────────────────────
+   Helpers
+───────────────────────────────────────── */
+const fmtBytes = (bytes: number) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+};
+
+/* Apply a solid background colour to a transparent PNG blob */
+async function applyBackground(
+    pngBlob: Blob,
+    color: BackgroundColor,
+    customHex: string,
+): Promise<Blob> {
+    if (color === "transparent") return pngBlob;
+
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(pngBlob);
+        const img = new Image();
+
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d")!;
+
+            // Fill background
+            if (color === "white") ctx.fillStyle = "#ffffff";
+            else if (color === "black") ctx.fillStyle = "#000000";
+            else ctx.fillStyle = customHex || "#ffffff";
+
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw image on top
+            ctx.drawImage(img, 0, 0);
+
+            canvas.toBlob(blob => {
+                if (blob) resolve(blob);
+                else reject(new Error("Failed to apply background"));
+            }, "image/jpeg", 0.95);
+        };
+
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image load failed")); };
+        img.src = url;
+    });
+}
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
 const BackgroundRemoverTool = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [processedData, setProcessedData] = useState<ProcessedResult[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const [modelLoading, setModelLoading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const [processProgress, setProcessProgress] = useState(0);
+    const [currentFile, setCurrentFile] = useState("");
+    const [modelProgress, setModelProgress] = useState<number | null>(null);
     const [backgroundColor, setBackgroundColor] = useState<BackgroundColor>("transparent");
-    const [edgeBlur, setEdgeBlur] = useState<number>(3);
+    const [customColor, setCustomColor] = useState("#ffffff");
+    const [sliderIdx, setSliderIdx] = useState(0); // for before/after
+    const [sliderPos, setSliderPos] = useState(50); // 0-100
+    const sliderRef = useRef<HTMLDivElement>(null);
 
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const modelRef = useRef<bodyPix.BodyPix | null>(null);
-
-    /* -----------------------------
-       Load TensorFlow Model
-    ------------------------------ */
-
-    useEffect(() => {
-        loadModel();
-
-        return () => {
-            // Cleanup
-            if (modelRef.current) {
-                modelRef.current = null;
-            }
-        };
-    }, []);
-
-    const loadModel = async () => {
-        if (modelRef.current) return; // Already loaded
-
-        setModelLoading(true);
-        toast.info("Loading AI model... This may take a moment.", "Initializing");
-
-        try {
-            // Set backend to WebGL for better performance
-            await tf.setBackend('webgl');
-            await tf.ready();
-
-            // Load BodyPix model with optimized settings
-            const net = await bodyPix.load({
-                architecture: 'MobileNetV1',
-                outputStride: 16,
-                multiplier: 0.75,
-                quantBytes: 2
-            });
-
-            modelRef.current = net;
-            toast.success("AI model loaded successfully!", "Ready");
-        } catch (error) {
-            console.error("Error loading model:", error);
-            toast.error(
-                "Failed to load AI model. Please refresh and try again.",
-                "Model Error"
-            );
-        } finally {
-            setModelLoading(false);
-        }
-    };
-
-    /* -----------------------------
-       Helper Functions
-    ------------------------------ */
-
-    const formatBytes = (bytes: number): string => {
-        if (bytes === 0) return "0 Bytes";
-        const k = 1024;
-        const dm = 2;
-        const sizes = ["Bytes", "KB", "MB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-    };
-
-    /* -----------------------------
-       File Handling
-    ------------------------------ */
-
-    const processFiles = (files: File[]) => {
+    /* ── File handling ── */
+    const processFiles = useCallback((files: File[]) => {
         if (files.length > MAX_FILES) {
-            toast.error(
-                `You can only process up to ${MAX_FILES} images at once for optimal performance.`,
-                "Upload Limit Exceeded"
-            );
+            toast.error(`Maximum ${MAX_FILES} images at once`, "Too many files");
             return;
         }
 
-        const validFiles = files.filter((file) =>
-            ACCEPTED_TYPES.includes(file.type)
-        );
+        const valid = files.filter(f => ACCEPTED_TYPES.includes(f.type) && f.size <= MAX_SIZE);
+        const toolarge = files.filter(f => f.size > MAX_SIZE);
+        const invalid = files.filter(f => !ACCEPTED_TYPES.includes(f.type));
 
-        if (validFiles.length !== files.length) {
-            toast.warning(
-                "Only image files (PNG, JPG, WebP) are allowed.",
-                "Invalid File Type"
-            );
-        }
+        if (toolarge.length) toast.warning(`${toolarge.length} file(s) exceeded ${MAX_SIZE_MB} MB limit`, "Skipped");
+        if (invalid.length) toast.warning(`${invalid.length} file(s) are not supported image types`, "Skipped");
+        if (!valid.length) return;
 
-        if (!validFiles.length) return;
+        // Revoke old object URLs
+        previews.forEach(p => URL.revokeObjectURL(p));
 
-        setSelectedFiles(validFiles);
-        setPreviews(validFiles.map(file => URL.createObjectURL(file)));
+        setSelectedFiles(valid);
+        setPreviews(valid.map(f => URL.createObjectURL(f)));
         setProcessedData([]);
         setProcessProgress(0);
-
-        toast.success(
-            `${validFiles.length} file(s) uploaded successfully!`,
-            "Upload Complete"
-        );
-    };
+        setCurrentFile("");
+        toast.success(`${valid.length} image${valid.length > 1 ? "s" : ""} ready`, "Uploaded");
+    }, [previews]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files ? Array.from(e.target.files) : [];
-        processFiles(files);
+        const files = Array.from(e.target.files || []);
+        if (files.length) processFiles(files);
+        e.target.value = "";
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault(); e.stopPropagation();
+        setDragActive(e.type === "dragenter" || e.type === "dragover");
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault(); e.stopPropagation();
+        setDragActive(false);
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length) processFiles(files);
     };
 
     const removeFile = (index: number) => {
+        URL.revokeObjectURL(previews[index]);
         const newFiles = selectedFiles.filter((_, i) => i !== index);
         const newPreviews = previews.filter((_, i) => i !== index);
-
         setSelectedFiles(newFiles);
         setPreviews(newPreviews);
-
-        if (newFiles.length === 0) {
-            resetForm();
-        } else {
-            toast.info("File removed");
-        }
+        if (!newFiles.length) resetForm();
     };
 
-    /* -----------------------------
-       Drag & Drop
-    ------------------------------ */
+    /* ── Core removal — @imgly/background-removal ── */
+    const removeSingle = async (file: File): Promise<ProcessedResult> => {
+        // Dynamic import so the heavy ONNX library only loads when needed
+        const { removeBackground } = await import("@imgly/background-removal");
 
-    const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // Convert File → Blob URL (library accepts URL | Blob | ImageData)
+        const inputUrl = URL.createObjectURL(file);
 
-        if (e.type === "dragenter" || e.type === "dragover") {
-            setDragActive(true);
-        } else if (e.type === "dragleave") {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-
-        const files = e.dataTransfer.files
-            ? Array.from(e.dataTransfer.files)
-            : [];
-
-        processFiles(files);
-    };
-
-    /* -----------------------------
-       Background Removal Logic
-    ------------------------------ */
-
-    const removeBackground = async (file: File): Promise<ProcessedResult> => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (!modelRef.current) {
-                    throw new Error("Model not loaded");
-                }
-
-                const img = new Image();
-                const url = URL.createObjectURL(file);
-
-                img.onload = async () => {
-                    URL.revokeObjectURL(url);
-
-                    try {
-                        // Get segmentation
-                        const segmentation = await modelRef.current!.segmentPerson(img, {
-                            flipHorizontal: false,
-                            internalResolution: 'medium',
-                            segmentationThreshold: 0.7,
-                        });
-
-                        // Create canvas
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-
-                        if (!ctx) {
-                            throw new Error("Failed to get canvas context");
-                        }
-
-                        // Draw original image
-                        ctx.drawImage(img, 0, 0);
-
-                        // Get image data
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const pixels = imageData.data;
-
-                        // Process based on background color choice
-                        if (backgroundColor === "transparent") {
-                            // Make background transparent
-                            for (let i = 0; i < segmentation.data.length; i++) {
-                                if (segmentation.data[i] === 0) {
-                                    pixels[i * 4 + 3] = 0; // Set alpha to 0
-                                } else if (edgeBlur > 0) {
-                                    // Smooth edges
-                                    const alpha = pixels[i * 4 + 3];
-                                    pixels[i * 4 + 3] = Math.min(255, alpha + edgeBlur * 10);
-                                }
-                            }
-                        } else {
-                            // Replace with solid color or blur
-                            let bgR = 255, bgG = 255, bgB = 255;
-
-                            if (backgroundColor === "black") {
-                                bgR = bgG = bgB = 0;
-                            } else if (backgroundColor === "white") {
-                                bgR = bgG = bgB = 255;
-                            }
-
-                            for (let i = 0; i < segmentation.data.length; i++) {
-                                if (segmentation.data[i] === 0) {
-                                    if (backgroundColor === "blur") {
-                                        // Apply blur effect (simplified)
-                                        pixels[i * 4] = pixels[i * 4] * 0.5;
-                                        pixels[i * 4 + 1] = pixels[i * 4 + 1] * 0.5;
-                                        pixels[i * 4 + 2] = pixels[i * 4 + 2] * 0.5;
-                                    } else {
-                                        pixels[i * 4] = bgR;
-                                        pixels[i * 4 + 1] = bgG;
-                                        pixels[i * 4 + 2] = bgB;
-                                    }
-                                }
-                            }
-                        }
-
-                        // Put processed image data back
-                        ctx.putImageData(imageData, 0, 0);
-
-                        // Convert to blob
-                        canvas.toBlob((blob) => {
-                            if (!blob) {
-                                reject(new Error("Failed to create blob"));
-                                return;
-                            }
-
-                            const fileName = file.name.replace(/\.[^/.]+$/, '') +
-                                (backgroundColor === "transparent" ? '.png' : '.jpg');
-                            const processedFile = new File(
-                                [blob],
-                                fileName,
-                                { type: backgroundColor === "transparent" ? 'image/png' : 'image/jpeg' }
-                            );
-
-                            resolve({
-                                original: file,
-                                processed: processedFile,
-                                originalPreview: URL.createObjectURL(file),
-                                processedPreview: URL.createObjectURL(blob),
-                                fileName: fileName
-                            });
-                        }, backgroundColor === "transparent" ? 'image/png' : 'image/jpeg', 0.95);
-
-                    } catch (error) {
-                        reject(error);
+        let pngBlob: Blob;
+        try {
+            pngBlob = await removeBackground(inputUrl, {
+                // ISNet-FP16: best quality, works on ANY subject (not just people)
+                model: "isnet_fp16",
+                output: { format: "image/png", quality: 1 },
+                // Progress callback — fires for model download (first time) and inference
+                progress: (key, current, total) => {
+                    if (key.includes("fetch") || key.includes("download")) {
+                        // Model is downloading (~30 MB, cached after first use)
+                        const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+                        setModelProgress(pct < 100 ? pct : null);
                     }
-                };
+                },
+            });
+        } finally {
+            URL.revokeObjectURL(inputUrl);
+        }
 
-                img.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    reject(new Error("Failed to load image"));
-                };
+        // Apply background colour if not transparent
+        const finalBlob = await applyBackground(pngBlob, backgroundColor, customColor);
 
-                img.src = url;
-            } catch (error) {
-                reject(error);
-            }
-        });
+        const ext = backgroundColor === "transparent" ? "png" : "jpg";
+        const fileName = file.name.replace(/\.[^/.]+$/, `_no_bg.${ext}`);
+
+        return {
+            original: file,
+            processed: finalBlob,
+            originalPreview: URL.createObjectURL(file),
+            processedPreview: URL.createObjectURL(finalBlob),
+            fileName,
+            originalSize: file.size,
+            processedSize: finalBlob.size,
+        };
     };
 
+    /* ── Handle batch removal ── */
     const handleRemoveBackground = async () => {
         if (!selectedFiles.length) {
-            toast.error("Please upload images first.", "No Files Selected");
-            return;
-        }
-
-        if (!modelRef.current) {
-            toast.error("AI model is still loading. Please wait.", "Model Not Ready");
+            toast.error("Please upload at least one image", "No files");
             return;
         }
 
         setLoading(true);
         setProcessProgress(0);
-        toast.info("Removing backgrounds with AI...", "Processing");
+        setProcessedData([]);
+        setModelProgress(null);
 
-        try {
-            const results: ProcessedResult[] = [];
-            const totalFiles = selectedFiles.length;
-            let failedCount = 0;
+        const results: ProcessedResult[] = [];
+        let failed = 0;
 
-            for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
+        for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            setCurrentFile(file.name);
 
-                try {
-                    const result = await removeBackground(file);
-                    results.push(result);
-                } catch (err) {
-                    console.error(`Failed to process ${file.name}:`, err);
-                    failedCount++;
-                }
-
-                // Update progress
-                const progress = Math.round(((i + 1) / totalFiles) * 100);
-                setProcessProgress(progress);
+            try {
+                const result = await removeSingle(file);
+                results.push(result);
+            } catch (err: any) {
+                console.error(`Failed: ${file.name}`, err);
+                failed++;
+                toast.error(`Failed to process "${file.name}"`, "Error");
             }
 
-            if (results.length > 0) {
-                setProcessedData(results);
-                toast.success(
-                    `${results.length} background(s) removed successfully!`,
-                    "Processing Complete"
-                );
-
-                if (failedCount > 0) {
-                    toast.warning(
-                        `${failedCount} file(s) failed to process.`,
-                        "Partial Success"
-                    );
-                }
-            } else {
-                toast.error(
-                    "All processing failed. Please try again.",
-                    "Processing Failed"
-                );
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error(
-                "Error processing images. Please try again.",
-                "Processing Failed"
-            );
-        } finally {
-            setLoading(false);
-            setProcessProgress(0);
+            setProcessProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
         }
+
+        setModelProgress(null);
+        setCurrentFile("");
+
+        if (results.length) {
+            setProcessedData(results);
+            setSliderIdx(0);
+            setSliderPos(50);
+            toast.success(
+                `${results.length} image${results.length > 1 ? "s" : ""} processed!${failed ? ` (${failed} failed)` : ""}`,
+                "Done"
+            );
+        } else {
+            toast.error("All images failed to process", "Error");
+        }
+
+        setLoading(false);
+        setProcessProgress(0);
     };
 
-    /* -----------------------------
-       Download
-    ------------------------------ */
+    /* ── Download ── */
+    const downloadSingle = (item: ProcessedResult) => {
+        saveAs(item.processed, item.fileName);
+        toast.success(`Downloaded "${item.fileName}"`, "Done");
+    };
 
-    const handleDownload = async () => {
+    const downloadAll = async () => {
         if (!processedData.length) return;
 
-        try {
-            if (processedData.length === 1) {
-                saveAs(processedData[0].processed, processedData[0].fileName);
-                toast.success("Download started!", "Success");
-            } else {
-                toast.info("Creating ZIP file...", "Please wait");
-
-                const zip = new JSZip();
-                processedData.forEach(item => {
-                    zip.file(item.fileName, item.processed);
-                });
-                const blob = await zip.generateAsync({ type: "blob" });
-                saveAs(blob, "background-removed.zip");
-
-                toast.success("ZIP download started!", "Success");
-            }
-
-            setTimeout(() => {
-                resetForm();
-                toast.info("Ready for new processing!", "Reset Complete");
-            }, 1500);
-        } catch (err) {
-            console.error(err);
-            toast.error("Error downloading files.", "Download Failed");
+        if (processedData.length === 1) {
+            downloadSingle(processedData[0]);
+            return;
         }
+
+        toast.info("Creating ZIP…", "Please wait");
+        const zip = new JSZip();
+        processedData.forEach(item => zip.file(item.fileName, item.processed));
+        const blob = await zip.generateAsync({ type: "blob" });
+        saveAs(blob, "background-removed.zip");
+        toast.success("ZIP downloaded!", "Done");
     };
 
+    /* ── Before/After slider mouse handling ── */
+    const handleSliderMouseMove = useCallback((e: React.MouseEvent) => {
+        if (!sliderRef.current) return;
+        const rect = sliderRef.current.getBoundingClientRect();
+        const pos = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+        setSliderPos(pos);
+    }, []);
+
+    const handleSliderTouchMove = useCallback((e: React.TouchEvent) => {
+        if (!sliderRef.current) return;
+        const rect = sliderRef.current.getBoundingClientRect();
+        const pos = Math.max(0, Math.min(100, ((e.touches[0].clientX - rect.left) / rect.width) * 100));
+        setSliderPos(pos);
+    }, []);
+
+    /* ── Reset ── */
     const resetForm = () => {
+        previews.forEach(p => URL.revokeObjectURL(p));
+        processedData.forEach(r => {
+            URL.revokeObjectURL(r.originalPreview);
+            URL.revokeObjectURL(r.processedPreview);
+        });
         setSelectedFiles([]);
         setProcessedData([]);
         setPreviews([]);
         setProcessProgress(0);
-        const input = document.getElementById("inputBgRemove") as HTMLInputElement;
-        if (input) input.value = "";
+        setCurrentFile("");
+        setModelProgress(null);
     };
 
-    /* -----------------------------
-       UI
-    ------------------------------ */
-
+    /* ─────────────────────────────────────────
+       RENDER
+    ───────────────────────────────────────── */
     return (
         <motion.div
             className="tool-card"
@@ -434,127 +309,94 @@ const BackgroundRemoverTool = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <canvas ref={canvasRef} style={{ display: "none" }} />
-
             {/* Info Banner */}
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Remove backgrounds from images using AI-powered segmentation.
-                    Process up to {MAX_FILES} images with TensorFlow BodyPix model.
+                    Remove backgrounds from <strong>any image</strong> — people, products,
+                    animals, objects. Powered by ISNet AI model. Up to {MAX_FILES} images,
+                    max {MAX_SIZE_MB} MB each. All processing happens in your browser.
                 </p>
             </div>
-
-            {/* AI Model Status */}
-            {modelLoading && (
-                <motion.div
-                    className="ai-model-loading"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    <div className="model-loading-content">
-                        <FiCpu className="model-icon spinning" />
-                        <div>
-                            <h4>Loading AI Model...</h4>
-                            <p>Initializing TensorFlow BodyPix for background removal</p>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
 
             {/* Background Options */}
             <motion.div
                 className="bg-options-section"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.15 }}
             >
                 <label className="bg-options-label">
                     <FiLayers /> Replace Background With:
                 </label>
                 <div className="bg-options-grid">
-                    <button
-                        className={`bg-option-btn ${backgroundColor === "transparent" ? "active" : ""}`}
-                        onClick={() => setBackgroundColor("transparent")}
-                    >
-                        <div className="bg-preview transparent-bg" />
-                        <span>Transparent</span>
-                        <small>PNG format</small>
-                    </button>
-                    <button
-                        className={`bg-option-btn ${backgroundColor === "white" ? "active" : ""}`}
-                        onClick={() => setBackgroundColor("white")}
-                    >
-                        <div className="bg-preview white-bg" />
-                        <span>White</span>
-                        <small>JPG format</small>
-                    </button>
-                    <button
-                        className={`bg-option-btn ${backgroundColor === "black" ? "active" : ""}`}
-                        onClick={() => setBackgroundColor("black")}
-                    >
-                        <div className="bg-preview black-bg" />
-                        <span>Black</span>
-                        <small>JPG format</small>
-                    </button>
-                    <button
-                        className={`bg-option-btn ${backgroundColor === "blur" ? "active" : ""}`}
-                        onClick={() => setBackgroundColor("blur")}
-                    >
-                        <div className="bg-preview blur-bg" />
-                        <span>Blur</span>
-                        <small>JPG format</small>
-                    </button>
+                    {([
+                        { id: "transparent", label: "Transparent", sub: "PNG" },
+                        { id: "white", label: "White", sub: "JPG" },
+                        { id: "black", label: "Black", sub: "JPG" },
+                        { id: "custom", label: "Custom", sub: "JPG" },
+                    ] as { id: BackgroundColor; label: string; sub: string }[]).map(opt => (
+                        <button
+                            key={opt.id}
+                            type="button"
+                            className={`bg-option-btn${backgroundColor === opt.id ? " active" : ""}`}
+                            onClick={() => setBackgroundColor(opt.id)}
+                        >
+                            {opt.id === "transparent" && <div className="bg-preview transparent-bg" />}
+                            {opt.id === "white" && <div className="bg-preview white-bg" />}
+                            {opt.id === "black" && <div className="bg-preview black-bg" />}
+                            {opt.id === "custom" && (
+                                <div
+                                    className="bg-preview"
+                                    style={{ background: customColor, border: "1px solid #e2e8f0" }}
+                                />
+                            )}
+                            <span>{opt.label}</span>
+                            <small>{opt.sub}</small>
+                        </button>
+                    ))}
                 </div>
+
+                {/* Custom colour picker */}
+                <AnimatePresence>
+                    {backgroundColor === "custom" && (
+                        <motion.div
+                            className="bgr-custom-color-row"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                        >
+                            <label className="bgr-custom-color-label">Pick colour:</label>
+                            <input
+                                type="color"
+                                value={customColor}
+                                onChange={e => setCustomColor(e.target.value)}
+                                className="bgr-color-input"
+                            />
+                            <span className="bgr-color-hex">{customColor}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </motion.div>
 
-            {/* Edge Blur Slider */}
-            {backgroundColor === "transparent" && (
-                <motion.div
-                    className="edge-blur-section"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                >
-                    <label className="edge-blur-label">
-                        Edge Smoothing: {edgeBlur}
-                    </label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="10"
-                        step="1"
-                        value={edgeBlur}
-                        onChange={(e) => setEdgeBlur(Number(e.target.value))}
-                        className="edge-blur-slider"
-                    />
-                    <div className="edge-blur-hints">
-                        <span>Sharp</span>
-                        <span>Smooth</span>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* AI Info Card */}
+            {/* AI Info */}
             <motion.div
                 className="ai-info-card"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.25 }}
             >
                 <FiInfo className="ai-info-icon" />
                 <div className="ai-info-content">
                     <p>
-                        <strong>How it works:</strong> This tool uses TensorFlow.js BodyPix model
-                        to detect people/objects and intelligently remove backgrounds.
-                        All processing happens in your browser - no server uploads!
+                        Uses the <strong>ISNet AI model</strong> via ONNX WebAssembly
                     </p>
                 </div>
             </motion.div>
 
             {/* Upload Area */}
             <div
-                className={`tool-upload-area ${dragActive ? "drag-active" : ""} ${selectedFiles.length > 0 ? "has-files" : ""}`}
+                className={`tool-upload-area${dragActive ? " drag-active" : ""}${selectedFiles.length > 0 ? " has-files" : ""}`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -567,19 +409,18 @@ const BackgroundRemoverTool = () => {
                     multiple
                     onChange={handleFileChange}
                     className="tool-file-input"
-                    disabled={modelLoading}
+                    disabled={loading}
                 />
-
                 <label htmlFor="inputBgRemove" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
                     <h3>Drop images here or click to browse</h3>
                     <p>
-                        Best results with portraits & clear subjects • Up to {MAX_FILES} images
+                        PNG, JPG, WebP · Up to {MAX_FILES} images · Max {MAX_SIZE_MB} MB each
                     </p>
                 </label>
             </div>
 
-            {/* Previews */}
+            {/* File Previews */}
             <AnimatePresence>
                 {previews.length > 0 && (
                     <motion.div
@@ -591,11 +432,7 @@ const BackgroundRemoverTool = () => {
                     >
                         <div className="preview-header">
                             <h3>Selected Files ({selectedFiles.length})</h3>
-                            <button
-                                className="btn-clear-all"
-                                onClick={resetForm}
-                                title="Clear all files"
-                            >
+                            <button className="btn-clear-all" onClick={resetForm}>
                                 <FiTrash2 /> Clear All
                             </button>
                         </div>
@@ -605,60 +442,80 @@ const BackgroundRemoverTool = () => {
                                 <motion.div
                                     key={i}
                                     className="preview-item"
-                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    initial={{ opacity: 0, scale: 0.85 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{
-                                        delay: i * 0.05,
-                                        duration: 0.3
-                                    }}
+                                    exit={{ opacity: 0, scale: 0.85 }}
+                                    transition={{ delay: i * 0.05 }}
                                     layout
                                 >
                                     <img src={src} alt={`Preview ${i + 1}`} />
                                     <button
                                         className="preview-remove"
                                         onClick={() => removeFile(i)}
-                                        title="Remove file"
+                                        disabled={loading}
                                     >
                                         <FiX />
                                     </button>
-                                    <div className="preview-name">
-                                        {selectedFiles[i].name}
-                                    </div>
-                                    <div className="preview-size">
-                                        {formatBytes(selectedFiles[i].size)}
-                                    </div>
+                                    <div className="preview-name">{selectedFiles[i].name}</div>
+                                    <div className="preview-size">{fmtBytes(selectedFiles[i].size)}</div>
                                 </motion.div>
                             ))}
                         </div>
 
+                        {/* Model download progress */}
+                        <AnimatePresence>
+                            {modelProgress !== null && (
+                                <motion.div
+                                    className="bgr-model-progress"
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    <div className="bgr-model-progress-label">
+                                        <span>Downloading AI model (cached after first use)…</span>
+                                        <span className="bgr-model-pct">{modelProgress}%</span>
+                                    </div>
+                                    <div className="bgr-model-progress-track">
+                                        <motion.div
+                                            className="bgr-model-progress-fill"
+                                            animate={{ width: `${modelProgress}%` }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Current file being processed */}
+                        {loading && currentFile && (
+                            <p className="bgr-processing-label">
+                                Processing: <strong>{currentFile}</strong>
+                            </p>
+                        )}
+
                         {/* Process Button */}
                         <motion.button
+                            type="button"
                             className="btn-convert btn-ai"
                             onClick={handleRemoveBackground}
-                            disabled={loading || modelLoading}
-                            whileHover={{ scale: loading || modelLoading ? 1 : 1.02 }}
-                            whileTap={{ scale: loading || modelLoading ? 1 : 0.98 }}
+                            disabled={loading}
+                            whileHover={{ scale: loading ? 1 : 1.02 }}
+                            whileTap={{ scale: loading ? 1 : 0.98 }}
                         >
                             {loading ? (
                                 <>
                                     <span className="spinner" />
-                                    Processing with AI... {processProgress}%
-                                </>
-                            ) : modelLoading ? (
-                                <>
-                                    <FiCpu className="spinning" />
-                                    Loading Model...
+                                    Removing backgrounds… {processProgress}%
                                 </>
                             ) : (
                                 <>
                                     <FiScissors />
-                                    Remove Background
+                                    Remove Background{selectedFiles.length > 1 ? "s" : ""}
                                 </>
                             )}
                         </motion.button>
 
-                        {/* Progress Bar */}
+                        {/* Progress bar */}
                         {loading && (
                             <motion.div
                                 className="progress-bar-container"
@@ -675,7 +532,7 @@ const BackgroundRemoverTool = () => {
                 )}
             </AnimatePresence>
 
-            {/* Result Section */}
+            {/* Results */}
             <AnimatePresence>
                 {processedData.length > 0 && (
                     <motion.div
@@ -683,67 +540,125 @@ const BackgroundRemoverTool = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.45 }}
                     >
                         <div className="result-header">
                             <FiCheckCircle className="success-icon" />
                             <h3>Background Removal Complete!</h3>
-                            <p>{processedData.length} image(s) processed successfully</p>
+                            <p>{processedData.length} image{processedData.length > 1 ? "s" : ""} processed</p>
                         </div>
 
-                        {/* Before/After Comparison Grid */}
-                        <div className="before-after-grid">
-                            {processedData.map((item, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="before-after-item"
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: i * 0.1 }}
+                        {/* Thumbnail nav — when multiple results */}
+                        {processedData.length > 1 && (
+                            <div className="bgr-thumb-nav">
+                                {processedData.map((item, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        className={`bgr-thumb${sliderIdx === i ? " bgr-thumb--active" : ""}`}
+                                        onClick={() => { setSliderIdx(i); setSliderPos(50); }}
+                                    >
+                                        <img
+                                            src={item.processedPreview}
+                                            alt={item.fileName}
+                                            className={backgroundColor === "transparent" ? "bgr-checkered" : ""}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Before / After drag slider */}
+                        {processedData[sliderIdx] && (
+                            <div
+                                className="bgr-slider-wrap"
+                                ref={sliderRef}
+                                onMouseMove={handleSliderMouseMove}
+                                onTouchMove={handleSliderTouchMove}
+                            >
+                                {/* After (processed) — full width underneath */}
+                                <div
+                                    className={`bgr-slider-after${backgroundColor === "transparent" ? " bgr-checkered" : ""}`}
+                                    style={{ background: backgroundColor === "white" ? "#fff" : backgroundColor === "black" ? "#000" : backgroundColor === "custom" ? customColor : undefined }}
                                 >
-                                    <div className="comparison-container">
-                                        <div className="comparison-side">
-                                            <span className="comparison-label">Before</span>
-                                            <img
-                                                src={item.originalPreview}
-                                                alt={`Original ${i + 1}`}
-                                                className="comparison-img"
-                                            />
-                                        </div>
-                                        <div className="comparison-divider">
-                                            <FiScissors />
-                                        </div>
-                                        <div className="comparison-side">
-                                            <span className="comparison-label">After</span>
-                                            <div
-                                                className={`comparison-img-wrapper ${backgroundColor === "transparent" ? "checkered-bg" : ""
-                                                    }`}
-                                            >
-                                                <img
-                                                    src={item.processedPreview}
-                                                    alt={`Processed ${i + 1}`}
-                                                    className="comparison-img"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="comparison-filename">
-                                        {item.fileName}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
+                                    <img
+                                        src={processedData[sliderIdx].processedPreview}
+                                        alt="After"
+                                        draggable={false}
+                                    />
+                                    <span className="bgr-slider-label bgr-slider-label--right">After</span>
+                                </div>
 
-                        {/* Download Button */}
+                                {/* Before (original) — clips to left of slider */}
+                                <div
+                                    className="bgr-slider-before"
+                                    style={{ width: `${sliderPos}%` }}
+                                >
+                                    <img
+                                        src={processedData[sliderIdx].originalPreview}
+                                        alt="Before"
+                                        draggable={false}
+                                    />
+                                    <span className="bgr-slider-label bgr-slider-label--left">Before</span>
+                                </div>
+
+                                {/* Drag handle */}
+                                <div
+                                    className="bgr-slider-handle"
+                                    style={{ left: `${sliderPos}%` }}
+                                >
+                                    <div className="bgr-slider-line" />
+                                    <div className="bgr-slider-knob">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M5 4l-3 4 3 4M11 4l3 4-3 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {/* Drag hint */}
+                                <span className="bgr-drag-hint">← Drag to compare →</span>
+                            </div>
+                        )}
+
+                        {/* File info row */}
+                        {processedData[sliderIdx] && (
+                            <div className="bgr-file-info">
+                                <span className="bgr-file-name">{processedData[sliderIdx].fileName}</span>
+                                <span className="bgr-file-sizes">
+                                    {fmtBytes(processedData[sliderIdx].originalSize)}
+                                    <span className="bgr-arrow">→</span>
+                                    {fmtBytes(processedData[sliderIdx].processedSize)}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="bgr-btn-single-dl"
+                                    onClick={() => downloadSingle(processedData[sliderIdx])}
+                                >
+                                    <FiDownload /> Download this
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Download all */}
                         <motion.button
+                            type="button"
                             className="btn-download"
-                            onClick={handleDownload}
+                            onClick={downloadAll}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
                             <FiDownload />
-                            Download {processedData.length > 1 ? "All as ZIP" : "Image"}
+                            {processedData.length > 1 ? `Download All (${processedData.length}) as ZIP` : "Download Image"}
                         </motion.button>
+
+                        {/* Process more */}
+                        <button
+                            type="button"
+                            className="bgr-btn-reset"
+                            onClick={resetForm}
+                        >
+                            <FiTrash2 /> Process new images
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -752,3 +667,4 @@ const BackgroundRemoverTool = () => {
 };
 
 export default BackgroundRemoverTool;
+

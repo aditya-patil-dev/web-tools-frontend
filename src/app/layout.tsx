@@ -1,10 +1,5 @@
-// src/app/layout.tsx
-
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import "@/styles/globals.css";
 import "@/styles/public.css";
-import "@/styles/admin.css";
 import "@/styles/publicv2.css";
 
 import Script from "next/script";

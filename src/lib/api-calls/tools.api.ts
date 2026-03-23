@@ -37,7 +37,6 @@ export type ToolPageDTO = {
     question: string;
     answer: string;
   }[];
-  // SEO fields
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string[];
@@ -64,7 +63,7 @@ export async function fetchToolPage(
   return normalizeToolPage(res.data);
 }
 
-// Cannot use axios here because server components have no browser APIs.
+// Server component version — used in page.tsx for SSR/ISR
 export async function fetchToolPageServer(
   category: string,
   slug: string,
@@ -77,13 +76,16 @@ export async function fetchToolPageServer(
     }
 
     const res = await fetch(`${base}/tools/${category}/${slug}`, {
-      cache: "no-store", // always fresh — tool data changes
+      // ── CHANGE: was `cache: "no-store"` which hit the API on every request.
+      // Now we cache for 5 minutes. Adjust revalidate (seconds) to match
+      // how often your tool content actually changes.
+      // Use `cache: "no-store"` only if tool data changes every few seconds.
+      next: { revalidate: 300 }, // 5 minutes
     });
 
     if (!res.ok) return null;
 
     const json = await res.json();
-
     if (!json.success || !json.data) return null;
 
     return normalizeToolPage(json.data);
@@ -136,13 +138,13 @@ export const checkRedirect = async (url: string): Promise<RedirectResult> => {
     .then((res) => res.data);
 };
 
-// Fetch ALL tools across every category (no category filter)
+// Fetch ALL tools across every category
 export async function fetchAllTools(): Promise<AllToolsResponse> {
   const res = await api.get<{
     success: boolean;
     message: string;
     data: AllToolsResponse;
-  }>("/tools/all"); // ← /tools/all, not /tools
+  }>("/tools/all");
 
   return {
     categories: res.data.categories || [],
@@ -212,9 +214,6 @@ export interface SpeedTestResponse {
 }
 
 export const toolsApi = {
-  /**
-   * Test website speed via Google PageSpeed Insights
-   */
   testWebsiteSpeed: async (
     data: SpeedTestRequest,
   ): Promise<SpeedTestResponse> => {
@@ -226,11 +225,6 @@ export const toolsApi = {
     return response.data;
   },
 
-  /**
-   * Protect PDF with AES-256 encryption via server-side qpdf.
-   * Uses apiClient directly (not api helper) because we need
-   * responseType: "blob" to receive the binary PDF back.
-   */
   protectPdf: async (opts: {
     file: File;
     password: string;
@@ -239,10 +233,7 @@ export const toolsApi = {
     allowCopy: boolean;
     allowModify: boolean;
   }): Promise<{ blob: Blob; fileName: string }> => {
-    // Import apiClient locally — it already handles FormData headers
-    // (removes Content-Type so the browser sets the multipart boundary)
     const { default: apiClient } = await import("@/lib/api/api");
-
     const formData = new FormData();
     formData.append("pdf", opts.file);
     formData.append("password", opts.password);
@@ -255,7 +246,6 @@ export const toolsApi = {
       responseType: "blob",
     });
 
-    // Extract filename from Content-Disposition header if present
     const disposition = response.headers["content-disposition"] || "";
     const nameMatch = disposition.match(/filename="?([^";\n]+)"?/);
     const fileName = nameMatch
@@ -271,7 +261,6 @@ export const toolsApi = {
     password: string;
   }): Promise<{ blob: Blob; fileName: string }> => {
     const { default: apiClient } = await import("@/lib/api/api");
-
     const formData = new FormData();
     formData.append("pdf", opts.file);
     formData.append("password", opts.password);

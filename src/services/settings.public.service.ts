@@ -1,6 +1,4 @@
-// src/services/settings.public.service.ts
-// Server-side only — used in layout.tsx and generateMetadata()
-// No auth required (public read endpoint)
+import { cache } from "react";
 
 export type SiteSettings = {
   id: string;
@@ -30,21 +28,15 @@ type SettingsResponse = {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-/**
- * Fetch site settings on the server side.
- * Cached for 1 hour — revalidate on demand via revalidateTag('site-settings')
- * if you add ISR later.
- */
-export async function getSiteSettings(): Promise<SiteSettings | null> {
+export const getSiteSettings = cache(async (): Promise<SiteSettings | null> => {
   try {
     const res = await fetch(`${BASE_URL}/settings`, {
       next: { revalidate: 3600 },
     });
-    const json = await res.json();
-    console.log("[SiteSettings]", json.data); // ← add this
+    const json: SettingsResponse = await res.json();
     return json.success ? json.data : null;
   } catch (err) {
-    console.error("[SiteSettings] fetch failed:", err); // ← and this
+    console.error("[SiteSettings] fetch failed:", err);
     return null;
   }
-}
+});

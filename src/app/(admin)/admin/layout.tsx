@@ -1,7 +1,9 @@
 "use client";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "@/styles/admin.css";
 
 import { useEffect, useState } from "react";
-
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
@@ -11,14 +13,10 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    /*
-      Close mobile sidebar on route change
-      */
-
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMobileOpen(false);
     }, [children]);
 
