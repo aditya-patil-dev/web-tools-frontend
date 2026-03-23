@@ -81,6 +81,14 @@ export default async function RootLayout({
                     </>
                 )}
 
+                {/* Umami Analytics */}
+                <Script
+                    src="https://cloud.umami.is/script.js"
+                    data-website-id="f9fa1c59-8638-4939-b776-c47134c301f6"
+                    strategy="afterInteractive"
+                    defer
+                />
+
                 <Providers>
                     <SiteSettingsProvider settings={settings}>
                         <CookieConsentProvider>
