@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import "@/styles/public.css";
 import "@/styles/publicv2.css";
+import "@/styles/tools.css";
 
 import Script from "next/script";
 

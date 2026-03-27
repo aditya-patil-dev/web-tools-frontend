@@ -24,7 +24,7 @@ function NavigationLoaderInner() {
     // Safety fallback — auto-hide after 8s in case navigation silently fails
     const showWithFallback = (opts?: Parameters<typeof show>[0]) => {
         show(opts);
-        timeoutRef.current = setTimeout(() => hide(), 8000);
+        timeoutRef.current = setTimeout(() => hide(), 1000);
     };
 
     return null;
