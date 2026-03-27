@@ -1,7 +1,6 @@
 "use client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "@/styles/admin.css";
 
 import { useEffect, useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
