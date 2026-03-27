@@ -283,7 +283,7 @@ export const POLICY_CONTENT: PolicyContentMap = {
                 id: "process",
                 heading: "4. How to Request a Refund",
                 content:
-                    "To request a refund, please contact our support team at support@yourcompany.com with your order number and reason for the request. We aim to process all refund requests within 5–7 business days. Approved refunds are credited to the original payment method within 10 business days.",
+                    "To request a refund, please contact our support team at adityapatil93564@gmail.com with your order number and reason for the request. We aim to process all refund requests within 5–7 business days. Approved refunds are credited to the original payment method within 10 business days.",
                 list: [],
             },
             {
@@ -302,7 +302,7 @@ export const POLICY_CONTENT: PolicyContentMap = {
         isContactPage: true,
         contactInfo: {
             email: "hello@yourcompany.com",
-            support: "support@yourcompany.com",
+            support: "adityapatil93564@gmail.com",
             phone: "+1 (800) 123-4567",
             hours: "Monday – Friday, 9 AM – 6 PM EST",
             address: "123 Company Street, Suite 400\nSan Francisco, CA 94105\nUnited States",
@@ -321,7 +321,7 @@ export const POLICY_CONTENT: PolicyContentMap = {
                 icon: "headset",
                 title: "Technical Support",
                 description: "Having trouble? Our support team is here 24/5.",
-                contact: "support@yourcompany.com",
+                contact: "adityapatil93564@gmail.com",
                 type: "email",
             },
             {
