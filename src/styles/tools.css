@@ -28,7 +28,7 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   transition: all var(--transition-base);
-  padding: 14px;
+  padding: 36px;
 }
 
 .tool-card:hover {
