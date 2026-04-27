@@ -14,7 +14,10 @@ import {
     FiTrash2,
     FiMaximize2,
     FiLock,
-    FiUnlock
+    FiUnlock,
+    FiFileText,
+    FiZap,
+    FiLayers,
 } from "react-icons/fi";
 
 const MAX_FILES = 25;
@@ -427,8 +430,8 @@ const ImageResizerTool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Resize up to {MAX_FILES} images with custom dimensions, percentages, or presets.
-                    Maintain aspect ratio and control output quality.
+                    Resize up to {MAX_FILES} images with custom dimensions, percentages, or presets &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
@@ -563,25 +566,6 @@ const ImageResizerTool = () => {
                     </div>
                 )}
 
-                {/* Quality Slider */}
-                <div className="quality-controls">
-                    <label className="quality-label">
-                        Output Quality: {quality}%
-                    </label>
-                    <input
-                        type="range"
-                        min="60"
-                        max="100"
-                        step="5"
-                        value={quality}
-                        onChange={(e) => setQuality(Number(e.target.value))}
-                        className="quality-slider"
-                    />
-                    <div className="quality-hints">
-                        <span>Good (60%)</span>
-                        <span>Best (100%)</span>
-                    </div>
-                </div>
             </motion.div>
 
             {/* Upload Area */}
@@ -603,11 +587,39 @@ const ImageResizerTool = () => {
 
                 <label htmlFor="inputResizer" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop images here or click to browse</h3>
-                    <p>
-                        Supports PNG, JPG, WebP, GIF, BMP • Up to {MAX_FILES} images
-                    </p>
+                    <h3>Drop images here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> All formats
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Max 10 MB each
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
+            </div>
+
+            {/* Quality Slider */}
+            <div className="quality-slider-container">
+                <span className="quality-slider-label">Output quality</span>
+                <div className="quality-slider-wrapper">
+                    <input
+                        type="range"
+                        min="1"
+                        max="100"
+                        value={quality}
+                        onChange={(e) => setQuality(Number(e.target.value))}
+                        className="quality-slider"
+                    />
+                    <span className="quality-value">{quality}%</span>
+                </div>
             </div>
 
             {/* Previews */}

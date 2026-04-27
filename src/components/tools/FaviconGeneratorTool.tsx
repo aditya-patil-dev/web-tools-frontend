@@ -11,10 +11,13 @@ import {
     FiX,
     FiCheckCircle,
     FiImage,
+    FiType,
+    FiFileText,
+    FiZap,
+    FiLayers,
     FiMonitor,
     FiSmartphone,
     FiTablet,
-    FiType
 } from "react-icons/fi";
 
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
@@ -442,8 +445,22 @@ const FaviconGeneratorTool = () => {
 
                     <label htmlFor="inputFavicon" className="tool-upload-label">
                         <FiUpload className="upload-icon" />
-                        <h3>Drop your logo/icon here or click to browse</h3>
-                        <p>Square images work best • Minimum 512x512 recommended</p>
+                        <h3>Drop your logo here</h3>
+                        <p>or click to browse your device</p>
+
+                        <div className="btn-browse">Browse files</div>
+
+                        <div className="uploader-tags">
+                            <div className="uploader-tag">
+                                <FiFileText /> PNG, JPG, SVG
+                            </div>
+                            <div className="uploader-tag">
+                                <FiZap /> Square best
+                            </div>
+                            <div className="uploader-tag">
+                                <FiLayers /> 512x512+ recommended
+                            </div>
+                        </div>
                     </label>
                 </div>
             )}

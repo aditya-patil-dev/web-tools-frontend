@@ -13,6 +13,7 @@ import {
     AiOutlineSearch,
     AiOutlineAppstore,
 } from "react-icons/ai";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 import { fetchAllTools } from "@/lib/api-calls/tools.api";
 import { ToolItem } from "@/app/(public)/tools/tools.config";
@@ -41,53 +42,41 @@ function StarRating({ rating }: { rating: number }) {
 // TOOL CARD
 // ─────────────────────────────────────────────────────────────
 function ToolCard({ tool, index }: { tool: ToolItem; index: number }) {
+    const iconName = useMemo(() => {
+        const slug = tool.category_slug || "";
+        if (slug.includes('image')) return 'LuImage';
+        if (slug.includes('pdf')) return 'LuFileText';
+        if (slug.includes('seo')) return 'LuTags';
+        if (slug.includes('dev')) return 'LuCode';
+        if (slug.includes('text') || slug.includes('content')) return 'LuPenTool';
+        if (slug.includes('convert')) return 'LuRefreshCw';
+        return 'LuTool';
+    }, [tool.category_slug]);
+
     return (
         <motion.div
             className="tool-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.04 }}
+            transition={{ duration: 0.3, delay: index * 0.02 }}
         >
-            {tool.badge && (
-                <span className={`tool-badge ${tool.badge}`}>
-                    {tool.badge.toUpperCase()}
-                </span>
-            )}
-
-            <h3>{tool.title}</h3>
-
-            {tool.short_description && (
-                <p className="tool-desc">{tool.short_description}</p>
-            )}
-
-            {tool.tags && tool.tags.length > 0 && (
-                <div className="tool-tags">
-                    {tool.tags.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                    ))}
+            <AppLink href={tool.tool_url} className="tool-card-link">
+                <div className="tool-glow"></div>
+                {tool.badge && <span className="tool-card-badge">{tool.badge}</span>}
+                <div className="tool-icon">
+                    <DynamicIcon name={iconName} size={32} fallback={<span>🔧</span>} />
                 </div>
-            )}
-
-            {(tool.views > 0 || tool.users_count > 0) && (
-                <div className="tool-meta">
-                    {tool.views > 0 && (
-                        <span>
-                            <AiOutlineEye /> {tool.views.toLocaleString()}
-                        </span>
-                    )}
-                    {tool.users_count > 0 && (
-                        <span>
-                            <AiOutlineUser /> {tool.users_count.toLocaleString()}
-                        </span>
-                    )}
+                <div className="tool-content">
+                    <h3>{tool.title}</h3>
+                    <p>{tool.short_description}</p>
                 </div>
-            )}
-
-            <StarRating rating={tool.rating} />
-
-            <AppLink href={tool.tool_url} className="tool-cta-wrapper">
-                <div className="tool-cta">
-                    Try Free <AiOutlineArrowRight />
+                <div className="tool-card-footer">
+                    <span className="tool-usage-tag">
+                        {tool.category_slug?.replace(/-/g, ' ').toUpperCase() || 'TOOL'}
+                    </span>
+                    <div className="tool-action-icon">
+                        <DynamicIcon name="LuArrowRight" size={16} />
+                    </div>
                 </div>
             </AppLink>
         </motion.div>

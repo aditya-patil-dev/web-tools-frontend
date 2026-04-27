@@ -38,6 +38,13 @@ export const ADMIN_NAV: AdminNavItem[] = [
         ],
     },
     {
+        id: "import-export",
+        label: "Import/Export",
+        href: "/admin/import-export",
+        icon: "bi-cloud-download",
+        match: "prefix",
+    },
+    {
         id: "settings",
         label: "Settings",
         icon: "bi-gear",

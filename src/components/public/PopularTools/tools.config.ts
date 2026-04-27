@@ -3,46 +3,56 @@ export type ToolItem = {
   description: string;
   href: string;
   icon: string;
-  badge?: "new" | "popular";
+  badge?: string;
+  category?: string;
 };
 
 export const POPULAR_TOOLS: ToolItem[] = [
   {
-    title: "Image Converter",
-    description: "Convert JPG, PNG, WEBP images instantly.",
-    href: "/tools/image-converter",
-    icon: "🖼️",
-    badge: "popular",
+    "title": "AI Background Remover",
+    "description": "Remove image backgrounds instantly with AI. High-precision cutout for transparent PNGs.",
+    "href": "/tools/image-tools/background-remover",
+    "icon": "LuEraser",
+    "category": "AI",
+    "badge": "AI POWERED",
   },
   {
-    title: "Keyword Research",
-    description: "Find low-competition keywords in seconds.",
-    href: "/tools/keyword-research",
-    icon: "🔍",
+    "title": "Batch Image Compressor",
+    "description": "Reduce image file size up to 80% without losing quality. Optimized for WebP, PNG, and JPG.",
+    "href": "/tools/image-tools/image-compressor",
+    "icon": "LuImage",
+    "category": "IMAGE",
+    "badge": "FAST",
   },
   {
-    title: "Image Compressor",
-    description: "Reduce image size without losing quality.",
-    href: "/tools/image-compressor",
-    icon: "⚡",
+    "title": "PDF to Word Converter",
+    "description": "Convert PDF to editable DOCX online. Maintain formatting and layout with 100% accuracy.",
+    "href": "/tools/pdf-tools/pdf-to-word-converter",
+    "icon": "LuFileType",
+    "category": "PDF",
+    "badge": "POPULAR",
   },
   {
-    title: "Meta Tag Generator",
-    description: "Generate SEO-friendly meta tags easily.",
-    href: "/tools/meta-tag-generator",
-    icon: "🧠",
-    badge: "new",
+    "title": "SEO Meta Tag Generator",
+    "description": "Create high-CTR meta titles and descriptions. Includes Open Graph and Twitter Card previews.",
+    "href": "/tools/seo-tools/meta-tag-generator",
+    "icon": "LuTags",
+    "category": "SEO",
+    "badge": "TOP RATED",
   },
   {
-    title: "Text Case Converter",
-    description: "Convert text to upper, lower, title case.",
-    href: "/tools/text-case-converter",
-    icon: "✍️",
+    "title": "XML Sitemap Generator",
+    "description": "Automatically crawl your site and generate a valid sitemap.xml for faster Google indexing.",
+    "href": "/tools/seo-tools/sitemap-generator",
+    "icon": "LuMap",
+    "category": "SEO",
+    "badge": "FREE",
   },
   {
-    title: "AI Content Helper",
-    description: "Generate ideas and short content with AI.",
-    href: "/tools/ai-content-helper",
-    icon: "🤖",
-  },
+    "title": "Privacy Robots.txt Generator",
+    "description": "Guide search crawlers and protect private folders with a custom-built robots.txt file.",
+    "href": "/tools/seo-tools/robots-txt-generator",
+    "icon": "LuBot",
+    "category": "SEO",
+  }
 ];

@@ -1,23 +1,10 @@
 "use client";
 
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import AppLink from '@/components/common/AppLink';
-import { motion } from "framer-motion";
 import { POPULAR_TOOLS } from "./tools.config";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-};
-const itemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1] as const } },
-};
-const headerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
-};
 
 interface Tool {
     title: string;
@@ -25,6 +12,7 @@ interface Tool {
     icon: string;
     href: string;
     badge?: string | null;
+    category?: string;
 }
 interface PopularToolsConfig {
     header: { title: string; subtitle: string };
@@ -38,70 +26,106 @@ interface PopularToolsProps {
 const DEFAULT_CONFIG: PopularToolsConfig = {
     header: {
         title: "Popular <span>Tools</span>",
-        subtitle: "Try our most used tools trusted by developers and marketers.",
+        subtitle: "Our most-used tools by people like you",
     },
     tools: POPULAR_TOOLS,
     footer: { text: "View All Tools →", href: "/tools" },
 };
 
 export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsProps) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [hasMoved, setHasMoved] = useState(false);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        setHasMoved(false);
+        setStartX(e.pageX - scrollRef.current.offsetLeft);
+        setScrollLeft(scrollRef.current.scrollLeft);
+    };
+
+    const handleMouseLeave = () => setIsDragging(false);
+    const handleMouseUp = () => {
+        // Delay resetting isDragging to allow the click handler to run
+        setTimeout(() => setIsDragging(false), 0);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2; // scroll-fast factor
+        if (Math.abs(x - startX) > 5) {
+            setHasMoved(true);
+        }
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleLinkClick = (e: React.MouseEvent) => {
+        if (hasMoved) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <section className="tools-wrapper">
             <div className="tools-container">
-                <motion.div
-                    className="tools-header"
-                    initial="hidden" whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={headerVariants}
-                >
+                <div className="tools-header">
                     <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
                     <p>{config.header.subtitle}</p>
-                </motion.div>
+                </div>
 
-                <motion.div
-                    className="tools-grid"
-                    initial="hidden" whileInView="visible"
-                    viewport={{ once: true, margin: "-50px" }}
-                    variants={containerVariants}
+                <div
+                    className={`tools-grid horizontal-row ${isDragging ? 'dragging' : ''}`}
+                    ref={scrollRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    style={{
+                        cursor: isDragging ? 'grabbing' : 'grab',
+                        userSelect: isDragging ? 'none' : 'auto'
+                    }}
                 >
                     {config.tools.map((tool, index) => (
-                        <motion.div
+                        <div
                             key={index}
                             className="tool-card"
-                            variants={itemVariants}
-                            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                            onDragStart={(e) => e.preventDefault()}
                         >
-                            <AppLink href={tool.href}>
-                                <motion.div
-                                    className="tool-icon"
-                                    whileHover={{ scale: 1.1, rotate: 5, transition: { duration: 0.3 } }}
-                                >
-                                    {/* DynamicIcon: accepts emoji OR any react-icons name e.g. "TbPhoto" */}
-                                    <DynamicIcon name={tool.icon} size={28} fallback={<span>🔧</span>} />
-                                </motion.div>
+                            <AppLink
+                                href={tool.href}
+                                className="tool-card-link"
+                                onClick={handleLinkClick}
+                            >
+                                <div className="tool-glow"></div>
+                                {tool.badge && <span className="tool-card-badge">{tool.badge}</span>}
+                                <div className="tool-icon">
+                                    <DynamicIcon name={tool.icon} size={32} fallback={<span>🔧</span>} />
+                                </div>
                                 <div className="tool-content">
-                                    <h3>
-                                        {tool.title}
-                                        {tool.badge && (
-                                            <span className={`tool-badge ${tool.badge}`}>{tool.badge}</span>
-                                        )}
-                                    </h3>
+                                    <h3>{tool.title}</h3>
                                     <p>{tool.description}</p>
                                 </div>
+                                <div className="tool-card-footer">
+                                    {tool.category && <span className="tool-usage-tag">{tool.category}</span>}
+                                    <div className="tool-action-icon">
+                                        <DynamicIcon name="LuArrowRight" size={16} />
+                                    </div>
+                                </div>
                             </AppLink>
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
 
-                <motion.div
-                    className="tools-footer"
-                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}
-                >
+                <div className="tools-footer">
                     <AppLink href={config.footer.href} className="tools-view-all">
                         {config.footer.text}
                     </AppLink>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

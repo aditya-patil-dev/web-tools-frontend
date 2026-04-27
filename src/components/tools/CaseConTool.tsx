@@ -9,6 +9,10 @@ import {
     FiAlertCircle,
     FiRefreshCw,
     FiDownload,
+    FiHash,
+    FiClock,
+    FiLayers,
+    FiZap,
 } from "react-icons/fi";
 
 interface TextStats {
@@ -249,10 +253,9 @@ const CaseConTool = () => {
         >
             {/* Info Banner */}
             <div className="tool-info-banner">
-                <FiCheckCircle className="info-icon" />
+                <FiZap />
                 <p>
-                    Count words, characters, and transform text case instantly. Perfect
-                    for writers, developers, and content creators.
+                    Count words, characters, and transform text case instantly. All processing happens locally in your browser for maximum privacy.
                 </p>
             </div>
 
@@ -279,16 +282,17 @@ const CaseConTool = () => {
                         rows={12}
                     />
 
-                    {/* Statistics Cards */}
+                    {/* Statistics Grid */}
                     <AnimatePresence>
                         {inputText && showStats && (
                             <motion.div
                                 className="text-stats-grid"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
                             >
                                 <div className="stat-card primary">
+                                    <FiHash style={{ marginBottom: 8, fontSize: 18 }} />
                                     <div className="stat-value">{stats.words.toLocaleString()}</div>
                                     <div className="stat-label">Words</div>
                                 </div>
@@ -297,14 +301,7 @@ const CaseConTool = () => {
                                     <div className="stat-value">
                                         {stats.characters.toLocaleString()}
                                     </div>
-                                    <div className="stat-label">Characters</div>
-                                </div>
-
-                                <div className="stat-card">
-                                    <div className="stat-value">
-                                        {stats.charactersNoSpaces.toLocaleString()}
-                                    </div>
-                                    <div className="stat-label">Characters (no spaces)</div>
+                                    <div className="stat-label">Chars</div>
                                 </div>
 
                                 <div className="stat-card">
@@ -328,18 +325,12 @@ const CaseConTool = () => {
                                     <div className="stat-label">Lines</div>
                                 </div>
 
-                                <div className="stat-card accent">
+                                <div className="stat-card highlight">
+                                    <FiClock style={{ marginBottom: 8, fontSize: 18 }} />
                                     <div className="stat-value">
-                                        {stats.readingTime > 0 ? `~${stats.readingTime}` : "<1"}
+                                        {stats.readingTime > 0 ? `${stats.readingTime}m` : "<1m"}
                                     </div>
-                                    <div className="stat-label">Min read</div>
-                                </div>
-
-                                <div className="stat-card accent">
-                                    <div className="stat-value">
-                                        {stats.speakingTime > 0 ? `~${stats.speakingTime}` : "<1"}
-                                    </div>
-                                    <div className="stat-label">Min speak</div>
+                                    <div className="stat-label">Read Time</div>
                                 </div>
                             </motion.div>
                         )}
@@ -349,7 +340,7 @@ const CaseConTool = () => {
                 {/* Right Side - Case Converter */}
                 <div className="case-converter-section">
                     <div className="section-header">
-                        <h3>Case Converter</h3>
+                        <h3><FiLayers /> Case Converter</h3>
                     </div>
 
                     {!inputText ? (
@@ -391,11 +382,9 @@ const CaseConTool = () => {
                                         <div className="output-header">
                                             <h4>Converted Text ({selectedCase})</h4>
                                             <div className="output-actions">
-                                                <motion.button
-                                                    className="btn-copy-output"
+                                                <button
+                                                    className="btn-ghost"
                                                     onClick={() => handleCopy(convertedText)}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
                                                 >
                                                     {copied ? (
                                                         <>
@@ -406,16 +395,14 @@ const CaseConTool = () => {
                                                             <FiCopy /> Copy
                                                         </>
                                                     )}
-                                                </motion.button>
+                                                </button>
 
-                                                <motion.button
-                                                    className="btn-download-output"
+                                                <button
+                                                    className="btn-ghost"
                                                     onClick={handleDownload}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
                                                 >
                                                     <FiDownload /> Download
-                                                </motion.button>
+                                                </button>
                                             </div>
                                         </div>
 

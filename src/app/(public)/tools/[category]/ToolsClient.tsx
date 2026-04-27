@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import {
     AiOutlineEye,
     AiOutlineUser,
@@ -156,65 +158,43 @@ export default function ToolsListing() {
 
                 {/* Tools Grid */}
                 <div className="tools-page-grid">
-                    {tools.map((tool) => (
-                        <div key={tool.id} className="tool-card">
-                            {/* Only show badge if it exists */}
-                            {tool.badge && (
-                                <span className={`tool-badge ${tool.badge}`}>
-                                    {tool.badge.toUpperCase()}
-                                </span>
-                            )}
+                    {tools.map((tool, index) => {
+                        const iconName = tool.category_slug?.includes('image') ? 'LuImage' :
+                                       tool.category_slug?.includes('pdf') ? 'LuFileText' :
+                                       tool.category_slug?.includes('seo') ? 'LuTags' :
+                                       tool.category_slug?.includes('dev') ? 'LuCode' :
+                                       tool.category_slug?.includes('convert') ? 'LuRefreshCw' : 'LuTool';
 
-                            {/* Title - always show (required field) */}
-                            <h3>{tool.title}</h3>
-
-                            {/* Only show description if it exists */}
-                            {tool.short_description && (
-                                <p className="tool-desc">{tool.short_description}</p>
-                            )}
-
-                            {/* Only show tags if array has items */}
-                            {tool.tags && tool.tags.length > 0 && (
-                                <div className="tool-tags">
-                                    {tool.tags.map((tag) => (
-                                        <span key={tag}>{tag}</span>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Only show meta if either views or users_count exists */}
-                            {(tool.views > 0 || tool.users_count > 0) && (
-                                <div className="tool-meta">
-                                    {/* Only show views if > 0 */}
-                                    {tool.views > 0 && (
-                                        <span>
-                                            <AiOutlineEye /> {tool.views.toLocaleString()}
-                                        </span>
-                                    )}
-
-                                    {/* Only show users_count if > 0 */}
-                                    {tool.users_count > 0 && (
-                                        <span>
-                                            <AiOutlineUser /> {tool.users_count.toLocaleString()}
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* StarRating component handles null internally */}
-                            <StarRating rating={tool.rating} />
-
-                            {/* CTA - always show (required for functionality) */}
-                            <AppLink
-                                href={tool.tool_url}
-                                className="tool-cta-wrapper"
+                        return (
+                            <motion.div 
+                                key={tool.id} 
+                                className="tool-card"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: index * 0.02 }}
                             >
-                                <div className="tool-cta">
-                                    Try Free <AiOutlineArrowRight />
-                                </div>
-                            </AppLink>
-                        </div>
-                    ))}
+                                <AppLink href={tool.tool_url} className="tool-card-link">
+                                    <div className="tool-glow"></div>
+                                    {tool.badge && <span className="tool-card-badge">{tool.badge}</span>}
+                                    <div className="tool-icon">
+                                        <DynamicIcon name={iconName} size={32} fallback={<span>🔧</span>} />
+                                    </div>
+                                    <div className="tool-content">
+                                        <h3>{tool.title}</h3>
+                                        <p>{tool.short_description}</p>
+                                    </div>
+                                    <div className="tool-card-footer">
+                                        <span className="tool-usage-tag">
+                                            {tool.category_slug?.replace(/-/g, ' ').toUpperCase() || 'TOOL'}
+                                        </span>
+                                        <div className="tool-action-icon">
+                                            <DynamicIcon name="LuArrowRight" size={16} />
+                                        </div>
+                                    </div>
+                                </AppLink>
+                            </motion.div>
+                        );
+                    })}
                 </div>
 
                 {/* Empty State */}

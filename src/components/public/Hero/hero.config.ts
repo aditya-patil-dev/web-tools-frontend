@@ -15,6 +15,10 @@ export interface HeroConfig {
     text: string;
     href: string;
   };
+  thirdCta: {
+    text: string;
+    href: string;
+  };
   trustBadges: {
     icon: string;
     text: string;
@@ -23,25 +27,29 @@ export interface HeroConfig {
 }
 
 export const DEFAULT_HERO_CONFIG: HeroConfig = {
-  badge: "✦ 10,000+ tasks completed today",
-  title: "Stop doing things the <span>slow way.</span>",
+  badge: "✦ Upload Your Image to Compress Instantly",
+  title: "Compress, Convert & Optimize Files Instantly — <span>No Signup Needed</span>",
   subtitle:
-    "Compress images, generate meta tags, format JSON, convert files — instantly. No sign-up, no limits, no friction.",
+    "Free AI-powered tools to help you work faster, smarter, and more efficiently. No limits, no friction.",
   primaryCta: {
-    text: "Explore 40+ free tools →",
-    href: "/tools",
+    text: "Try Image Compressor →",
+    href: "/tools/image-tools/image-compressor",
   },
   secondaryCta: {
-    text: "View Pricing",
-    href: "/pricing",
+    text: "Explore All Tools",
+    href: "/tools",
+  },
+  thirdCta: {
+    text: "Background Remover →",
+    href: "/tools/image-tools/background-remover",
   },
   trustBadges: [
-    { icon: "BiSolidBolt", text: "Lightning Fast" },
-    { icon: "FcUnlock", text: "100% Private (No Uploads)" },
-    { icon: "PiLaptopFill", text: "No Account Required" },
+    { icon: "HiUsers", text: "No Signup" },
+    { icon: "HiLockClosed", text: "100% Private" },
+    { icon: "HiSparkles", text: "Free" },
   ],
   toolChips: [
-    { label: "AI Background Remover", href: "/tools/image-tools/background-remover"},
+    { label: "AI Background Remover", href: "/tools/image-tools/background-remover" },
     { label: "Image Compressor", href: "/tools/image-tools/image-compressor" },
     { label: "Meta Tag Generator", href: "/tools/seo-tools/meta-tag-generator" },
     { label: "JSON Formatter", href: "/tools/developer-tools/json-formatter" },

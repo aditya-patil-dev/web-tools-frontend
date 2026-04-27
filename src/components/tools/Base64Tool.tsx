@@ -14,7 +14,8 @@ import {
     FiFile,
     FiAlertCircle,
     FiArrowRight,
-    FiArrowLeft
+    FiArrowLeft,
+    FiType
 } from "react-icons/fi";
 
 type OperationMode = "encode" | "decode";
@@ -263,72 +264,70 @@ const Base64Tool = () => {
         >
             {/* Info Banner */}
             <div className="tool-info-banner">
-                <FiCheckCircle />
+                <FiCode />
                 <p>
-                    Encode text and files to Base64 or decode Base64 strings back to original format.
-                    Perfect for data transmission, embedding images, and API integration.
+                    Encode text and files to Base64 or decode Base64 strings back to original format instantly. All processing happens locally in your browser.
                 </p>
             </div>
 
             {/* Mode Switcher */}
-            <div className="base64-mode-section">
-                <div className="mode-switcher">
+            <div className="case-converter-section">
+                <div className="case-options-grid">
                     <button
-                        className={`mode-btn ${mode === "encode" ? "active" : ""}`}
+                        className={`case-option-btn ${mode === "encode" ? "active" : ""}`}
                         onClick={() => mode !== "encode" && switchMode()}
                     >
-                        <FiCode />
-                        Encode to Base64
+                        <div className="case-icon"><FiCode /></div>
+                        <div className="case-info">
+                            <span className="case-label">Encode to Base64</span>
+                        </div>
                     </button>
                     <button
-                        className="mode-switch-icon"
-                        onClick={switchMode}
-                        title="Switch mode"
-                    >
-                        <FiRefreshCw />
-                    </button>
-                    <button
-                        className={`mode-btn ${mode === "decode" ? "active" : ""}`}
+                        className={`case-option-btn ${mode === "decode" ? "active" : ""}`}
                         onClick={() => mode !== "decode" && switchMode()}
                     >
-                        <FiCode />
-                        Decode from Base64
+                        <div className="case-icon"><FiRefreshCw /></div>
+                        <div className="case-info">
+                            <span className="case-label">Decode from Base64</span>
+                        </div>
                     </button>
                 </div>
 
                 {/* Input Type Selector (only for encode mode) */}
                 {mode === "encode" && (
-                    <div className="input-type-selector">
+                    <div className="case-options-grid" style={{ marginTop: 12 }}>
                         <button
-                            className={`type-btn ${inputType === "text" ? "active" : ""}`}
+                            className={`case-option-btn ${inputType === "text" ? "active" : ""}`}
                             onClick={() => setInputType("text")}
                         >
-                            <FiCode /> Text
+                            <div className="case-icon"><FiType /></div>
+                            <div className="case-info"><span className="case-label">Text Input</span></div>
                         </button>
                         <button
-                            className={`type-btn ${inputType === "file" ? "active" : ""}`}
+                            className={`case-option-btn ${inputType === "file" ? "active" : ""}`}
                             onClick={() => setInputType("file")}
                         >
-                            <FiFile /> File
+                            <div className="case-icon"><FiFile /></div>
+                            <div className="case-info"><span className="case-label">File Input</span></div>
                         </button>
                     </div>
                 )}
             </div>
 
-            <div className="base64-workspace">
+            <div className="text-tool-workspace">
                 {/* Input Section */}
-                <div className="base64-input-section">
+                <div className="text-input-section">
                     <div className="section-header">
                         <h3>
                             {mode === "encode" ? <FiArrowRight /> : <FiArrowLeft />}
-                            {mode === "encode" ? "Input" : "Base64 Input"}
+                            {mode === "encode" ? "Input Data" : "Base64 Input"}
                         </h3>
-                        <div className="header-actions">
-                            <button className="btn-sample-base64" onClick={loadSample}>
-                                Load Sample
+                        <div className="output-actions">
+                            <button className="btn-ghost" onClick={loadSample}>
+                                Sample
                             </button>
                             {(inputText || selectedFile) && (
-                                <button className="btn-clear-base64" onClick={handleClear}>
+                                <button className="btn-ghost" onClick={handleClear}>
                                     <FiRefreshCw /> Clear
                                 </button>
                             )}
@@ -344,10 +343,12 @@ const Base64Tool = () => {
                                 className="file-input-hidden"
                                 id="base64FileInput"
                             />
-                            <label htmlFor="base64FileInput" className="file-upload-area">
-                                <FiUpload className="upload-icon" />
+                            <label htmlFor="base64FileInput" className="tool-upload-area">
+                                <div className="upload-icon">
+                                    <FiUpload />
+                                </div>
                                 <h4>Click to upload file</h4>
-                                <p>Max size: 5MB</p>
+                                <p>Support for images, PDF, and text files (Max 5MB)</p>
                             </label>
 
                             {selectedFile && (
@@ -385,7 +386,7 @@ const Base64Tool = () => {
                         </div>
                     ) : (
                         <textarea
-                            className="base64-input-area"
+                            className="text-input-area"
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             placeholder={
@@ -419,10 +420,10 @@ const Base64Tool = () => {
                     {/* Process Button */}
                     {inputType === "text" && (
                         <motion.button
-                            className="btn-process-base64"
+                            className="btn-convert"
                             onClick={handleProcess}
                             disabled={!inputText.trim()}
-                            whileHover={{ scale: !inputText.trim() ? 1 : 1.02 }}
+                            whileHover={{ scale: !inputText.trim() ? 1 : 1.01 }}
                             whileTap={{ scale: !inputText.trim() ? 1 : 0.98 }}
                         >
                             {mode === "encode" ? (
@@ -440,9 +441,10 @@ const Base64Tool = () => {
                     {/* Decode File Button (for decode mode) */}
                     {mode === "decode" && inputText && (
                         <motion.button
-                            className="btn-decode-file"
+                            className="btn-download"
                             onClick={handleDecodeFile}
-                            whileHover={{ scale: 1.02 }}
+                            style={{ marginTop: 12 }}
+                            whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.98 }}
                         >
                             <FiDownload /> Decode as File
@@ -451,16 +453,16 @@ const Base64Tool = () => {
                 </div>
 
                 {/* Output Section */}
-                <div className="base64-output-section">
+                <div className="case-converter-section">
                     <div className="section-header">
                         <h3>
-                            {mode === "encode" ? <FiArrowRight /> : <FiArrowLeft />}
+                            {mode === "encode" ? <FiCode /> : <FiType />}
                             {mode === "encode" ? "Base64 Output" : "Decoded Output"}
                         </h3>
                         {outputText && (
                             <div className="output-actions">
                                 <button
-                                    className="btn-copy-base64"
+                                    className="btn-ghost"
                                     onClick={handleCopy}
                                 >
                                     {copied ? (
@@ -474,7 +476,7 @@ const Base64Tool = () => {
                                     )}
                                 </button>
                                 <button
-                                    className="btn-download-base64"
+                                    className="btn-ghost"
                                     onClick={handleDownloadText}
                                 >
                                     <FiDownload /> Download
@@ -485,21 +487,19 @@ const Base64Tool = () => {
 
                     {!outputText ? (
                         <div className="empty-output">
-                            <FiCode className="empty-icon" />
+                            <FiCode className="empty-icon" style={{ fontSize: 48, opacity: 0.1, marginBottom: 16 }} />
                             <p>Output will appear here</p>
                             <small>
                                 {mode === "encode" ? "Enter text or upload a file to encode" : "Enter Base64 string to decode"}
                             </small>
                         </div>
                     ) : (
-                        <div className="base64-output-display">
-                            <pre>
-                                <code>{outputText}</code>
-                            </pre>
+                        <div className="converted-text-display">
+                            <code>{outputText}</code>
                             {outputText.length > 0 && (
-                                <div className="output-stats">
+                                <div className="output-stats" style={{ marginTop: 12, fontSize: 12, opacity: 0.5, borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 8 }}>
                                     <span>{outputText.length.toLocaleString()} characters</span>
-                                    <span>•</span>
+                                    <span style={{ margin: "0 8px" }}>•</span>
                                     <span>{(outputText.length / 1024).toFixed(2)} KB</span>
                                 </div>
                             )}

@@ -13,7 +13,10 @@ import {
     FiCheckCircle,
     FiCopy,
     FiTrash2,
-    FiCode
+    FiCode,
+    FiFileText,
+    FiZap,
+    FiLayers,
 } from "react-icons/fi";
 
 const MAX_FILES = 25;
@@ -247,8 +250,8 @@ const ImageToBase64Tool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Convert up to {MAX_FILES} images to Base64 encoded strings.
-                    Perfect for embedding images in HTML, CSS, or JSON.
+                    Convert up to {MAX_FILES} images to Base64 encoded strings &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
@@ -271,10 +274,22 @@ const ImageToBase64Tool = () => {
 
                 <label htmlFor="inputBase64" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop images here or click to browse</h3>
-                    <p>
-                        Supports PNG, JPG, WebP, GIF • Up to {MAX_FILES} images
-                    </p>
+                    <h3>Drop images here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> All formats
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Secure
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
             </div>
 

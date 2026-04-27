@@ -14,7 +14,10 @@ import {
     FiCheckCircle,
     FiTrash2,
     FiImage,
-    FiSmartphone
+    FiSmartphone,
+    FiFileText,
+    FiZap,
+    FiLayers,
 } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
@@ -324,8 +327,8 @@ const HeicConverterTool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Convert up to {MAX_FILES} HEIC/HEIF images from iPhone to JPG or PNG format.
-                    Perfect for sharing Apple photos on any device or platform.
+                    Convert up to {MAX_FILES} HEIC/HEIF images from iPhone to JPG or PNG format &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
@@ -383,30 +386,21 @@ const HeicConverterTool = () => {
             </motion.div>
 
             {/* Quality Slider */}
-            <motion.div
-                className="quality-settings"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-            >
-                <label className="quality-label">
-                    Output Quality: {quality}%
-                </label>
-                <input
-                    type="range"
-                    min="60"
-                    max="100"
-                    step="5"
-                    value={quality}
-                    onChange={(e) => setQuality(Number(e.target.value))}
-                    className="quality-slider"
-                />
-                <div className="quality-hints">
-                    <span>Good (60%)</span>
-                    <span>Recommended (92%)</span>
-                    <span>Best (100%)</span>
+            <div className="quality-slider-container">
+                <span className="quality-slider-label">Output quality</span>
+                <div className="quality-slider-wrapper">
+                    <input
+                        type="range"
+                        min="60"
+                        max="100"
+                        step="5"
+                        value={quality}
+                        onChange={(e) => setQuality(Number(e.target.value))}
+                        className="quality-slider"
+                    />
+                    <span className="quality-value">{quality}%</span>
                 </div>
-            </motion.div>
+            </div>
 
             {/* Upload Area */}
             <div
@@ -427,10 +421,22 @@ const HeicConverterTool = () => {
 
                 <label htmlFor="inputHeic" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop HEIC/HEIF files here or click to browse</h3>
-                    <p>
-                        iPhone/iPad photos • Up to {MAX_FILES} images
-                    </p>
+                    <h3>Drop HEIC/HEIF files here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> HEIC/HEIF
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Max 10 MB each
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
             </div>
 

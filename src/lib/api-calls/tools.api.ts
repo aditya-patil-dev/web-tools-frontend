@@ -1,6 +1,7 @@
 import { ToolItem } from "@/app/(public)/tools/tools.config";
 import { api } from "@/lib/api/api";
 import { toNumber } from "../api/apiHelpers";
+import { Recommendations } from "@/components/tool-sugggestion/ToolSuggestions"
 
 export type AllToolsResponse = {
   categories: {
@@ -43,6 +44,7 @@ export type ToolPageDTO = {
   canonical_url?: string;
   schema_markup?: Record<string, unknown>;
   noindex?: boolean;
+  recommendations?: Recommendations;
 };
 
 type ToolPageApiResponse = {

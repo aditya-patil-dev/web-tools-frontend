@@ -11,10 +11,10 @@ import {
     FiDownload,
     FiX,
     FiCheckCircle,
+    FiZap,
+    FiFileText,
     FiTrash2,
-    FiImage,
-    FiLayers,
-    FiZap
+    FiLayers
 } from "react-icons/fi";
 
 const MAX_FILES = 25;
@@ -437,8 +437,8 @@ const UniversalImageConverterTool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Universal image converter supporting PNG, JPG, WebP, GIF, and BMP formats.
-                    Convert up to {MAX_FILES} images with batch processing.
+                    Universal image converter supporting PNG, JPG, WebP, GIF, and BMP formats &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
@@ -502,23 +502,19 @@ const UniversalImageConverterTool = () => {
             >
                 {/* Quality Slider (not for PNG) */}
                 {outputFormat !== "png" && (
-                    <div className="quality-control">
-                        <label className="quality-label">
-                            Output Quality: {quality}%
-                        </label>
-                        <input
-                            type="range"
-                            min="60"
-                            max="100"
-                            step="5"
-                            value={quality}
-                            onChange={(e) => setQuality(Number(e.target.value))}
-                            className="quality-slider"
-                        />
-                        <div className="quality-hints">
-                            <span>Good (60%)</span>
-                            <span>Recommended (92%)</span>
-                            <span>Best (100%)</span>
+                    <div className="quality-slider-container">
+                        <span className="quality-slider-label">Output quality</span>
+                        <div className="quality-slider-wrapper">
+                            <input
+                                type="range"
+                                min="60"
+                                max="100"
+                                step="5"
+                                value={quality}
+                                onChange={(e) => setQuality(Number(e.target.value))}
+                                className="quality-slider"
+                            />
+                            <span className="quality-value">{quality}%</span>
                         </div>
                     </div>
                 )}
@@ -574,10 +570,22 @@ const UniversalImageConverterTool = () => {
 
                 <label htmlFor="inputUniversal" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop images here or click to browse</h3>
-                    <p>
-                        Supports PNG, JPG, WebP, GIF, BMP, TIFF, SVG • Up to {MAX_FILES} images
-                    </p>
+                    <h3>Drop images here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> All formats
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Max 10 MB each
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
             </div>
 

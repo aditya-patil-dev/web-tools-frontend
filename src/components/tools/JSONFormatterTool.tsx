@@ -205,27 +205,33 @@ const JSONFormatterTool = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <div className="jf-root">
+            <div className="tool-info-banner">
+                <FiCode />
+                <p>
+                    Beautify, minify, and validate JSON data instantly. All processing happens locally for maximum privacy.
+                </p>
+            </div>
+
+            <div className="case-converter-section">
 
                 {/* ── Controls bar ── */}
-                <div className="jf-controls">
-                    {/* Mode tabs */}
-                    <div className="jf-mode-tabs">
-                        {([
-                            { id: "beautify", icon: <FiMaximize2 />, label: "Beautify" },
-                            { id: "minify", icon: <FiMinimize2 />, label: "Minify" },
-                            { id: "validate", icon: <FiCheckCircle />, label: "Validate" },
-                        ] as { id: FormatMode; icon: React.ReactNode; label: string }[]).map(m => (
-                            <button
-                                key={m.id}
-                                type="button"
-                                className={`jf-mode-tab${mode === m.id ? " jf-mode-tab--active" : ""}`}
-                                onClick={() => setMode(m.id)}
-                            >
-                                {m.icon} {m.label}
-                            </button>
-                        ))}
-                    </div>
+                <div className="case-options-grid">
+                    {([
+                        { id: "beautify", icon: <FiMaximize2 />, label: "Beautify" },
+                        { id: "minify", icon: <FiMinimize2 />, label: "Minify" },
+                        { id: "validate", icon: <FiCheckCircle />, label: "Validate" },
+                    ] as { id: FormatMode; icon: React.ReactNode; label: string }[]).map(m => (
+                        <button
+                            key={m.id}
+                            type="button"
+                            className={`case-option-btn${mode === m.id ? " active" : ""}`}
+                            onClick={() => setMode(m.id)}
+                        >
+                            <div className="case-icon">{m.icon}</div>
+                            <div className="case-info"><span className="case-label">{m.label}</span></div>
+                        </button>
+                    ))}
+                </div>
 
                     {/* Indent selector */}
                     <AnimatePresence>
@@ -252,50 +258,50 @@ const JSONFormatterTool = () => {
                     </AnimatePresence>
 
                     {/* Sample + clear buttons */}
-                    <div className="jf-controls-right">
-                        <button type="button" className="jf-btn-ghost" onClick={() => loadSample("simple")}>
-                            <FiZap /> Simple
+                <div className="output-actions" style={{ marginTop: 12, justifyContent: "flex-start" }}>
+                    <button type="button" className="btn-ghost" onClick={() => loadSample("simple")}>
+                        <FiZap /> Simple
+                    </button>
+                    <button type="button" className="btn-ghost" onClick={() => loadSample("complex")}>
+                        <FiDatabase /> Complex
+                    </button>
+                    {inputJSON && (
+                        <button type="button" className="btn-ghost" onClick={handleClear}>
+                            <FiRefreshCw /> Clear
                         </button>
-                        <button type="button" className="jf-btn-ghost" onClick={() => loadSample("complex")}>
-                            <FiDatabase /> Complex
-                        </button>
-                        {inputJSON && (
-                            <button type="button" className="jf-btn-ghost jf-btn-ghost--danger" onClick={handleClear}>
-                                <FiRefreshCw /> Clear
-                            </button>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 {/* ── Input — full width ── */}
-                <div className="jf-panel">
-                    <div className="jf-panel-header">
-                        <span className="jf-panel-title">
+                <div className="text-input-section" style={{ marginTop: 24 }}>
+                    <div className="section-header">
+                        <h3>
                             <FiCode /> Input JSON
-                        </span>
-                        <div className="jf-panel-header-right">
+                        </h3>
+                        <div className="output-actions">
                             {/* Live validation badge */}
                             {isValid !== null && (
-                                <span className={`jf-valid-badge${isValid ? " jf-valid-badge--ok" : " jf-valid-badge--err"}`}>
-                                    {isValid ? <><FiCheck /> Valid</> : <><FiX /> Invalid</>}
+                                <span className={`stat-label ${isValid ? "text-success" : "text-error"}`} style={{ marginRight: 12, color: isValid ? "var(--color-success)" : "var(--color-error)" }}>
+                                    {isValid ? <FiCheck /> : <FiX />} {isValid ? "Valid" : "Invalid"}
                                 </span>
                             )}
                             {/* Live stats */}
                             {inputJSON && (
-                                <span className="jf-input-meta">
-                                    {inputJSON.length.toLocaleString()} chars · {inputJSON.split("\n").length} lines
+                                <span className="stat-label">
+                                    {inputJSON.length.toLocaleString()} chars
                                 </span>
                             )}
                         </div>
                     </div>
 
                     <textarea
-                        className={`jf-textarea${isValid === false ? " jf-textarea--invalid" : ""}`}
+                        className="text-input-area"
                         placeholder={'Paste your JSON here…\nExample: {"name": "Alice", "age": 30}'}
                         value={inputJSON}
                         onChange={e => setInputJSON(e.target.value)}
                         spellCheck={false}
                         autoComplete="off"
+                        rows={10}
                     />
 
                     {/* Error messages */}
@@ -323,11 +329,12 @@ const JSONFormatterTool = () => {
                     </AnimatePresence>
                 </div>
 
-                {/* ── Stats strip — full width ── */}
+                {/* Stats Grid */}
                 <AnimatePresence>
                     {inputJSON && isValid && (
                         <motion.div
-                            className="jf-stats"
+                            className="text-stats-grid"
+                            style={{ marginTop: 16 }}
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
@@ -339,19 +346,20 @@ const JSONFormatterTool = () => {
                                 { label: "Depth", value: jsonStats.depth.toLocaleString() },
                                 { label: "Size", value: formatBytes(jsonStats.size) },
                             ].map(s => (
-                                <div key={s.label} className="jf-stat">
-                                    <span className="jf-stat-val">{s.value}</span>
-                                    <span className="jf-stat-lbl">{s.label}</span>
+                                <div key={s.label} className="stat-card">
+                                    <span className="stat-value" style={{ fontSize: "1.25rem" }}>{s.value}</span>
+                                    <span className="stat-label">{s.label}</span>
                                 </div>
                             ))}
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* ── Format button — full width ── */}
+                {/* Format button — full width ── */}
                 <motion.button
                     type="button"
-                    className="jf-btn-format"
+                    className="btn-convert"
+                    style={{ marginTop: 24 }}
                     onClick={handleFormat}
                     disabled={!canFormat}
                     whileHover={{ scale: canFormat ? 1.01 : 1 }}
@@ -363,49 +371,46 @@ const JSONFormatterTool = () => {
                     {mode === "validate" && "Validate JSON"}
                 </motion.button>
 
-                {/* ── Output — full width ── */}
+                {/* Output Section */}
                 <AnimatePresence>
                     {(outputJSON || (isValid === true && mode === "validate")) && (
                         <motion.div
-                            className="jf-panel"
+                            className="converted-output-section"
                             initial={{ opacity: 0, y: 14 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 8 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <div className="jf-panel-header jf-panel-header--output">
-                                <span className="jf-panel-title">
+                            <div className="section-header">
+                                <h3>
                                     <FiCode /> Output
                                     {mode === "validate" && isValid && (
-                                        <span className="jf-valid-badge jf-valid-badge--ok" style={{ marginLeft: 8 }}>
-                                            <FiCheck /> Valid JSON
+                                        <span className="stat-label" style={{ marginLeft: 12, color: "var(--color-success)" }}>
+                                            <FiCheck /> Valid
                                         </span>
                                     )}
-                                </span>
+                                </h3>
 
-                                <div className="jf-panel-header-right">
+                                <div className="output-actions">
                                     {/* Size comparison */}
                                     {outputJSON && mode !== "validate" && (
-                                        <div className="jf-size-compare">
+                                        <div className="stat-label" style={{ marginRight: 16 }}>
                                             <span>{formatBytes(inputJSON.length)}</span>
-                                            <span className="jf-size-arrow">→</span>
+                                            <span style={{ margin: "0 8px" }}>→</span>
                                             <span>{formatBytes(outputJSON.length)}</span>
-                                            {savingsPct !== null && (
-                                                <span className="jf-size-savings">−{savingsPct}%</span>
-                                            )}
                                         </div>
                                     )}
 
                                     {outputJSON && (
-                                        <div className="jf-panel-actions">
+                                        <div className="output-actions">
                                             <button
                                                 type="button"
-                                                className={`jf-btn-ghost${copied ? " jf-btn-ghost--done" : ""}`}
+                                                className="btn-ghost"
                                                 onClick={handleCopy}
                                             >
                                                 {copied ? <><FiCheckCircle /> Copied!</> : <><FiCopy /> Copy</>}
                                             </button>
-                                            <button type="button" className="jf-btn-ghost" onClick={handleDownload}>
+                                            <button type="button" className="btn-ghost" onClick={handleDownload}>
                                                 <FiDownload /> Download
                                             </button>
                                         </div>
@@ -414,20 +419,15 @@ const JSONFormatterTool = () => {
                             </div>
 
                             {outputJSON ? (
-                                <div className="jf-output-code">
-                                    <pre>
+                                <div className="converted-text-display">
+                                    <pre style={{ margin: 0 }}>
                                         <JsonHighlight code={outputJSON} />
                                     </pre>
                                 </div>
                             ) : mode === "validate" && isValid ? (
-                                <div className="jf-validate-ok">
-                                    <div className="jf-validate-icon"><FiCheckCircle /></div>
-                                    <div>
-                                        <p className="jf-validate-title">JSON is valid!</p>
-                                        <p className="jf-validate-desc">
-                                            {jsonStats.keys} keys · {jsonStats.objects} objects · {jsonStats.arrays} arrays · depth {jsonStats.depth}
-                                        </p>
-                                    </div>
+                                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                    <FiCheckCircle style={{ fontSize: 48, color: "var(--color-success)", marginBottom: 12 }} />
+                                    <p style={{ fontWeight: 700 }}>JSON is valid!</p>
                                 </div>
                             ) : null}
                         </motion.div>

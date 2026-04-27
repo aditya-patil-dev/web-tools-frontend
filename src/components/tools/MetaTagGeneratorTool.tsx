@@ -280,70 +280,73 @@ const MetaTagGeneratorTool = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Info Banner */}
             <div className="tool-info-banner">
-                <FiCheckCircle className="info-icon" />
+                <FiCode />
                 <p>
-                    Generate SEO-optimized meta tags for your website. Perfect for improving search
-                    engine visibility and social media sharing.
+                    Generate SEO-optimized meta tags for your website instantly. Improve search engine visibility and social media sharing appearance.
                 </p>
             </div>
 
             {/* Top Controls */}
-            <div className="meta-top-controls">
-                <div className="control-buttons">
-                    <button className="btn-sample" onClick={loadSample}>
-                        Load Sample
-                    </button>
-                    {(metaTags.title || metaTags.description) && (
-                        <button className="btn-clear-meta" onClick={handleClear}>
-                            <FiRefreshCw /> Clear All
+            <div className="case-converter-section" style={{ marginBottom: 24 }}>
+                <div className="output-actions" style={{ justifyContent: "space-between", marginBottom: 16 }}>
+                    <div className="output-actions">
+                        <button className="btn-ghost" onClick={loadSample}>
+                            Sample
                         </button>
-                    )}
+                        {(metaTags.title || metaTags.description) && (
+                            <button className="btn-ghost" onClick={handleClear}>
+                                <FiRefreshCw /> Clear
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="output-actions">
+                        <button
+                            className={`btn-ghost ${previewMode === "code" ? "active" : ""}`}
+                            onClick={() => setPreviewMode("code")}
+                        >
+                            <FiCode /> Code
+                        </button>
+                        <button
+                            className={`btn-ghost ${previewMode === "visual" ? "active" : ""}`}
+                            onClick={() => setPreviewMode("visual")}
+                        >
+                            <FiEye /> Preview
+                        </button>
+                    </div>
                 </div>
 
-                <div className="preview-toggle">
+                <div className="case-options-grid">
                     <button
-                        className={`preview-btn ${previewMode === "code" ? "active" : ""}`}
-                        onClick={() => setPreviewMode("code")}
+                        className={`case-option-btn ${activeTab === "basic" ? "active" : ""}`}
+                        onClick={() => setActiveTab("basic")}
                     >
-                        <FiCode /> Code
+                        <div className="case-icon"><FiGlobe /></div>
+                        <div className="case-info"><span className="case-label">Basic SEO</span></div>
                     </button>
                     <button
-                        className={`preview-btn ${previewMode === "visual" ? "active" : ""}`}
-                        onClick={() => setPreviewMode("visual")}
+                        className={`case-option-btn ${activeTab === "og" ? "active" : ""}`}
+                        onClick={() => setActiveTab("og")}
                     >
-                        <FiEye /> Preview
+                        <div className="case-icon"><FiFacebook /></div>
+                        <div className="case-info"><span className="case-label">Open Graph</span></div>
+                    </button>
+                    <button
+                        className={`case-option-btn ${activeTab === "twitter" ? "active" : ""}`}
+                        onClick={() => setActiveTab("twitter")}
+                    >
+                        <div className="case-icon"><FiTwitter /></div>
+                        <div className="case-info"><span className="case-label">Twitter Card</span></div>
+                    </button>
+                    <button
+                        className={`case-option-btn ${activeTab === "additional" ? "active" : ""}`}
+                        onClick={() => setActiveTab("additional")}
+                    >
+                        <div className="case-icon"><FiCode /></div>
+                        <div className="case-info"><span className="case-label">Additional</span></div>
                     </button>
                 </div>
-            </div>
-
-            {/* Tabs Navigation */}
-            <div className="meta-tabs">
-                <button
-                    className={`meta-tab ${activeTab === "basic" ? "active" : ""}`}
-                    onClick={() => setActiveTab("basic")}
-                >
-                    <FiGlobe /> Basic SEO
-                </button>
-                <button
-                    className={`meta-tab ${activeTab === "og" ? "active" : ""}`}
-                    onClick={() => setActiveTab("og")}
-                >
-                    <FiFacebook /> Open Graph
-                </button>
-                <button
-                    className={`meta-tab ${activeTab === "twitter" ? "active" : ""}`}
-                    onClick={() => setActiveTab("twitter")}
-                >
-                    <FiTwitter /> Twitter Card
-                </button>
-                <button
-                    className={`meta-tab ${activeTab === "additional" ? "active" : ""}`}
-                    onClick={() => setActiveTab("additional")}
-                >
-                    Additional
-                </button>
             </div>
 
             {/* Tab Content */}
@@ -752,7 +755,7 @@ const MetaTagGeneratorTool = () => {
                             </>
                         )}
                     </h3>
-                    <button className="btn-copy" onClick={copyToClipboard}>
+                    <button className="btn-ghost" onClick={copyToClipboard}>
                         {copied ? (
                             <>
                                 <FiCheckCircle /> Copied!
@@ -766,8 +769,8 @@ const MetaTagGeneratorTool = () => {
                 </div>
 
                 {previewMode === "code" ? (
-                    <div className="code-preview">
-                        <pre>
+                    <div className="converted-text-display">
+                        <pre style={{ margin: 0 }}>
                             <code>{generateHTML() || "<!-- Fill in the fields to generate meta tags -->"}</code>
                         </pre>
                     </div>

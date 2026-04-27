@@ -13,7 +13,10 @@ import {
     FiX,
     FiCheckCircle,
     FiImage,
-    FiTrash2
+    FiTrash2,
+    FiFileText,
+    FiZap,
+    FiLayers,
 } from "react-icons/fi";
 
 const MAX_FILES = 25;
@@ -27,6 +30,7 @@ const WebpToJpgPngTool = () => {
     const [loading, setLoading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const [convertProgress, setConvertProgress] = useState(0);
+    const [quality, setQuality] = useState<number>(85);
 
     /* -----------------------------
        File Handling
@@ -136,8 +140,9 @@ const WebpToJpgPngTool = () => {
 
                 const compressed = await imageCompression(file, {
                     fileType: mimeType,
-                    maxWidthOrHeight: 1000,
-                    useWebWorker: true
+                    maxWidthOrHeight: 2000,
+                    useWebWorker: true,
+                    initialQuality: quality / 100
                 });
 
                 const convertedFile = new File(
@@ -227,8 +232,8 @@ const WebpToJpgPngTool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Convert up to {MAX_FILES} WebP images to JPG or PNG format.
-                    All processing happens in your browser - 100% private and secure.
+                    Convert up to {MAX_FILES} WebP images to JPG or PNG format &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
@@ -275,12 +280,49 @@ const WebpToJpgPngTool = () => {
 
                 <label htmlFor="inputWebp" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop WebP files here or click to browse</h3>
-                    <p>
-                        Support for up to {MAX_FILES} images • Max 10MB each
-                    </p>
+                    <h3>Drop WebP files here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> WebP only
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Max 10 MB each
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
             </div>
+
+            {/* Quality Slider - only for JPG output */}
+            <AnimatePresence>
+                {outputFormat === "jpg" && (
+                    <motion.div 
+                        className="quality-slider-container"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                    >
+                        <span className="quality-slider-label">Output quality</span>
+                        <div className="quality-slider-wrapper">
+                            <input
+                                type="range"
+                                min="1"
+                                max="100"
+                                value={quality}
+                                onChange={(e) => setQuality(Number(e.target.value))}
+                                className="quality-slider"
+                            />
+                            <span className="quality-value">{quality}%</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Previews */}
             <AnimatePresence>

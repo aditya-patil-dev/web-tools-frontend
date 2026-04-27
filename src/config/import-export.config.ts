@@ -51,6 +51,59 @@ export type ResourceConfig = {
 // VALIDATION HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Converts various formats of keywords to a PostgreSQL-compatible array.
+ * Handles:
+ *   - JSON array string:  '["a","b","c"]'       → ['a','b','c'] (JS array, sent as-is)
+ *   - Comma-separated:    'a,b,c'                → ['a','b','c']
+ *   - Already an array:   ['a','b','c']           → ['a','b','c']
+ *   - Empty/null:         '' | null               → null
+ */
+const toKeywordsArray = (value: any): string[] | null => {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  if (str === "") return null;
+
+  // Try JSON array first (exported as ["a","b"])
+  if (str.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(str);
+      if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+    } catch {
+      /* fall through to comma split */
+    }
+  }
+
+  // Fallback: comma-separated plain text
+  return str
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const toJsonOrNull = (value: any): any => {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  if (str === "") return null;
+  try {
+    return JSON.parse(str); // parse so backend receives an object, not a string
+  } catch {
+    return null; // invalid JSON → null (validator already caught this)
+  }
+};
+
+const toNullIfEmpty = (value: any): string | null => {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  return str === "" ? null : str;
+};
+
+const toBooleanOrFalse = (value: any): boolean => {
+  if (typeof value === "boolean") return value;
+  const str = String(value).toLowerCase().trim();
+  return str === "true" || str === "1" || str === "yes";
+};
+
 const validateRequired = (value: any, columnLabel: string): string | null => {
   if (value === null || value === undefined || String(value).trim() === "") {
     return `${columnLabel} is required`;
@@ -316,7 +369,26 @@ export const IMPORT_EXPORT_RESOURCES: Record<string, ResourceConfig> = {
     },
 
     // The backend service handles all type coercions — just pass raw CSV values
-    transformer: (row) => row,
+    transformer: (row) => ({
+      id: row.id ? Number(row.id) : undefined,
+      title: toNullIfEmpty(row.title),
+      slug: toNullIfEmpty(row.slug),
+      category_slug: toNullIfEmpty(row.category_slug),
+      tool_type: toNullIfEmpty(row.tool_type),
+      short_description: toNullIfEmpty(row.short_description),
+      tool_url: toNullIfEmpty(row.tool_url),
+      tags: toNullIfEmpty(row.tags),
+      status: toNullIfEmpty(row.status) ?? "draft",
+      badge: toNullIfEmpty(row.badge),
+      access_level: toNullIfEmpty(row.access_level) ?? "free",
+      daily_limit: row.daily_limit ? Number(row.daily_limit) : null,
+      monthly_limit: row.monthly_limit ? Number(row.monthly_limit) : null,
+      is_featured: toBooleanOrFalse(row.is_featured),
+      sort_order: row.sort_order ? Number(row.sort_order) : 0,
+      rating: row.rating ? Number(row.rating) : null,
+      views: row.views ? Number(row.views) : 0,
+      users_count: row.users_count ? Number(row.users_count) : 0,
+    }),
 
     importModes: ["append", "update"],
     batchSize: 100,
@@ -443,7 +515,19 @@ export const IMPORT_EXPORT_RESOURCES: Record<string, ResourceConfig> = {
       return { valid: errors.length === 0, errors, data: row };
     },
 
-    transformer: (row) => row,
+    transformer: (row) => ({
+      id: row.id ? Number(row.id) : undefined,
+      category_slug: toNullIfEmpty(row.category_slug),
+      page_title: toNullIfEmpty(row.page_title),
+      page_description: toNullIfEmpty(row.page_description),
+      page_intro: toNullIfEmpty(row.page_intro),
+      meta_title: toNullIfEmpty(row.meta_title),
+      meta_description: toNullIfEmpty(row.meta_description),
+      meta_keywords: toNullIfEmpty(row.meta_keywords),
+      canonical_url: toNullIfEmpty(row.canonical_url),
+      noindex: toBooleanOrFalse(row.noindex),
+      status: toNullIfEmpty(row.status) ?? "draft",
+    }),
     importModes: ["append", "update"],
     batchSize: 50,
   },
@@ -606,7 +690,23 @@ export const IMPORT_EXPORT_RESOURCES: Record<string, ResourceConfig> = {
       return { valid: errors.length === 0, errors, data: row };
     },
 
-    transformer: (row) => row,
+    transformer: (row) => ({
+      id: row.id ? Number(row.id) : undefined,
+      tool_slug: toNullIfEmpty(row.tool_slug),
+      page_title: toNullIfEmpty(row.page_title),
+      page_intro: toNullIfEmpty(row.page_intro),
+      long_content: toNullIfEmpty(row.long_content),
+      features: toJsonOrNull(row.features),
+      faqs: toJsonOrNull(row.faqs),
+      meta_title: toNullIfEmpty(row.meta_title),
+      meta_description: toNullIfEmpty(row.meta_description),
+      meta_keywords: toKeywordsArray(row.meta_keywords), // ← fix: array, not string
+      canonical_url: toNullIfEmpty(row.canonical_url),
+      schema_markup: toJsonOrNull(row.schema_markup),
+      noindex: toBooleanOrFalse(row.noindex),
+      status: toNullIfEmpty(row.status) ?? "draft",
+    }),
+
     importModes: ["append", "update"],
     batchSize: 100,
   },

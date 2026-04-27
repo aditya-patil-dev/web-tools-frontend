@@ -8,10 +8,11 @@ import {
     FiX,
     FiCheckCircle,
     FiCopy,
+    FiZap,
+    FiFileText,
     FiDroplet,
     FiEye,
-    FiLayers,
-    FiZap
+    FiLayers
 } from "react-icons/fi";
 
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "image/bmp"];
@@ -384,8 +385,22 @@ const ColorPickerTool = () => {
 
                     <label htmlFor="inputColorPicker" className="tool-upload-label">
                         <FiUpload className="upload-icon" />
-                        <h3>Drop an image here or click to browse</h3>
-                        <p>Supports PNG, JPG, WebP, GIF, BMP</p>
+                        <h3>Drop an image here</h3>
+                        <p>or click to browse your device</p>
+
+                        <div className="btn-browse">Browse files</div>
+
+                        <div className="uploader-tags">
+                            <div className="uploader-tag">
+                                <FiFileText /> All formats
+                            </div>
+                            <div className="uploader-tag">
+                                <FiZap /> Precise
+                            </div>
+                            <div className="uploader-tag">
+                                <FiLayers /> Palette ready
+                            </div>
+                        </div>
                     </label>
                 </div>
             )}

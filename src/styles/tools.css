@@ -23,18 +23,32 @@
 /* Outer card container wrapping every tool component */
 .tool-card {
   position: relative;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
+  background: var(--color-slate-900);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
   overflow: hidden;
-  transition: all var(--transition-base);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   padding: 36px;
+  margin: var(--space-4) 0;
+  color: #fff;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  z-index: 1;
 }
 
 .tool-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px);
+  border-color: rgba(255, 107, 53, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px);
 }
 
 .tool-card a {
@@ -49,24 +63,22 @@
 
 .tool-info-banner {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-primary-light);
-  border: 1px solid rgba(255, 107, 53, 0.2);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-6);
-  font-size: var(--font-sm);
-  color: var(--text-secondary);
-  line-height: 1.6;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(255, 107, 53, 0.03);
+  border: 1px solid rgba(255, 107, 53, 0.15);
+  border-radius: 16px;
+  margin-bottom: 32px;
+  font-size: 15px;
+  color: var(--color-slate-300);
+  backdrop-filter: blur(8px);
 }
 
 .tool-info-banner svg {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  font-size: 20px;
   color: var(--color-primary);
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 /* =============================================================
@@ -75,25 +87,26 @@
 
 .tool-upload-area {
   position: relative;
-  border: 2px dashed var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-12);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 48px 32px;
   text-align: center;
-  background: var(--bg-secondary);
-  transition: all var(--transition-base);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
+  overflow: hidden;
 }
 
 .tool-upload-area:hover,
 .tool-upload-area.drag-active {
   border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: rgba(255, 107, 53, 0.05);
+  box-shadow: 0 0 40px rgba(255, 107, 53, 0.1);
 }
 
 .tool-upload-area.drag-active {
   border-style: solid;
-  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
-  transform: scale(1.01);
+  transform: scale(1.02);
 }
 
 /* Hidden native file input */
@@ -119,15 +132,62 @@
   width: 64px;
   height: 64px;
   padding: var(--space-4);
-  background: var(--gradient-primary);
+  background: #ff6b35;
   color: white;
   border-radius: var(--radius-full);
-  margin-bottom: var(--space-2);
-  transition: transform var(--transition-base);
+  transition: all var(--transition-base);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
 }
 
 .tool-upload-area:hover .upload-icon {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 107, 53, 0.4);
+}
+
+.tool-upload-label h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.tool-upload-label p {
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.btn-browse {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 14px;
+  pointer-events: none;
+  /* Label handles the click */
+}
+
+.uploader-tags {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.uploader-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uploader-tag svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* =============================================================
@@ -384,16 +444,18 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: var(--space-4);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateY(-4px);
 }
 
 /* Highlighted stat card — primary gradient */
@@ -402,15 +464,16 @@
   background: var(--gradient-primary);
   border-color: var(--color-primary);
   color: white;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 16px rgba(255, 107, 53, 0.2);
 }
 
 .stat-value {
-  font-size: var(--font-2xl);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .stat-card.highlight .stat-value,
@@ -419,11 +482,11 @@
 }
 
 .stat-label {
-  font-size: var(--font-xs);
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-slate-400);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 .stat-card.highlight .stat-label,
@@ -658,7 +721,61 @@
 }
 
 /* =============================================================
-   13. MODE / TAB BUTTONS
+   13. QUALITY SLIDER
+   ============================================================= */
+
+.quality-slider-container {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quality-slider-label {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.quality-slider-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.quality-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: #1f2937;
+  border-radius: 2px;
+  outline: none;
+}
+
+.quality-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 2px solid #ff6b35;
+}
+
+.quality-value {
+  color: #ff6b35;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 32px;
+}
+
+/* =============================================================
+   14. MODE / TAB BUTTONS
    Toggle between two or more operational modes (e.g. Encode/Decode)
    ============================================================= */
 
@@ -725,23 +842,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 12px;
   width: 100%;
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--font-lg);
-  font-weight: 600;
-  color: white;
+  padding: 16px;
   background: var(--gradient-primary);
+  color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-md);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-convert::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .btn-convert:hover:not(:disabled) {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.45);
+}
+
+.btn-convert:hover:not(:disabled)::after {
+  opacity: 1;
 }
 
 .btn-convert:disabled {
@@ -760,24 +892,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 12px;
   width: 100%;
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--font-lg);
-  font-weight: 600;
-  color: white;
+  padding: 16px;
   background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%);
+  color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-md);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .btn-download:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
 }
 
 .btn-download svg {
@@ -841,22 +972,30 @@
 .btn-ghost {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-sm);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-slate-300);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.3s ease;
 }
 
 .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 107, 53, 0.4);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-ghost.active {
+  background: rgba(255, 107, 53, 0.1);
   border-color: var(--color-primary);
   color: var(--color-primary);
-  background: var(--color-primary-light);
 }
 
 .btn-ghost svg {
@@ -931,9 +1070,11 @@
     transform: scale(0.8);
     opacity: 0;
   }
+
   60% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -1033,6 +1174,7 @@
    ============================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+
   .spinner,
   .spinner-lg,
   .upload-icon,
@@ -1047,4 +1189,475 @@
   .tool-card:hover {
     transform: none;
   }
+}
+
+/* =============================================================
+   18. TOOL SUGGESTIONS SIDEBAR (ts-*)
+   Used by ToolSuggestions component — position="above" and "below"
+   ============================================================= */
+
+/* ── Outer card shell ─────────────────────────────────────────── */
+.ts-root {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  background: var(--bg-primary);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Header strip ────────────────────────────────────────────── */
+.ts-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-xs);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ABOVE position — orange brand strip */
+.ts-header--above {
+  background: var(--gradient-primary);
+  color: #ffffff;
+}
+
+/* BELOW position — dark slate strip */
+.ts-header--below {
+  background: var(--color-slate-800);
+  color: #ffffff;
+}
+
+.ts-header-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* ── Section (labelled group of rows) ────────────────────────── */
+.ts-section {
+  padding: var(--space-4) var(--space-5);
+}
+
+.ts-section+.ts-section {
+  border-top: 1px solid var(--border-primary);
+}
+
+.ts-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.ts-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ts-section-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ts-section-title {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ── Tool row ─────────────────────────────────────────────────── */
+.ts-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ts-tool-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+  color: inherit;
+}
+
+.ts-tool-row:hover {
+  background: var(--bg-secondary);
+}
+
+/* Avatar circle — shows first letter of tool name */
+.ts-tool-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-primary);
+  color: #ffffff;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+/* Text block: name + description */
+.ts-tool-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ts-tool-name {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ts-tool-desc {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+/* Chevron arrow — right side */
+.ts-tool-arrow {
+  width: 13px;
+  height: 13px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.ts-tool-row:hover .ts-tool-arrow {
+  transform: translateX(2px);
+  color: var(--color-primary);
+}
+
+/* ── Badge chips ─────────────────────────────────────────────── */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.6;
+}
+
+.ts-badge--new {
+  background: var(--color-primary-new);
+}
+
+.ts-badge--hot {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.ts-badge--ai {
+  background: var(--color-primary-ai);
+}
+
+.ts-badge--pro {
+  background: var(--color-primary-pro);
+}
+
+.ts-badge--beta {
+  background: var(--color-primary-beta);
+}
+
+.ts-badge--popular {
+  background: var(--color-primary-popular);
+}
+
+/* ── BELOW grid: two columns (alsoUsed | popular) ────────────── */
+.ts-below-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.ts-below-grid .ts-section:first-child {
+  border-right: 1px solid var(--border-primary);
+}
+
+/* When only one section has data → full width */
+.ts-below-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.ts-below-grid--single .ts-section:first-child {
+  border-right: none;
+}
+
+/* ── Footer — browse all link ────────────────────────────────── */
+.ts-footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.ts-browse-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: gap var(--transition-fast), opacity var(--transition-fast);
+}
+
+.ts-browse-link:hover {
+  gap: var(--space-3);
+  opacity: 0.85;
+}
+
+.ts-browse-link svg {
+  width: 13px;
+  height: 13px;
+  transition: transform var(--transition-fast);
+}
+
+.ts-browse-link:hover svg {
+  transform: translateX(3px);
+}
+
+/* ── Responsive: stack columns on small screens ──────────────── */
+@media (max-width: 480px) {
+  .ts-below-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ts-below-grid .ts-section:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--border-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .ts-tool-row:hover .ts-tool-arrow,
+  .ts-browse-link:hover svg {
+    transform: none;
+  }
+}
+/* =============================================================
+   17. BACKGROUND OPTIONS TOGGLE (BackgroundRemoverTool)
+   ============================================================= */
+
+.bg-options-toggle-container {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.btn-toggle-options {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-toggle-options:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-label svg {
+  color: #ff6b35;
+  font-size: 18px;
+}
+
+.btn-toggle-options svg:last-child {
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.bg-options-section {
+  overflow: hidden;
+  padding: 0 4px;
+}
+
+/* =============================================================
+   18. TEXT TOOL WORKSPACE & ELEMENTS
+   ============================================================= */
+
+.text-tool-workspace {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+@media (max-width: 1024px) {
+  .text-tool-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.text-input-section, .case-converter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.text-input-area {
+  width: 100%;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #fff;
+  resize: vertical;
+  min-height: 320px;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.text-input-area:focus {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 107, 53, 0.5);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.text-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.case-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.case-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+.case-option-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateY(-2px);
+}
+
+.case-option-btn.active {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+.case-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.case-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.case-label {
+  font-size: 13px;
+  font-weight: 700;
+  display: block;
+}
+
+.case-example {
+  font-size: 11px;
+  color: var(--color-slate-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-top: 2px;
+}
+
+.converted-output-section {
+  padding: 24px;
+  background: rgba(16, 185, 129, 0.03);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  margin-top: 8px;
+}
+
+.converted-text-display {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 15px;
+  color: #fff;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 16px;
 }

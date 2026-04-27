@@ -195,41 +195,40 @@ const HashGeneratorTool = () => {
         >
             {/* Info Banner */}
             <div className="tool-info-banner">
-                <FiCheckCircle />
+                <FiLock />
                 <p>
-                    Generate cryptographic hashes using MD5, SHA-1, SHA-256, SHA-512, and SHA-3 algorithms.
-                    Perfect for password verification, data integrity, and security applications.
+                    Generate cryptographic hashes using MD5, SHA-1, SHA-2 family, and SHA-3 algorithms. Secure, local browser-based hashing for your data.
                 </p>
             </div>
 
             {/* Security Warning */}
-            <div className="hash-warning-box">
-                <FiAlertCircle />
-                <div className="warning-content">
-                    <strong>Security Notice:</strong> MD5 and SHA-1 are cryptographically broken and should not be used for security-critical applications. Use SHA-256 or SHA-512 instead.
-                </div>
+            <div className="tool-info-banner" style={{ background: "rgba(239, 68, 68, 0.05)", borderColor: "rgba(239, 68, 68, 0.2)", marginBottom: 24 }}>
+                <FiAlertCircle style={{ color: "rgb(239, 68, 68)" }} />
+                <p style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+                    <strong style={{ color: "rgb(239, 68, 68)" }}>Security Notice:</strong> MD5 and SHA-1 are cryptographically broken. Use SHA-256 or SHA-512 for security-critical applications.
+                </p>
             </div>
 
-            <div className="hash-workspace">
+            <div className="text-tool-workspace">
                 {/* Left Panel - Input */}
-                <div className="hash-input-panel">
+                <div className="text-input-section">
                     {/* Controls */}
-                    <div className="hash-controls">
-                        <div className="controls-left">
+                    <div className="output-actions" style={{ marginBottom: 16 }}>
+                        <div className="output-actions">
                             <button
-                                className="btn-toggle-input"
+                                className="btn-ghost"
                                 onClick={() => setShowInput(!showInput)}
                             >
                                 {showInput ? <FiEyeOff /> : <FiEye />}
-                                {showInput ? "Hide" : "Show"} Input
+                                {showInput ? "Hide" : "Show"}
                             </button>
                         </div>
-                        <div className="controls-right">
-                            <button className="btn-sample-hash" onClick={loadSample}>
-                                Load Sample
+                        <div className="output-actions">
+                            <button className="btn-ghost" onClick={loadSample}>
+                                Sample
                             </button>
                             {inputText && (
-                                <button className="btn-clear-hash" onClick={handleClear}>
+                                <button className="btn-ghost" onClick={handleClear}>
                                     <FiRefreshCw /> Clear
                                 </button>
                             )}
@@ -243,32 +242,33 @@ const HashGeneratorTool = () => {
                                 <FiType /> Input Text
                             </h3>
                             {inputText && (
-                                <span className="char-count">
+                                <span className="stat-label">
                                     {inputText.length} characters
                                 </span>
                             )}
                         </div>
 
                         <textarea
-                            className={`hash-input-area ${!showInput ? "obscured" : ""}`}
+                            className={`text-input-area ${!showInput ? "obscured" : ""}`}
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             placeholder="Enter text to generate hash..."
                             rows={8}
                             spellCheck={false}
+                            style={{ WebkitTextSecurity: showInput ? "none" : "disc" } as any}
                         />
                     </div>
 
                     {/* HMAC Section */}
-                    <div className="hmac-section">
-                        <label className="hmac-toggle">
+                    <div className="hmac-section" style={{ marginTop: 20 }}>
+                        <label className="hmac-toggle" style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", color: "var(--color-slate-300)" }}>
                             <input
                                 type="checkbox"
                                 checked={useHMAC}
                                 onChange={(e) => setUseHMAC(e.target.checked)}
                             />
-                            <span>
-                                <FiShield /> Use HMAC (Hash-based Message Authentication)
+                            <span style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                                <FiShield /> Use HMAC Key
                             </span>
                         </label>
 
@@ -279,42 +279,37 @@ const HashGeneratorTool = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
+                                    style={{ marginTop: 12 }}
                                 >
                                     <input
                                         type="text"
                                         value={hmacKey}
                                         onChange={(e) => setHmacKey(e.target.value)}
                                         placeholder="Enter secret key for HMAC..."
-                                        className="hmac-key-field"
+                                        className="text-input-area"
+                                        style={{ height: "auto", padding: "12px 16px" }}
                                     />
-                                    <small className="hmac-hint">
-                                        HMAC adds a secret key to the hash for authentication
-                                    </small>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
 
                     {/* Algorithm Selection */}
-                    <div className="algorithm-section">
-                        <h3>
-                            <FiLock /> Select Hash Algorithms
-                        </h3>
-                        <div className="algorithm-grid">
+                    <div className="algorithm-section" style={{ marginTop: 24 }}>
+                        <div className="section-header">
+                            <h3><FiLock /> Algorithms</h3>
+                        </div>
+                        <div className="case-options-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
                             {algorithms.map((algo) => (
                                 <button
                                     key={algo.id}
-                                    className={`algorithm-btn ${selectedAlgorithms.includes(algo.id) ? "active" : ""} ${!algo.secure ? "insecure" : ""}`}
+                                    className={`case-option-btn ${selectedAlgorithms.includes(algo.id) ? "active" : ""}`}
                                     onClick={() => toggleAlgorithm(algo.id)}
                                 >
-                                    <span className="algo-icon">{algo.icon}</span>
-                                    <div className="algo-info">
-                                        <div className="algo-name">{algo.name}</div>
-                                        <div className="algo-desc">{algo.description}</div>
+                                    <div className="case-icon">{algo.icon}</div>
+                                    <div className="case-info">
+                                        <div className="case-label">{algo.name}</div>
                                     </div>
-                                    {selectedAlgorithms.includes(algo.id) && (
-                                        <FiCheckCircle className="algo-check" />
-                                    )}
                                 </button>
                             ))}
                         </div>
@@ -322,16 +317,11 @@ const HashGeneratorTool = () => {
                 </div>
 
                 {/* Right Panel - Results */}
-                <div className="hash-results-panel">
-                    <div className="results-header">
+                <div className="case-converter-section">
+                    <div className="section-header">
                         <h3>
-                            <FiLock /> Generated Hashes
+                            <FiShield /> Generated Hashes
                         </h3>
-                        {hashResults.length > 0 && (
-                            <span className="results-count">
-                                {hashResults.length} hash{hashResults.length !== 1 ? "es" : ""}
-                            </span>
-                        )}
                     </div>
 
                     {!inputText ? (
@@ -352,52 +342,39 @@ const HashGeneratorTool = () => {
                                 {hashResults.map((result, index) => (
                                     <motion.div
                                         key={result.algorithm}
-                                        className="hash-result-card"
+                                        className="converted-output-section"
+                                        style={{ marginBottom: 16 }}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
                                         transition={{ delay: index * 0.05 }}
                                     >
-                                        <div className="result-header">
-                                            <div className="result-algorithm">
+                                        <div className="section-header">
+                                            <h3>
                                                 {result.algorithm}
                                                 {useHMAC && (
-                                                    <span className="hmac-badge">HMAC</span>
+                                                    <span className="stat-label" style={{ marginLeft: 8, color: "var(--color-primary)" }}>HMAC</span>
                                                 )}
-                                            </div>
-                                            <div className="result-length">
-                                                {result.length} chars
+                                            </h3>
+                                            <div className="output-actions">
+                                                <button
+                                                    className="btn-ghost"
+                                                    onClick={() => handleCopy(result.hash, result.algorithm)}
+                                                >
+                                                    {copiedHash === result.algorithm ? <FiCheckCircle /> : <FiCopy />}
+                                                    {copiedHash === result.algorithm ? "Copied!" : "Lower"}
+                                                </button>
+                                                <button
+                                                    className="btn-ghost"
+                                                    onClick={() => handleCopy(result.uppercase, result.algorithm)}
+                                                >
+                                                    <FiCopy /> Upper
+                                                </button>
                                             </div>
                                         </div>
 
-                                        <div className="result-hash-container">
-                                            <code className="result-hash">
-                                                {result.hash}
-                                            </code>
-                                        </div>
-
-                                        <div className="result-actions">
-                                            <button
-                                                className="btn-copy-hash"
-                                                onClick={() => handleCopy(result.hash, result.algorithm)}
-                                            >
-                                                {copiedHash === result.algorithm ? (
-                                                    <>
-                                                        <FiCheckCircle /> Copied!
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FiCopy /> Copy Lowercase
-                                                    </>
-                                                )}
-                                            </button>
-
-                                            <button
-                                                className="btn-copy-hash secondary"
-                                                onClick={() => handleCopy(result.uppercase, result.algorithm)}
-                                            >
-                                                <FiCopy /> Copy Uppercase
-                                            </button>
+                                        <div className="converted-text-display">
+                                            <code style={{ wordBreak: "break-all", fontSize: 13 }}>{result.hash}</code>
                                         </div>
                                     </motion.div>
                                 ))}

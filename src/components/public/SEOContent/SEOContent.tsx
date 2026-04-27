@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface SEOContentConfig {
     title: string;
@@ -39,36 +38,7 @@ const DEFAULT_CONFIG: SEOContentConfig = {
     ],
 };
 
-const contentVariants = {
-    collapsed: {
-        height: 0,
-        opacity: 0,
-        transition: {
-            duration: 0.4,
-            ease: [0.4, 0, 0.2, 1] as const,
-        },
-    },
-    expanded: {
-        height: "auto",
-        opacity: 1,
-        transition: {
-            duration: 0.5,
-            ease: [0.4, 0, 0.2, 1] as const,
-        },
-    },
-};
 
-const paragraphVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.1,
-            duration: 0.4,
-        },
-    }),
-};
 
 export default function SEOContent({ config = DEFAULT_CONFIG }: SEOContentProps) {
     const [expanded, setExpanded] = useState(false);
@@ -76,71 +46,31 @@ export default function SEOContent({ config = DEFAULT_CONFIG }: SEOContentProps)
     return (
         <section className="seo-wrapper">
             <div className="seo-container">
-                <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.6 }}
-                    dangerouslySetInnerHTML={{ __html: config.title }}
-                />
+                <h2 dangerouslySetInnerHTML={{ __html: config.title }} />
 
-                <motion.p
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
+                <p>
                     {config.intro}
-                </motion.p>
+                </p>
 
-                <AnimatePresence initial={false}>
-                    {expanded && (
-                        <motion.div
-                            className="seo-content"
-                            initial="collapsed"
-                            animate="expanded"
-                            exit="collapsed"
-                            variants={contentVariants}
-                            style={{ overflow: "hidden" }}
-                        >
-                            <motion.div>
-                                {config.expandedContent.map((section, index) => (
-                                    <div key={index}>
-                                        <motion.h3
-                                            custom={index * 2}
-                                            initial="hidden"
-                                            animate="visible"
-                                            variants={paragraphVariants}
-                                        >
-                                            {section.heading}
-                                        </motion.h3>
-                                        <motion.p
-                                            custom={index * 2 + 1}
-                                            initial="hidden"
-                                            animate="visible"
-                                            variants={paragraphVariants}
-                                        >
-                                            {section.content}
-                                        </motion.p>
-                                    </div>
-                                ))}
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {expanded && (
+                    <div className="seo-content" style={{ overflow: "hidden" }}>
+                        <div>
+                            {config.expandedContent.map((section, index) => (
+                                <div key={index}>
+                                    <h3>{section.heading}</h3>
+                                    <p>{section.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                <motion.button
+                <button
                     className="seo-toggle"
                     onClick={() => setExpanded(!expanded)}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
                 >
                     {expanded ? "Show less" : "Read more"}
-                </motion.button>
+                </button>
             </div>
         </section>
     );

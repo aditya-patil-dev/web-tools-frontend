@@ -6,9 +6,10 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { toast } from "@/components/toast/toast";
 import {
-    FiUpload, FiDownload, FiX, FiCheckCircle,
     FiTrash2, FiScissors, FiLayers, FiInfo,
-    FiAlertCircle,
+    FiAlertCircle, FiFileText, FiZap,
+    FiDownload, FiUpload, FiX, FiCheckCircle,
+    FiChevronDown, FiChevronUp
 } from "react-icons/fi";
 
 /* ─────────────────────────────────────────
@@ -98,6 +99,7 @@ const BackgroundRemoverTool = () => {
     const [customColor, setCustomColor] = useState("#ffffff");
     const [sliderIdx, setSliderIdx] = useState(0); // for before/after
     const [sliderPos, setSliderPos] = useState(50); // 0-100
+    const [showBgOptions, setShowBgOptions] = useState(false);
     const sliderRef = useRef<HTMLDivElement>(null);
 
     /* ── File handling ── */
@@ -313,71 +315,87 @@ const BackgroundRemoverTool = () => {
             <div className="tool-info-banner">
                 <FiCheckCircle />
                 <p>
-                    Remove backgrounds from <strong>any image</strong> — people, products,
-                    animals, objects. Powered by ISNet AI model. Up to {MAX_FILES} images,
-                    max {MAX_SIZE_MB} MB each. All processing happens in your browser.
+                    Remove backgrounds from up to {MAX_FILES} images at once &mdash; all processing
+                    happens locally in your browser.
                 </p>
             </div>
 
-            {/* Background Options */}
-            <motion.div
-                className="bg-options-section"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-            >
-                <label className="bg-options-label">
-                    <FiLayers /> Replace Background With:
-                </label>
-                <div className="bg-options-grid">
-                    {([
-                        { id: "transparent", label: "Transparent", sub: "PNG" },
-                        { id: "white", label: "White", sub: "JPG" },
-                        { id: "black", label: "Black", sub: "JPG" },
-                        { id: "custom", label: "Custom", sub: "JPG" },
-                    ] as { id: BackgroundColor; label: string; sub: string }[]).map(opt => (
-                        <button
-                            key={opt.id}
-                            type="button"
-                            className={`bg-option-btn${backgroundColor === opt.id ? " active" : ""}`}
-                            onClick={() => setBackgroundColor(opt.id)}
-                        >
-                            {opt.id === "transparent" && <div className="bg-preview transparent-bg" />}
-                            {opt.id === "white" && <div className="bg-preview white-bg" />}
-                            {opt.id === "black" && <div className="bg-preview black-bg" />}
-                            {opt.id === "custom" && (
-                                <div
-                                    className="bg-preview"
-                                    style={{ background: customColor, border: "1px solid #e2e8f0" }}
-                                />
-                            )}
-                            <span>{opt.label}</span>
-                            <small>{opt.sub}</small>
-                        </button>
-                    ))}
-                </div>
+            {/* Background Options Toggle */}
+            <div className="bg-options-toggle-container">
+                <button
+                    type="button"
+                    className="btn-toggle-options"
+                    onClick={() => setShowBgOptions(!showBgOptions)}
+                >
+                    <div className="toggle-label">
+                        <FiLayers />
+                        <span>Background Options</span>
+                    </div>
+                    {showBgOptions ? <FiChevronUp /> : <FiChevronDown />}
+                </button>
+            </div>
 
-                {/* Custom colour picker */}
-                <AnimatePresence>
-                    {backgroundColor === "custom" && (
-                        <motion.div
-                            className="bgr-custom-color-row"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                        >
-                            <label className="bgr-custom-color-label">Pick colour:</label>
-                            <input
-                                type="color"
-                                value={customColor}
-                                onChange={e => setCustomColor(e.target.value)}
-                                className="bgr-color-input"
-                            />
-                            <span className="bgr-color-hex">{customColor}</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
+            {/* Background Options Content */}
+            <AnimatePresence>
+                {showBgOptions && (
+                    <motion.div
+                        className="bg-options-section"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="bg-options-grid">
+                            {([
+                                { id: "transparent", label: "Transparent", sub: "PNG" },
+                                { id: "white", label: "White", sub: "JPG" },
+                                { id: "black", label: "Black", sub: "JPG" },
+                                { id: "custom", label: "Custom", sub: "JPG" },
+                            ] as { id: BackgroundColor; label: string; sub: string }[]).map(opt => (
+                                <button
+                                    key={opt.id}
+                                    type="button"
+                                    className={`bg-option-btn${backgroundColor === opt.id ? " active" : ""}`}
+                                    onClick={() => setBackgroundColor(opt.id)}
+                                >
+                                    {opt.id === "transparent" && <div className="bg-preview transparent-bg" />}
+                                    {opt.id === "white" && <div className="bg-preview white-bg" />}
+                                    {opt.id === "black" && <div className="bg-preview black-bg" />}
+                                    {opt.id === "custom" && (
+                                        <div
+                                            className="bg-preview"
+                                            style={{ background: customColor, border: "1px solid #e2e8f0" }}
+                                        />
+                                    )}
+                                    <span>{opt.label}</span>
+                                    <small>{opt.sub}</small>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Custom colour picker */}
+                        <AnimatePresence>
+                            {backgroundColor === "custom" && (
+                                <motion.div
+                                    className="bgr-custom-color-row"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                >
+                                    <label className="bgr-custom-color-label">Pick colour:</label>
+                                    <input
+                                        type="color"
+                                        value={customColor}
+                                        onChange={e => setCustomColor(e.target.value)}
+                                        className="bgr-color-input"
+                                    />
+                                    <span className="bgr-color-hex">{customColor}</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* AI Info */}
             <motion.div
@@ -413,10 +431,22 @@ const BackgroundRemoverTool = () => {
                 />
                 <label htmlFor="inputBgRemove" className="tool-upload-label">
                     <FiUpload className="upload-icon" />
-                    <h3>Drop images here or click to browse</h3>
-                    <p>
-                        PNG, JPG, WebP · Up to {MAX_FILES} images · Max {MAX_SIZE_MB} MB each
-                    </p>
+                    <h3>Drop images here</h3>
+                    <p>or click to browse your device</p>
+
+                    <div className="btn-browse">Browse files</div>
+
+                    <div className="uploader-tags">
+                        <div className="uploader-tag">
+                            <FiFileText /> PNG, JPG, WebP
+                        </div>
+                        <div className="uploader-tag">
+                            <FiZap /> Max {MAX_SIZE_MB} MB each
+                        </div>
+                        <div className="uploader-tag">
+                            <FiLayers /> Up to {MAX_FILES} files
+                        </div>
+                    </div>
                 </label>
             </div>
 
