@@ -9032,7 +9032,7 @@ a {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
   border: 3px solid var(--color-primary);
   cursor: pointer;
   box-shadow: var(--shadow-md);
@@ -9048,7 +9048,7 @@ a {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
   border: 3px solid var(--color-primary);
   cursor: pointer;
   box-shadow: var(--shadow-md);
@@ -9263,7 +9263,7 @@ a {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
   border: 3px solid var(--color-primary);
   cursor: pointer;
   box-shadow: var(--shadow-md);
@@ -9281,7 +9281,7 @@ a {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
   border: 3px solid var(--color-primary);
   cursor: pointer;
   box-shadow: var(--shadow-md);

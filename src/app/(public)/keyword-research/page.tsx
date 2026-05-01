@@ -232,11 +232,11 @@ export default function KeywordExplorer() {
         :root {
           --color-primary: #ff6b35;
           --color-primary-hover: #ff5722;
-          --color-primary-light: #ffebe6;
+          --color-primary-light: rgba(255, 107, 53, 0.1);
           --color-primary-dark: #e85a28;
-          --color-slate-50: #f8fafc;
-          --color-slate-100: #f1f5f9;
-          --color-slate-200: #e2e8f0;
+          --color-slate-50: rgba(255, 255, 255, 0.05);
+          --color-slate-100: rgba(255, 255, 255, 0.1);
+          --color-slate-200: rgba(255, 255, 255, 0.2);
           --color-slate-300: #cbd5e1;
           --color-slate-400: #94a3b8;
           --color-slate-500: #64748b;
@@ -246,14 +246,14 @@ export default function KeywordExplorer() {
           --color-slate-900: #0f172a;
           --color-success: #10b981;
           --color-error: #ef4444;
-          --bg-primary: #ffffff;
-          --bg-secondary: #f8fafc;
-          --text-primary: #0f172a;
-          --text-secondary: #475569;
-          --border-primary: #e2e8f0;
-          --shadow-sm: 0 1px 3px rgba(15,23,42,0.1);
-          --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.1);
-          --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.1);
+          --bg-primary: #0f172a;
+          --bg-secondary: rgba(255, 255, 255, 0.02);
+          --text-primary: #ffffff;
+          --text-secondary: #cbd5e1;
+          --border-primary: rgba(255, 255, 255, 0.08);
+          --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+          --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+          --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
           --radius-sm: 0.375rem;
           --radius-md: 0.5rem;
           --radius-lg: 0.75rem;
@@ -385,10 +385,11 @@ export default function KeywordExplorer() {
         }
 
         .ke-form-card {
-          background: #ffffff;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 1.25rem 1.25rem 0 0;
           padding: 2.5rem;
-          box-shadow: 0 -4px 40px rgba(0,0,0,0.12);
+          box-shadow: 0 -4px 40px rgba(0,0,0,0.3);
           position: relative;
           z-index: 2;
           animation: ke-fadeUp 0.5s 0.35s ease both;
@@ -701,7 +702,7 @@ export default function KeywordExplorer() {
           align-items: center;
           gap: 0.4rem;
           padding: 0.55rem 1rem;
-          background: #fff;
+          background: rgba(255, 255, 255, 0.02);
           border: 1.5px solid var(--border-primary);
           border-radius: var(--radius-md);
           font-family: 'DM Sans', sans-serif;
@@ -726,7 +727,7 @@ export default function KeywordExplorer() {
         }
 
         .ke-intent-card {
-          background: #fff;
+          background: rgba(255, 255, 255, 0.03);
           border-radius: var(--radius-xl);
           padding: 1.25rem;
           display: flex;
@@ -780,7 +781,7 @@ export default function KeywordExplorer() {
         .ke-tabs {
           display: flex;
           gap: 0.25rem;
-          background: #fff;
+          background: rgba(255, 255, 255, 0.02);
           border: 1px solid var(--border-primary);
           border-radius: var(--radius-lg);
           padding: 0.3rem;

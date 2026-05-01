@@ -153,7 +153,7 @@
 
 .tool-upload-label p {
   font-size: 15px;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
 .btn-browse {
@@ -163,7 +163,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  color: #4b5563;
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 14px;
   pointer-events: none;
@@ -174,7 +174,7 @@
   display: flex;
   justify-content: center;
   gap: 20px;
-  color: #4b5563;
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 500;
 }
@@ -501,8 +501,8 @@
 .how-it-works {
   margin-top: var(--space-8);
   padding: var(--space-6);
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-  border: 2px solid #bfdbfe;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: var(--radius-lg);
 }
 
@@ -702,11 +702,11 @@
 .tool-textarea {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   font-size: var(--font-base);
-  color: var(--text-primary);
+  color: #fff;
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -718,6 +718,12 @@
 .tool-textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.tool-input::placeholder,
+.tool-select::placeholder,
+.tool-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* =============================================================
@@ -734,7 +740,7 @@
 }
 
 .quality-slider-label {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -760,7 +766,7 @@
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  background: white;
+  background: #fff;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -1120,9 +1126,9 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background: #fffbeb;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: var(--radius-md);
   font-size: var(--font-sm);
 }
@@ -1565,6 +1571,10 @@
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 107, 53, 0.5);
   box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.text-input-area::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .text-stats-grid {
