@@ -224,12 +224,16 @@ export default function ToolFormPage() {
             leftIcon: <FiCheckCircle size={16} />,
             isLoading: isSubmitting,
             loadingText: isEditMode ? "Updating..." : "Creating...",
+            onClick: () => {
+                const form = document.getElementById("tool-card-form") as HTMLFormElement;
+                if (form) form.requestSubmit();
+            }
         },
     ];
 
     return (
         <div className="adminPage">
-            <Form onSubmit={handleSubmit}>
+            <Form id="tool-card-form" onSubmit={handleSubmit}>
                 <PageHeader
                     title={isEditMode ? "Edit Tool" : "New Tool"}
                     subtitle={

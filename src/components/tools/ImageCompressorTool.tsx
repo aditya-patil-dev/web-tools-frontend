@@ -615,12 +615,12 @@ const ImageCompressorTool = () => {
           >
             <div className="result-header">
               <FiCheckCircle className="success-icon" />
-              <h3>
+              <h3 className="result-title">
                 {anyAiOptimized
                   ? "AI Optimization Complete!"
                   : "Compression Complete!"}
               </h3>
-              <p>{compressedData.length} image(s) processed successfully</p>
+              <p className="result-subtitle">{compressedData.length} image(s) processed successfully</p>
 
               {anyAiOptimized && (
                 <motion.div
@@ -652,8 +652,10 @@ const ImageCompressorTool = () => {
               <div className="stat-card highlight">
                 <span className="stat-label">Total Saved</span>
                 <span className="stat-value">
-                  {formatBytes(totalSaved)}{" "}
-                  <em>({totalSavedPercent.toFixed(1)}%)</em>
+                  {formatBytes(totalSaved)}
+                </span>
+                <span className="stat-percent">
+                  {totalSavedPercent.toFixed(1)}% Saved
                 </span>
               </div>
             </div>
@@ -672,7 +674,7 @@ const ImageCompressorTool = () => {
                   <div
                     className={`compression-badge ${item.aiOptimized ? "badge--ai" : ""}`}
                   >
-                    {item.aiOptimized && <FiZap />}-
+                    {item.aiOptimized && <FiZap />}
                     {item.savedPercent.toFixed(0)}%
                   </div>
                   {item.outputFormat && (
@@ -699,13 +701,14 @@ const ImageCompressorTool = () => {
 
             {/* Download */}
             <motion.button
-              className="btn-download"
+              className="btn-download btn-download--premium"
               onClick={handleDownload}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <FiDownload />
-              Download {compressedData.length > 1 ? "All as ZIP" : "Image"}
+              <span>Download {compressedData.length > 1 ? "All as ZIP" : "Optimized Image"}</span>
+              <div className="btn-shimmer" />
             </motion.button>
           </motion.div>
         )}

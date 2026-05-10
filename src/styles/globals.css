@@ -2831,10 +2831,19 @@ a {
   overflow-x: auto;
   padding: 1rem 0 2rem;
   scrollbar-width: none;
+  align-items: stretch;
 }
 
 .tools-grid.horizontal-row::-webkit-scrollbar {
   display: none;
+}
+
+.tools-grid.horizontal-row .tool-card {
+  width: 440px;
+  max-width: 85vw;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .tool-card {
@@ -4800,9 +4809,17 @@ a {
 /* ==========================================
    TOOL PAGE - LONG CONTENT SECTION
    ========================================== */
+.tool-page-intro {
+  font-size: var(--font-lg);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 900px;
+  margin-bottom: var(--space-8);
+}
+
 .tool-content-section {
   margin: var(--space-12) 0;
-  padding: var(--space-8) 0;
+  padding: var(--space-12) 0;
   border-top: 1px solid var(--border-primary);
 }
 
@@ -4815,12 +4832,13 @@ a {
 
 .tool-content-body h1,
 .tool-content-body h2,
-.tool-content-body h3 {
-  margin-top: var(--space-8);
-  margin-bottom: var(--space-4);
+.tool-content-body h3,
+.tool-content-body h4 {
+  margin-top: var(--space-12);
+  margin-bottom: var(--space-6);
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .tool-content-body h1 {
@@ -4838,14 +4856,17 @@ a {
 }
 
 .tool-content-body p {
-  margin-bottom: var(--space-4);
-  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+  color: var(--text-primary);
+  opacity: 0.9;
 }
 
-.tool-content-body p:first-of-type {
+.tool-content-body>p:first-of-type {
   font-size: var(--font-xl);
+  line-height: 1.6;
   color: var(--text-primary);
   font-weight: 500;
+  margin-bottom: var(--space-8);
 }
 
 .tool-content-body ul,
@@ -4948,8 +4969,39 @@ a {
   max-width: 100%;
   height: auto;
   border-radius: var(--radius-lg);
-  margin: var(--space-6) 0;
-  box-shadow: var(--shadow-md);
+  display: block;
+  margin: var(--space-8) auto;
+}
+
+/* Handle Tiptap specific alignment classes if used */
+.tool-content-body .text-align-left {
+  text-align: left;
+}
+
+.tool-content-body .text-align-center {
+  text-align: center;
+}
+
+.tool-content-body .text-align-right {
+  text-align: right;
+}
+
+.tool-content-body .text-align-justify {
+  text-align: justify;
+}
+
+/* Ensure list items are properly spaced and visible */
+.tool-content-body ul li,
+.tool-content-body ol li {
+  padding-left: var(--space-1);
+}
+
+/* Fix for nested lists */
+.tool-content-body ul ul,
+.tool-content-body ol ol,
+.tool-content-body ul ol,
+.tool-content-body ol ul {
+  margin: var(--space-2) 0 var(--space-2) var(--space-6);
 }
 
 .tool-content-body table {
@@ -11345,7 +11397,7 @@ a {
 .ts-root {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-3);
   padding: 4px 0;
   background: transparent;
 }
@@ -11374,38 +11426,6 @@ a {
   height: 18px;
 }
 
-.ts-section {
-  opacity: 1 !important;
-  transform: none !important;
-  margin-bottom: var(--space-10);
-}
-
-.ts-section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
-}
-
-.ts-section-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-radius: var(--radius-md);
-}
-
-.ts-section-title {
-  font-size: var(--font-base);
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .ts-root .tools-grid.horizontal-row {
   padding: 4px 4px 20px 4px;
   margin: 0 -4px;
@@ -11417,7 +11437,6 @@ a {
 
 .ts-root .tool-card {
   width: 320px !important;
-  /* Standardized width for alignment */
   min-width: 320px !important;
   flex: 0 0 auto !important;
   background: var(--color-slate-900) !important;
@@ -11427,7 +11446,6 @@ a {
   padding: 0 !important;
   color: #fff !important;
   border-radius: 24px !important;
-  /* Premium rounded corners */
 }
 
 .ts-root .tool-card:hover {
@@ -11830,13 +11848,16 @@ a {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: var(--font-sm);
-  font-weight: 500;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.3);
   border-radius: var(--radius-full);
-  padding: var(--space-1) var(--space-4);
+  padding: 6px 18px;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+  backdrop-filter: blur(4px);
 }
 
 /* ── Compression badge variant for AI ──────────────────────── */
@@ -12498,7 +12519,7 @@ a {
   text-align: left;
 } */
 
-.tools-grid.horizontal-row {
+/* .tools-grid.horizontal-row {
   display: flex !important;
   gap: var(--space-4);
   overflow-x: auto;
@@ -12513,7 +12534,7 @@ a {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-}
+} */
 
 .tool-card-link {
   display: block;
@@ -12712,12 +12733,7 @@ a {
 
 .ts-section {
   padding: 0 !important;
-  margin-bottom: var(--space-6);
   border-top: none !important;
-}
-
-.ts-section-header {
-  margin-bottom: var(--space-4);
 }
 
 .ts-root .tools-grid.horizontal-row {
@@ -12750,6 +12766,7 @@ a {
    MOBILE SPACING FIXES
    ========================================== */
 @media (max-width: 768px) {
+
   .tools-container,
   .tool-container,
   .ts-root,
@@ -12766,7 +12783,7 @@ a {
     padding-right: var(--sp-16) !important;
     gap: var(--space-4) !important;
   }
-  
+
   /* Ensure cards in horizontal rows don't get too wide */
   .tools-grid.horizontal-row .tool-card {
     max-width: calc(100vw - 40px) !important;

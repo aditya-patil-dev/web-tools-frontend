@@ -38,7 +38,7 @@ export type ToolPageFormData = {
   faqs?: string | null; // ← string (JSON.stringify'd) or null
   meta_title?: string | null; // ← add null
   meta_description?: string | null; // ← add null
-  meta_keywords?: string | null; // ← add null
+  meta_keywords?: string | string[] | null; // ← string for form, string[] for API
   canonical_url?: string | null; // ← add null
   noindex?: boolean;
   schema_markup?: string | null; // ← string or null

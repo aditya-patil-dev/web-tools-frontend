@@ -2,6 +2,13 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import type { ToastItem } from "./toast.types";
+import { 
+    FiCheckCircle, 
+    FiXCircle, 
+    FiInfo, 
+    FiAlertTriangle, 
+    FiX 
+} from "react-icons/fi";
 
 export default function ToastViewport({
     toasts,
@@ -23,10 +30,10 @@ export default function ToastViewport({
                         transition={{ duration: 0.18 }}
                     >
                         <div className="toastIcon" aria-hidden="true">
-                            {t.variant === "success" && <i className="bi bi-check-circle-fill" />}
-                            {t.variant === "error" && <i className="bi bi-x-circle-fill" />}
-                            {t.variant === "info" && <i className="bi bi-info-circle-fill" />}
-                            {t.variant === "warning" && <i className="bi bi-exclamation-triangle-fill" />}
+                            {t.variant === "success" && <FiCheckCircle />}
+                            {t.variant === "error" && <FiXCircle />}
+                            {t.variant === "info" && <FiInfo />}
+                            {t.variant === "warning" && <FiAlertTriangle />}
                         </div>
 
                         <div className="toastBody">
@@ -35,7 +42,7 @@ export default function ToastViewport({
                         </div>
 
                         <button className="toastClose" onClick={() => onDismiss(t.id)} aria-label="Dismiss notification">
-                            <i className="bi bi-x-lg" />
+                            <FiX />
                         </button>
                     </motion.div>
                 ))}

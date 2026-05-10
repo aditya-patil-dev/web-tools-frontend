@@ -186,12 +186,16 @@ export default function CategoryFormPage() {
             leftIcon: <FiCheckCircle size={16} />,
             isLoading: isSubmitting,
             loadingText: isEditMode ? "Updating..." : "Creating...",
+            onClick: () => {
+                const form = document.getElementById("category-form") as HTMLFormElement;
+                if (form) form.requestSubmit();
+            }
         },
     ];
 
     return (
         <div className="adminPage">
-            <Form onSubmit={handleSubmit}>
+            <Form id="category-form" onSubmit={handleSubmit}>
                 <PageHeader
                     title={isEditMode ? "Edit Category" : "New Category"}
                     subtitle={

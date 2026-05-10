@@ -141,7 +141,9 @@ export default function ToolPageFormPage() {
         faqs: toolPage.faqs ?? null,
         meta_title: toolPage.meta_title ?? "",
         meta_description: toolPage.meta_description ?? "",
-        meta_keywords: toolPage.meta_keywords ?? "",
+        meta_keywords: Array.isArray(toolPage.meta_keywords)
+          ? toolPage.meta_keywords.join(", ")
+          : (toolPage.meta_keywords ?? ""),
         canonical_url: toolPage.canonical_url ?? "",
         noindex: toolPage.noindex ?? false,
         schema_markup: toolPage.schema_markup ?? null,
@@ -200,12 +202,14 @@ export default function ToolPageFormPage() {
       faqs: filteredFaqs.length ? JSON.stringify(filteredFaqs) : null,
       schema_markup: schemaValue,
       // Guard all optional string fields — replace "" with null
-      page_intro: formData.page_intro?.trim() || null,
-      long_content: formData.long_content?.trim() || null,
-      meta_title: formData.meta_title?.trim() || null,
-      meta_description: formData.meta_description?.trim() || null,
-      meta_keywords: formData.meta_keywords?.trim() || null,
-      canonical_url: formData.canonical_url?.trim() || null,
+      page_intro: typeof formData.page_intro === 'string' ? formData.page_intro.trim() || null : null,
+      long_content: typeof formData.long_content === 'string' ? formData.long_content.trim() || null : null,
+      meta_title: typeof formData.meta_title === 'string' ? formData.meta_title.trim() || null : null,
+      meta_description: typeof formData.meta_description === 'string' ? formData.meta_description.trim() || null : null,
+      meta_keywords: typeof formData.meta_keywords === 'string' 
+        ? formData.meta_keywords.split(",").map(k => k.trim()).filter(k => k !== "") 
+        : null,
+      canonical_url: typeof formData.canonical_url === 'string' ? formData.canonical_url.trim() || null : null,
     };
 
     setIsSubmitting(true);
@@ -237,7 +241,7 @@ export default function ToolPageFormPage() {
   // ── Options ──
   const statusOptions = [
     { value: "draft", label: "Draft" },
-    { value: "active", label: "Published" },
+    { value: "published", label: "Published" },
     { value: "archived", label: "Archived" },
   ];
 
@@ -277,12 +281,17 @@ export default function ToolPageFormPage() {
       leftIcon: <FiCheckCircle size={16} />,
       isLoading: isSubmitting,
       loadingText: isEditMode ? "Updating..." : "Creating...",
+      onClick: () => {
+        // Explicitly trigger form submission in case browser doesn't bubbling submit type
+        const form = document.getElementById("tool-page-form") as HTMLFormElement;
+        if (form) form.requestSubmit();
+      }
     },
   ];
 
   return (
     <div className="adminPage">
-      <Form onSubmit={handleSubmit}>
+      <Form id="tool-page-form" onSubmit={handleSubmit}>
         <PageHeader
           title={isEditMode ? "Edit Tool Page" : "New Tool Page"}
           subtitle={

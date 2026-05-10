@@ -222,6 +222,9 @@ const TOOL_COMPONENTS: Record<string, React.ComponentType> = {
 function ToolLoader() {
   return (
     <div
+      role="status"
+      aria-busy="true"
+      aria-label="Loading tool"
       style={{
         display: "flex",
         alignItems: "center",
@@ -262,14 +265,14 @@ export default function ToolPageClient({
     <div className="tools-container">
       <div className="tool-container">
         {/* Breadcrumb */}
-        <nav className="tool-breadcrumb">
+        <nav className="tool-breadcrumb" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
-          <SlArrowRight />
+          <SlArrowRight aria-hidden="true" />
           <Link href="/tools">Tools</Link>
-          <SlArrowRight />
+          <SlArrowRight aria-hidden="true" />
           <Link href={`/tools/${category}`}>{category}</Link>
-          <SlArrowRight />
-          <span>{tool.title}</span>
+          <SlArrowRight aria-hidden="true" />
+          <span aria-current="page">{tool.title}</span>
         </nav>
 
         {/* Header */}
@@ -278,7 +281,7 @@ export default function ToolPageClient({
         </header>
 
         {/* Tool */}
-        <div>
+        <main id="tool-content">
           {ToolComponent ? (
             <ToolComponent />
           ) : (
@@ -288,22 +291,24 @@ export default function ToolPageClient({
               Tool not found or under maintenance.
             </div>
           )}
-        </div>
+        </main>
 
         {/* ABOVE: Related Tools */}
         <ToolSuggestions position="above" recommendations={recommendations} />
 
         {/* Long Content */}
         {tool.long_content && (
-          <div>
-            {tool.page_intro && <p>{tool.page_intro}</p>}
+          <article className="tool-long-content">
+            {tool.page_intro && (
+              <p className="tool-page-intro">{tool.page_intro}</p>
+            )}
             <section className="tool-content-section">
               <div
                 className="tool-content-body"
                 dangerouslySetInnerHTML={{ __html: tool.long_content }}
               />
             </section>
-          </div>
+          </article>
         )}
 
         {/* Features */}
