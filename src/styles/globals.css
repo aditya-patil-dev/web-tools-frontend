@@ -12011,7 +12011,7 @@ a {
 
 .ts-below-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .ts-below-grid--single {
@@ -12019,13 +12019,15 @@ a {
 }
 
 .ts-below-grid:not(.ts-below-grid--single) .ts-section:first-child {
-  border-right: 1px solid var(--border-primary);
+  border-right: none;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 /* ── Section ────────────────────────────────────────────────────── */
 
 .ts-section {
   padding: var(--space-4);
+  min-width: 0;
 }
 
 .ts-section-header {
@@ -12734,6 +12736,7 @@ a {
 .ts-section {
   padding: 0 !important;
   border-top: none !important;
+  min-width: 0 !important;
 }
 
 .ts-root .tools-grid.horizontal-row {

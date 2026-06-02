@@ -694,7 +694,7 @@ const RobotsTxtGeneratorTool = () => {
                     )}
                     </button>
 
-                    <button className="btn-download" onClick={downloadRobotsTxt}>
+                    <button className="btn-download-code" onClick={downloadRobotsTxt}>
                     <FiDownload /> Download
                     </button>
                 </div>
