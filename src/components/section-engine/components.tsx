@@ -17,19 +17,19 @@ export function ToolIcon({ name, size = 18 }: { name: string; size?: number }) {
 }
 
 // ── Badge ────────────────────────────────────────────────────
-// Uses CSS custom properties from --color-primary-* gradients in the theme
+// Matches website tool-card-badge system and theme variables
 const BADGE_STYLES: Record<BadgeLabel, React.CSSProperties> = {
-    POPULAR: { background: 'var(--color-primary-popular)', color: '#fff' },
-    NEW: { background: 'var(--color-primary-new)', color: '#fff' },
-    AI: { background: 'var(--color-primary-ai)', color: '#fff' },
-    FREE: { background: 'var(--color-success)', color: '#fff' },
-    BETA: { background: 'var(--color-primary-beta)', color: '#fff' },
-    HOT: { background: 'var(--color-primary-pro)', color: '#fff' },
-    'FREE & FAST': { background: 'var(--color-success)', color: '#fff' },
-    'AI POWERED': { background: 'var(--color-primary-ai)', color: '#fff' },
-    SECURE: { background: 'var(--color-info)', color: '#fff' },
-    PRIVATE: { background: 'var(--color-primary-pro)', color: '#fff' },
-    LIVE: { background: 'var(--color-success)', color: '#fff' },
+    POPULAR: { background: 'var(--color-primary-popular)', color: '#ffffff' },
+    NEW: { background: 'var(--color-primary-new)', color: '#ffffff' },
+    AI: { background: 'var(--color-primary-ai)', color: '#ffffff' },
+    FREE: { background: 'var(--color-success)', color: '#ffffff' },
+    BETA: { background: 'var(--color-primary-beta)', color: '#ffffff' },
+    HOT: { background: 'var(--color-primary-pro)', color: '#ffffff' },
+    'FREE & FAST': { background: 'var(--color-success)', color: '#ffffff' },
+    'AI POWERED': { background: 'var(--color-primary-ai)', color: '#ffffff' },
+    SECURE: { background: 'var(--color-info)', color: '#ffffff' },
+    PRIVATE: { background: 'var(--color-primary-pro)', color: '#ffffff' },
+    LIVE: { background: 'var(--color-success)', color: '#ffffff' },
 }
 
 export function Badge({ label }: { label: BadgeLabel }) {
@@ -44,23 +44,24 @@ export function Badge({ label }: { label: BadgeLabel }) {
 }
 
 // ── Tag pill ─────────────────────────────────────────────────
+// Clean, crisp category tags matching website design tokens
 const TAG_STYLES: Record<string, React.CSSProperties> = {
-    PDF: { background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' },
-    IMAGE: { background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' },
-    DEV: { background: 'rgba(102,126,234,0.12)', color: '#667eea' },
-    AI: { background: 'rgba(102,126,234,0.12)', color: '#667eea' },
-    TEXT: { background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)' },
-    ZIP: { background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' },
-    EXCEL: { background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)' },
-    VIDEO: { background: 'rgba(59,130,246,0.12)', color: 'var(--color-info)' },
-    FREE: { background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)' },
-    CONVERT: { background: 'rgba(255,107,53,0.1)', color: '#ff6b35' },
-    SEO: { background: 'rgba(102,126,234,0.12)', color: '#667eea' },
-    SOCIAL: { background: 'rgba(59,130,246,0.12)', color: 'var(--color-info)' },
+    PDF: { background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' },
+    IMAGE: { background: 'rgba(255, 107, 53, 0.12)', color: '#ff6b35', border: '1px solid rgba(255, 107, 53, 0.2)' },
+    DEV: { background: 'rgba(139, 92, 246, 0.12)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.2)' },
+    AI: { background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)' },
+    TEXT: { background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' },
+    ZIP: { background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' },
+    EXCEL: { background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' },
+    VIDEO: { background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' },
+    FREE: { background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)' },
+    CONVERT: { background: 'rgba(255, 107, 53, 0.12)', color: '#ff6b35', border: '1px solid rgba(255, 107, 53, 0.2)' },
+    SEO: { background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' },
+    SOCIAL: { background: 'rgba(14, 165, 233, 0.12)', color: '#0ea5e9', border: '1px solid rgba(14, 165, 233, 0.2)' },
 }
 
 export function TagPill({ tag }: { tag: string }) {
-    const style = TAG_STYLES[tag] ?? { background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }
+    const style = TAG_STYLES[tag] ?? { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }
     return (
         <span className="tag-pill" style={style}>
             {tag}
@@ -72,13 +73,13 @@ export function TagPill({ tag }: { tag: string }) {
 export function ArrowBtn() {
     return (
         <div className="arrow-btn">
-            <LucideIcons.ArrowRight size={13} strokeWidth={2} className="arrow-btn__icon" />
+            <LucideIcons.ArrowRight size={15} strokeWidth={2} className="arrow-btn__icon" />
         </div>
     )
 }
 
 // ── Icon box ─────────────────────────────────────────────────
-export function IconBox({ icon, size = 18 }: { icon: string; size?: number }) {
+export function IconBox({ icon, size = 22 }: { icon: string; size?: number }) {
     return (
         <div className="icon-box">
             <ToolIcon name={icon} size={size} />
@@ -115,11 +116,6 @@ export function CardMotion({
         </div>
     )
 }
-
-// ── Stagger container ─────────────────────────────────────────
-// (Animations removed, using native CSS transitions)
-
-// (Animations removed, using native CSS transitions)
 
 // ── Section header ────────────────────────────────────────────
 export function SectionHeader({

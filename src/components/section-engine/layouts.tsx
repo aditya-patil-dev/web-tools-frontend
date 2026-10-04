@@ -41,13 +41,13 @@ function CompactCard({ tool }: { tool: import('./types').ToolItem }) {
     return (
         <Link href={tool.href} className="no-underline">
             <CardMotion className="se-compact-card">
-                {tool.badge && <Badge label={tool.badge} />}
                 <IconBox icon={tool.icon} />
                 <div className="se-compact-card__body">
                     <div className="se-compact-card__title">{tool.title}</div>
                     <div className="se-compact-card__desc">{tool.description}</div>
                 </div>
                 <div className="se-compact-card__right">
+                    {tool.badge && <Badge label={tool.badge} />}
                     <TagPill tag={tool.tag} />
                     <ArrowBtn />
                 </div>

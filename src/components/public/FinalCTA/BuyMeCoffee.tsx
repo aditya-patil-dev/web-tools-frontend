@@ -11,10 +11,29 @@ export default function BuyMeCoffee({ username = 'fusiontools' }: BuyMeCoffeePro
   const [isVisible, setIsVisible] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
 
+  const [isHighlighted, setIsHighlighted] = useState(false);
+
   useEffect(() => {
     // Trigger slide-up animation after component mounts
     const timer = setTimeout(() => setIsVisible(true), 300);
-    return () => clearTimeout(timer);
+
+    const handleToolLiked = () => {
+      setIsHidden(false);
+      setIsVisible(true);
+      setIsHighlighted(true);
+      setTimeout(() => setIsHighlighted(false), 4000);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('tool_feedback_liked', handleToolLiked);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('tool_feedback_liked', handleToolLiked);
+      }
+    };
   }, []);
 
   const handleClose = (e: React.MouseEvent) => {
@@ -53,7 +72,7 @@ export default function BuyMeCoffee({ username = 'fusiontools' }: BuyMeCoffeePro
   if (isHidden) return null;
 
   return (
-    <div className={`${styles.coffeeWidget} ${isVisible ? styles.visible : ''}`}>
+    <div className={`${styles.coffeeWidget} ${isVisible ? styles.visible : ''} ${isHighlighted ? styles.highlighted : ''}`}>
       <div className={styles.coffeeCard}>
         <div className={styles.closeBtn} onClick={handleClose} />
         <div className={styles.glowPulse} />

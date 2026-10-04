@@ -143,4 +143,16 @@ export const toolsApi = {
             `/admin/tools/check/slug/${slug}`
         );
     },
+
+    /**
+     * POST /tools/feedback - Submit user feedback (like / dislike + reason)
+     */
+    async submitFeedback(data: {
+        tool_slug: string;
+        rating: "like" | "dislike";
+        reason?: string;
+        session_id?: string;
+    }): Promise<{ success: boolean; message: string }> {
+        return api.post<{ success: boolean; message: string }>("/tools/feedback", data);
+    },
 };

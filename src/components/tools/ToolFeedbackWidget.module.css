@@ -1,0 +1,168 @@
+.feedbackContainer {
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.feedbackContainer:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.questionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.questionText {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+}
+
+.likeBtn {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}
+
+.likeBtn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: translateY(-1px);
+}
+
+.dislikeBtn {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.dislikeBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.reasonBox {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.reasonLabel {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 0.875rem;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.reasonActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.submitBtn {
+  background: #3b82f6;
+  color: #ffffff;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submitBtn:hover {
+  background: #2563eb;
+}
+
+.skipBtn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+}
+
+.skipBtn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.thankYouMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+}
+
+.dislikeThankYou {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
