@@ -7,6 +7,7 @@ import { SlArrowRight } from "react-icons/sl";
 import { FiCheckCircle } from "react-icons/fi";
 import { ToolPageDTO } from "@/lib/api-calls/tools.api";
 import ToolSuggestions from "@/components/tool-sugggestion/ToolSuggestions";
+import ToolFeedbackWidget from "@/components/tools/ToolFeedbackWidget";
 
 // ── Tool Components Registry ────────────────────────────────────────────────
 const TOOL_COMPONENTS: Record<string, React.ComponentType> = {
@@ -253,6 +254,7 @@ interface ToolPageClientProps {
 export default function ToolPageClient({
   tool,
   category,
+  slug,
 }: ToolPageClientProps) {
   useEffect(() => {
     if (tool?.id) console.log(`Tracking page view for tool: ${tool.id}`);
@@ -291,6 +293,7 @@ export default function ToolPageClient({
               Tool not found or under maintenance.
             </div>
           )}
+          <ToolFeedbackWidget toolSlug={slug} />
         </main>
 
         {/* ABOVE: Related Tools */}
