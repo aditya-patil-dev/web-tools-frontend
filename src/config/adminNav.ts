@@ -34,7 +34,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
             { id: "categories", label: "Categories", href: "/admin/tools/categories", match: "prefix" },
             { id: "tools-list", label: "Tools", href: "/admin/tools/tools-card", match: "prefix" },
             { id: "tools-pages", label: "Tool Pages", href: "/admin/tools/tool-pages", match: "prefix" },
-
+            { id: "tools-feedback", label: "User Feedback", href: "/admin/tools/feedback", match: "prefix" },
         ],
     },
     {

@@ -155,4 +155,38 @@ export const toolsApi = {
     }): Promise<{ success: boolean; message: string }> {
         return api.post<{ success: boolean; message: string }>("/tools/feedback", data);
     },
+
+    /**
+     * GET /admin/tools/feedback - List feedback with pagination & filters
+     */
+    async getFeedbackList(params?: import("@/types/tool-feedback.types").FeedbackListParams): Promise<import("@/types/tool-feedback.types").FeedbackListResponse> {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.set("page", String(params.page));
+        if (params?.limit) queryParams.set("limit", String(params.limit));
+        if (params?.search) queryParams.set("search", params.search);
+        if (params?.tool_slug) queryParams.set("tool_slug", params.tool_slug);
+        if (params?.rating) queryParams.set("rating", params.rating);
+
+        return api.get<import("@/types/tool-feedback.types").FeedbackListResponse>(
+            `/admin/tools/feedback?${queryParams.toString()}`
+        );
+    },
+
+    /**
+     * GET /admin/tools/feedback/stats - Get feedback analytics
+     */
+    async getFeedbackStats(): Promise<import("@/types/tool-feedback.types").FeedbackStatsResponse> {
+        return api.get<import("@/types/tool-feedback.types").FeedbackStatsResponse>(
+            "/admin/tools/feedback/stats"
+        );
+    },
+
+    /**
+     * DELETE /admin/tools/feedback/:id - Delete feedback entry
+     */
+    async deleteFeedback(id: number): Promise<{ success: boolean; message: string }> {
+        return api.delete<{ success: boolean; message: string }>(
+            `/admin/tools/feedback/${id}`
+        );
+    },
 };

@@ -21,8 +21,24 @@ export async function proxy(req: NextRequest) {
     response.cookies.delete("maintenance_bypass");
   }
 
-  // 3. Admin Authentication check for /admin routes
-  if (pathname.startsWith("/admin")) {
+  // If user is already logged in and visits /admin-login, redirect to /admin
+  if (pathname === "/admin-login") {
+    const token = req.cookies.get("admin_token")?.value;
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        if (["admin", "support"].includes(payload.role as string)) {
+          return NextResponse.redirect(new URL("/admin", req.url));
+        }
+      } catch {
+        // invalid token, let them stay on /admin-login
+      }
+    }
+    return response;
+  }
+
+  // 3. Admin Authentication check for /admin routes only (excludes /admin-login)
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const token = req.cookies.get("admin_token")?.value;
 
     if (!token) {
