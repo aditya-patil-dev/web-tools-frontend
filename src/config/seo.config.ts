@@ -12,15 +12,18 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://fusiontools.in",
   ogImage:
     "https://ik.imagekit.io/7w8ikjsre/logos/ba45e1e8-9be3-4904-b3bf-4e116b228c0f.png",
-  twitterHandle: "@yourtoolbox",
-  twitterCreator: "@yourtoolbox",
+  twitterHandle: "@fusiontools",
+  twitterCreator: "@fusiontools",
   keywords: [
     "online tools",
     "free tools",
     "image converter",
     "pdf tools",
-    "text tools",
     "developer tools",
+    "seo tools",
+    "text tools",
+    "browser tools",
+    "privacy focused tools",
   ],
 };
 
@@ -74,59 +77,70 @@ export const defaultMetadata: Metadata = {
 
 export const pagesSEO = {
   home: {
-    title: "Free Online Tools - Image, PDF, Text & Developer Tools",
+    title: "FusionTools – 100% Free Online Image, PDF & Developer Tools",
     description:
-      "100+ free online tools for image conversion, PDF editing, text formatting, SEO optimization, and developer utilities.",
+      "Discover 30+ free, secure online web tools. Compress images, merge PDFs, format JSON, decode JWTs, and generate SEO tags with zero server uploads and 100% privacy.",
     keywords: [
-      "online tools",
-      "free tools",
+      "free online tools",
+      "web tools",
       "image converter",
-      "pdf editor",
-      "text formatter",
+      "pdf tools",
+      "developer tools",
+      "seo tools",
+      "privacy tools",
+      "in browser tools",
+      "fusiontools",
     ],
     url: "/",
     ogImage: "/images/home-og.jpg",
   },
 
   tools: {
-    title: "All Web Tools | Free Image, PDF, SEO & Dev Utilities",
+    title: "All Web Tools Directory | Free Image, PDF, Dev & SEO Utilities",
     description:
-      "Browse the complete library of free online web tools. Access secure PDF editors, image converters, SEO generators, and developer utilities all in one place.",
+      "Explore our complete catalog of 34+ free online web tools. Fast, secure utilities for image processing, PDF management, code formatting, and search engine optimization.",
     keywords: [
-      "free online tools",
-      "all tools",
-      "image tools",
-      "pdf tools",
-      "text tools",
-      "seo tools",
-      "developer tools",
+      "all web tools",
+      "free online tools directory",
+      "developer utilities",
+      "pdf editor online",
+      "image tools suite",
+      "seo tag generators",
+      "free utility toolbox",
     ],
     url: "/tools",
     ogImage: "/images/tools-og.jpg",
   },
 
   about: {
-    title: "About Us - Our Mission & Story",
+    title: "About FusionTools – Our Mission for Private & Free Web Tools",
     description:
-      "Learn about ToolBox and our mission to provide free, privacy-focused online tools.",
-    keywords: ["about us", "our mission", "privacy tools"],
+      "Learn how FusionTools provides fast, zero-upload, client-side web tools for developers, designers, and creators worldwide. 100% privacy and zero paywalls.",
+    keywords: [
+      "about fusiontools",
+      "private online tools",
+      "client-side web tools",
+      "free tools mission",
+      "safe web utilities",
+    ],
     url: "/about",
     ogImage: "/images/about-og.jpg",
   },
 
   pricing: {
-    title: "Pricing - Free & Premium Plans",
+    title: "Pricing – Free & Premium Plans | FusionTools",
     description:
-      "Choose the perfect plan. Start free or upgrade to Premium for advanced features.",
-    keywords: ["pricing", "plans", "premium tools"],
+      "Explore FusionTools plans. Enjoy generous free access or upgrade for high-capacity batch processing and team workflows.",
+    keywords: ["pricing", "plans", "premium tools", "fusiontools pricing"],
     url: "/pricing",
     ogImage: "/images/pricing-og.jpg",
   },
 
   contact: {
-    title: "Contact Us - Get in Touch",
-    description: "Have questions or feedback? Contact our support team.",
-    keywords: ["contact", "support", "help"],
+    title: "Contact Us – Get in Touch with FusionTools Support",
+    description:
+      "Have questions, feature suggestions, or feedback? Get in touch with the FusionTools development team.",
+    keywords: ["contact", "support", "help", "fusiontools support"],
     url: "/contact",
     ogImage: "/images/contact-og.jpg",
   },
