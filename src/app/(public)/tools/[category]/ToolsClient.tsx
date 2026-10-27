@@ -20,6 +20,7 @@ import {
     CategoryPage,
 } from "../tools.config";
 import AppLink from '@/components/common/AppLink';
+import CategorySkeletonLoader from "@/components/tools/CategorySkeletonLoader";
 
 /* -----------------------------
    Star Rating Component
@@ -79,17 +80,7 @@ export default function ToolsListing() {
     const validToolsCount = tools.filter(tool => tool.title).length;
 
     if (isLoading) {
-        return (
-            <div className="tools-page-wrapper">
-                <div className="tools-page-container">
-                    <div className="tools-page-grid">
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="tool-card tool-card--skeleton" />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
+        return <CategorySkeletonLoader count={6} />;
     }
 
     if (isError) {

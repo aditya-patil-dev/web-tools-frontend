@@ -17,6 +17,7 @@ import DynamicIcon from "@/components/ui/DynamicIcon";
 
 import { fetchAllTools } from "@/lib/api-calls/tools.api";
 import { ToolItem } from "@/app/(public)/tools/tools.config";
+import CategorySkeletonLoader from "@/components/tools/CategorySkeletonLoader";
 
 // ─────────────────────────────────────────────────────────────
 // STAR RATING
@@ -131,17 +132,7 @@ export default function AllToolsClient() {
     // LOADING STATE
     // ─────────────────────────────────────────────────────────
     if (isLoading) {
-        return (
-            <div className="tools-page-wrapper">
-                <div className="tools-page-container">
-                    <div className="tools-page-grid">
-                        {[...Array(9)].map((_, i) => (
-                            <div key={i} className="tool-card tool-card--skeleton" />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
+        return <CategorySkeletonLoader count={9} showSearchAndTabs />;
     }
 
     // ─────────────────────────────────────────────────────────

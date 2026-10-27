@@ -11,6 +11,290 @@ import ToolFeedbackWidget from "@/components/tools/ToolFeedbackWidget";
 
 // ── Tool Components Registry ────────────────────────────────────────────────
 const TOOL_COMPONENTS: Record<string, React.ComponentType> = {
+  "svg-to-png": dynamic(() => import("@/components/tools/SvgToPngTool"), {
+    ssr: false,
+    loading: () => <ToolLoader />,
+  }),
+  "svg-to-png-converter": dynamic(
+    () => import("@/components/tools/SvgToPngTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "image-cropper": dynamic(
+    () => import("@/components/tools/ImageCropperTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "circle-avatar-maker": dynamic(
+    () => import("@/components/tools/ImageCropperTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "image-cropper-and-circle-avatar-maker": dynamic(
+    () => import("@/components/tools/ImageCropperTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "bulk-image-watermark-adder": dynamic(
+    () => import("@/components/tools/BulkImageWatermarkTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "image-watermark": dynamic(
+    () => import("@/components/tools/BulkImageWatermarkTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "watermark-adder": dynamic(
+    () => import("@/components/tools/BulkImageWatermarkTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-data-viewer-and-stripper": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-data-viewer": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-viewer": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-stripper": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "screenshot-device-mockup-generator": dynamic(
+    () => import("@/components/tools/DeviceMockupTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "device-mockup-generator": dynamic(
+    () => import("@/components/tools/DeviceMockupTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "screenshot-mockup": dynamic(
+    () => import("@/components/tools/DeviceMockupTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "mockup-generator": dynamic(
+    () => import("@/components/tools/DeviceMockupTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "online-meme-generator": dynamic(
+    () => import("@/components/tools/MemeGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "meme-generator": dynamic(
+    () => import("@/components/tools/MemeGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "create-meme": dynamic(
+    () => import("@/components/tools/MemeGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "google-serp-snippet-simulator": dynamic(
+    () => import("@/components/tools/GoogleSerpSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "serp-simulator": dynamic(
+    () => import("@/components/tools/GoogleSerpSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "google-serp-simulator": dynamic(
+    () => import("@/components/tools/GoogleSerpSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "schema-org-structured-data-generator": dynamic(
+    () => import("@/components/tools/SchemaGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "schema-generator": dynamic(
+    () => import("@/components/tools/SchemaGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "json-ld-generator": dynamic(
+    () => import("@/components/tools/SchemaGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "structured-data-generator": dynamic(
+    () => import("@/components/tools/SchemaGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "keyword-density-n-gram-analyzer": dynamic(
+    () => import("@/components/tools/KeywordDensityTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "keyword-density-analyzer": dynamic(
+    () => import("@/components/tools/KeywordDensityTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "keyword-density-checker": dynamic(
+    () => import("@/components/tools/KeywordDensityTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "social-media-share-card-simulator": dynamic(
+    () => import("@/components/tools/SocialMediaCardSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "social-share-card-simulator": dynamic(
+    () => import("@/components/tools/SocialMediaCardSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "open-graph-simulator": dynamic(
+    () => import("@/components/tools/SocialMediaCardSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "social-card-simulator": dynamic(
+    () => import("@/components/tools/SocialMediaCardSimulatorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "http-security-cache-headers-analyzer": dynamic(
+    () => import("@/components/tools/HttpHeadersAnalyzerTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "http-headers-analyzer": dynamic(
+    () => import("@/components/tools/HttpHeadersAnalyzerTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "security-headers-checker": dynamic(
+    () => import("@/components/tools/HttpHeadersAnalyzerTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "http-cache-headers-analyzer": dynamic(
+    () => import("@/components/tools/HttpHeadersAnalyzerTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "hreflang-and-canonical-tag-generator": dynamic(
+    () => import("@/components/tools/HreflangGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "hreflang-generator": dynamic(
+    () => import("@/components/tools/HreflangGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "canonical-tag-generator": dynamic(
+    () => import("@/components/tools/HreflangGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "hreflang-canonical-generator": dynamic(
+    () => import("@/components/tools/HreflangGeneratorTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
   "jpg-to-png": dynamic(() => import("@/components/tools/JpgToPngTool"), {
     ssr: false,
     loading: () => <ToolLoader />,
@@ -218,6 +502,34 @@ const TOOL_COMPONENTS: Record<string, React.ComponentType> = {
     ssr: false,
     loading: () => <ToolLoader />,
   }),
+  "image-cropper-avatar": dynamic(
+    () => import("@/components/tools/ImageCropperTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-viewer-stripper": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "exif-data-viewer-stripper": dynamic(
+    () => import("@/components/tools/ExifTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
+  "bulk-watermark": dynamic(
+    () => import("@/components/tools/BulkImageWatermarkTool"),
+    {
+      ssr: false,
+      loading: () => <ToolLoader />,
+    },
+  ),
 };
 
 function ToolLoader() {
@@ -260,7 +572,7 @@ export default function ToolPageClient({
     if (tool?.id) console.log(`Tracking page view for tool: ${tool.id}`);
   }, [tool?.id]);
 
-  const ToolComponent = TOOL_COMPONENTS[tool.tool_type];
+  const ToolComponent = TOOL_COMPONENTS[tool.tool_type] || TOOL_COMPONENTS[slug] || TOOL_COMPONENTS[tool.slug];
   const recommendations = tool.recommendations ?? null;
 
   return (

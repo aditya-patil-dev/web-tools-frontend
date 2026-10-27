@@ -3013,6 +3013,128 @@ a {
   line-height: 1.6;
 }
 
+/* =============================================================
+   TOOL CARD & CATEGORY PAGE SKELETON LOADERS
+   ============================================================= */
+
+@keyframes tool-skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.tool-card--skeleton {
+  min-height: 320px;
+  pointer-events: none;
+  user-select: none;
+  cursor: default;
+  position: relative;
+  background: var(--color-slate-900) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inner shimmer elements on dark card background */
+.tool-skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.13) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: tool-skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+/* Outer page shimmer elements (header, stats, search, pills) */
+.tool-page-skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.15) 0%,
+    rgba(148, 163, 184, 0.32) 50%,
+    rgba(148, 163, 184, 0.15) 100%
+  );
+  background-size: 200% 100%;
+  animation: tool-skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+/* Specific card skeleton sub-elements */
+.tool-skeleton-badge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 54px;
+  height: 20px;
+  border-radius: 100px;
+}
+
+.tool-skeleton-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tool-skeleton-title {
+  height: 24px;
+  width: 68%;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.tool-skeleton-desc {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+}
+
+.tool-skeleton-tag {
+  height: 28px;
+  width: 80px;
+  border-radius: 100px;
+}
+
+.tool-skeleton-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Staggered card shimmer wave effect */
+.tools-page-grid .tool-card--skeleton:nth-child(2) .tool-skeleton-shimmer {
+  animation-delay: 0.12s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(3) .tool-skeleton-shimmer {
+  animation-delay: 0.24s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(4) .tool-skeleton-shimmer {
+  animation-delay: 0.36s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(5) .tool-skeleton-shimmer {
+  animation-delay: 0.48s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(6) .tool-skeleton-shimmer {
+  animation-delay: 0.60s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(7) .tool-skeleton-shimmer {
+  animation-delay: 0.72s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(8) .tool-skeleton-shimmer {
+  animation-delay: 0.84s;
+}
+.tools-page-grid .tool-card--skeleton:nth-child(9) .tool-skeleton-shimmer {
+  animation-delay: 0.96s;
+}
+
 .tools-footer {
   text-align: center;
   margin-top: 3rem;
