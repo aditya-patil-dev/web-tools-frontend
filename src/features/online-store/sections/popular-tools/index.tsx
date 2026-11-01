@@ -98,7 +98,7 @@ const popularToolsSection: SectionDefinition<PopularToolsData> = {
         header: { title: "Popular <span>Tools</span>", subtitle: "Try our most used tools trusted by developers and marketers." },
         tools: [
             { title: "Image Converter", description: "Convert JPG, PNG, WebP instantly", icon: "TbPhoto", href: "/tools/image-converter", badge: "popular" },
-            { title: "Keyword Research", description: "Find low-competition keywords", icon: "TbSearch", href: "/tools/keyword-research", badge: null },
+            { title: "Keyword Research", description: "Find low-competition keywords", icon: "TbSearch", href: "/seo/tools/keyword-research", badge: null },
             { title: "Image Compressor", description: "Reduce file size without quality loss", icon: "TbFileZip", href: "/tools/image-compressor", badge: "new" },
         ],
         footer: { text: "View All Tools →", href: "/tools" },

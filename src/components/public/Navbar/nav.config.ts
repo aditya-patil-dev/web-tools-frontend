@@ -1,10 +1,13 @@
 export type NavItem = {
   label: string;
   href?: string;
+  isSpecial?: boolean;
+  badge?: "new" | "beta" | "pro" | "ai" | "hot";
   children?: {
     label: string;
     href: string;
-    badge?: "new" | "beta" | "pro" | "ai";
+    badge?: "new" | "beta" | "pro" | "ai" | "hot";
+    isSpecial?: boolean;
   }[];
 };
 
@@ -78,9 +81,21 @@ export const TOOLS_NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    label: "Keyword Research",
+    href: "/seo/tools/keyword-research",
+    isSpecial: true,
+    badge: "hot",
+    children: [],
+  },
+  {
     label: "SEO Tools",
     href: "/tools/seo-tools",
     children: [
+      {
+        label: "Keyword Research Tool",
+        href: "/seo/tools/keyword-research",
+        badge: "hot",
+      },
       {
         label: "SERP Simulator",
         href: "/tools/seo-tools/google-serp-snippet-simulator",
@@ -134,5 +149,12 @@ export const TOOLS_NAV_ITEMS: NavItem[] = [
         href: "/tools/pdf-tools/pdf-compressor",
       },
     ],
+  },
+  {
+    label: "Keyword Research",
+    href: "/seo/tools/keyword-research",
+    isSpecial: true,
+    badge: "hot",
+    children: [],
   },
 ];

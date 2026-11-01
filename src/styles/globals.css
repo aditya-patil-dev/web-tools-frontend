@@ -899,6 +899,125 @@ a {
   color: var(--color-primary);
 }
 
+/* ── Special Flagship Navbar Link ── */
+.nav-item-special {
+  margin: 0;
+}
+
+.nav-special-pill {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-3) var(--space-4) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+  font-size: var(--font-sm) !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  transition: all var(--transition-base) !important;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nav-special-pill:hover {
+  background: rgba(255, 107, 53, 0.08) !important;
+  border: none !important;
+  color: #c2410c !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.nav-special-pill:hover .nav-special-icon {
+  transform: rotate(15deg) scale(1.1);
+}
+
+.nav-special-pill:hover .nav-special-badge {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+.nav-special-icon {
+  color: #ff6b35;
+  transition: transform 200ms ease, color 200ms ease;
+  flex-shrink: 0;
+}
+
+.nav-special-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff6b35;
+  box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+  animation: navPulse 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes navPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 107, 53, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
+  }
+}
+
+.nav-special-badge {
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  border-radius: 9999px !important;
+  text-transform: uppercase;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.mobile-item-special {
+  margin: 6px 12px;
+}
+
+.mobile-special-pill {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+  text-decoration: none;
+}
+
+.dropdown-menu a[href*="keyword-research"] {
+  background: rgba(255, 107, 53, 0.06);
+  border-left: 3px solid #ff6b35;
+  font-weight: 700;
+  color: #ea580c;
+}
+
+.dropdown-menu a[href*="keyword-research"]:hover {
+  background: rgba(255, 107, 53, 0.14) !important;
+  color: #c2410c !important;
+}
+
+.announce-inner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: inherit;
+  text-decoration: none;
+}
+
+.announce-inner-link:hover {
+  opacity: 0.95;
+}
+
 /* ==========================================
    BADGES
    ========================================== */

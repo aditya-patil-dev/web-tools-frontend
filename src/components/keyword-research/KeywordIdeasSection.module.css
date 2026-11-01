@@ -1,0 +1,304 @@
+/* src/components/keyword-research/KeywordIdeasSection.module.css */
+
+.container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+.mainHeader {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ideasGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+  .ideasGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid #f1f5f9;
+  padding-right: 1.5rem;
+}
+
+.box:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+@media (max-width: 1024px) {
+  .box {
+    border-right: none;
+    border-bottom: 1px solid #f1f5f9;
+    padding-right: 0;
+    padding-bottom: 1.5rem;
+  }
+  .box:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.boxTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.countRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.bigCount {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2563eb;
+  line-height: 1;
+}
+
+.totalVolText {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* ── Mini Table in Box ── */
+.miniTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 1.25rem;
+}
+
+.miniTable th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.miniTable td {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+
+.kwCellFlex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  max-width: 220px;
+}
+
+.kwLink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.kwLink:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.quickActionBtn {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 4px;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  transition: all 150ms ease;
+}
+
+.miniTable tr:hover .quickActionBtn {
+  opacity: 0.8;
+}
+
+.quickActionBtn:hover {
+  opacity: 1 !important;
+  color: #ff6b35;
+  background: #fff7ed;
+}
+
+.volCol {
+  text-align: right;
+  font-weight: 600;
+  color: #334155;
+  padding-right: 0.75rem;
+}
+
+.kdCol {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.kdDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-left: 0.35rem;
+}
+
+/* ── Strategy Tree ── */
+.strategyDesc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 1.25rem;
+}
+
+.strategyDesc strong {
+  color: #0f172a;
+}
+
+.treeWrap {
+  margin-bottom: 1.25rem;
+  position: relative;
+  padding-left: 0.5rem;
+}
+
+.pillarRoot {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+}
+
+.pillarDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #93c5fd;
+  flex-shrink: 0;
+}
+
+.treeBranches {
+  position: relative;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.treeBranches::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 10px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.treeBranchItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: #334155;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.treeBranchItem:hover {
+  transform: translateX(3px);
+  color: #2563eb;
+}
+
+.treeBranchItem::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 14px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.branchBar {
+  width: 24px;
+  height: 4px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.branchText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ── Action Button ── */
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 0.65rem;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 180ms ease;
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.viewAllBtn:hover {
+  background: #f8fafc;
+  border-color: #ff6b35;
+  color: #ea580c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.12);
+}
+
+.viewAllBtn:active {
+  transform: translateY(0);
+}

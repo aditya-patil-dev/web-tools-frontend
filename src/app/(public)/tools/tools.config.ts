@@ -186,6 +186,19 @@ const FALLBACK_CATEGORY_TOOLS: Record<string, ToolItem[]> = {
       rating: 4.92,
       tool_url: "/tools/seo-tools/hreflang-and-canonical-tag-generator",
     },
+    {
+      id: "keyword-research-tool",
+      title: "Keyword Research & Intent Finder",
+      short_description: "Discover hundreds of Google autocomplete keywords, search questions, buyer intent, and topic clusters for free.",
+      slug: "keyword-research",
+      category_slug: "seo-tools",
+      badge: "popular",
+      tags: ["keyword-research", "seo", "google-suggest", "search-intent", "long-tail"],
+      views: 5200,
+      users_count: 3840,
+      rating: 4.98,
+      tool_url: "/seo/tools/keyword-research",
+    },
   ],
 };
 

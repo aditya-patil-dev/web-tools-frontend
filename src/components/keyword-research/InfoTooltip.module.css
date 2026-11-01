@@ -1,0 +1,90 @@
+/* src/components/keyword-research/InfoTooltip.module.css */
+
+.tooltipContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.infoIcon {
+  color: #94a3b8;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.tooltipContainer:hover .infoIcon,
+.tooltipContainer:focus-within .infoIcon {
+  color: #ff6b35;
+  transform: scale(1.1);
+}
+
+.tooltipContent {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.45;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.55rem;
+  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.35), 0 4px 6px -4px rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: max-content;
+  max-width: 260px;
+  text-align: left;
+  z-index: 1000;
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Bottom position option */
+.tooltipBottom .tooltipContent {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* Arrow */
+.tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.tooltipBottom .tooltipContent::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent #0f172a transparent;
+}
+
+.tooltipContainer:hover .tooltipContent,
+.tooltipContainer:focus-within .tooltipContent {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Left / right edge alignment adjustments for mobile */
+@media (max-width: 640px) {
+  .tooltipContent {
+    max-width: 210px;
+    font-size: 0.72rem;
+  }
+}

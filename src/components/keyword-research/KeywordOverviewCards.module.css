@@ -1,0 +1,335 @@
+/* src/components/keyword-research/KeywordOverviewCards.module.css */
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+  .overviewGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .overviewGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.15rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  transition: all 200ms ease;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+/* Stacked double card for column 3 (Intent + Trend) */
+.stackedCardsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.subCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.15rem;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  transition: all 200ms ease;
+  flex: 1;
+}
+
+.subCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.sectionHeader {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitleWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.bigValue {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 1.15rem 0;
+}
+
+/* ── KD Gauge ── */
+.kdSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kdHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kdRow {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.kdGaugeWrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.kdSvg {
+  transform: rotate(-90deg);
+}
+
+.kdCircleBg {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 5;
+}
+
+.kdCircleFill {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 800ms ease;
+}
+
+.kdScoreText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.kdInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.kdPercentage {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.kdDesc {
+  font-size: 0.76rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin-top: 0.25rem;
+}
+
+/* ── Country Breakdown ── */
+.countryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.countryRow {
+  display: grid;
+  grid-template-columns: 28px 1fr 45px;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.countryCode {
+  font-weight: 700;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+}
+
+.barTrack {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #93c5fd 0%, #3b82f6 100%);
+  border-radius: 99px;
+  transition: width 600ms ease;
+}
+
+.countryVol {
+  font-weight: 700;
+  color: #2563eb;
+  text-align: right;
+  font-size: 0.76rem;
+}
+
+/* ── Redesigned Clear Intent Card ── */
+.intentCardBody {
+  margin-top: 0.35rem;
+}
+
+.intentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  margin-bottom: 0.65rem;
+}
+
+.intent_informational {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+.intent_commercial {
+  background: rgba(234, 88, 12, 0.12);
+  color: #ea580c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+}
+
+.intent_transactional {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.intent_navigational {
+  background: rgba(124, 58, 237, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+.intentExplanation {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.intentRecommendation {
+  font-size: 0.74rem;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.intentRecommendation strong {
+  color: #ff6b35;
+  font-weight: 700;
+}
+
+/* ── Trend Bars ── */
+.trendWrap {
+  margin-top: 0.5rem;
+}
+
+.trendBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 52px;
+  padding-top: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.trendBar {
+  flex: 1;
+  background: #bfdbfe;
+  border-radius: 3px 3px 0 0;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.trendBar:hover {
+  background: #3b82f6;
+  transform: scaleY(1.08);
+}
+
+/* ── CPC & Density ── */
+.extraMetricsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.extraItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.extraLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.extraVal {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #64748b;
+}

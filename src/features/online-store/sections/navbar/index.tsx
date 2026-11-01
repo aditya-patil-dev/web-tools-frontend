@@ -12,12 +12,14 @@ import type { SectionDefinition, EditorProps } from "../../registry/types";
 export interface NavChild {
     label: string;
     href: string;
-    badge?: "new" | "beta" | "";
+    badge?: "new" | "beta" | "pro" | "ai" | "hot" | "";
 }
 
 export interface NavToolItem {
     label: string;
     href: string;
+    isSpecial?: boolean;
+    badge?: string;
     children: NavChild[];
 }
 

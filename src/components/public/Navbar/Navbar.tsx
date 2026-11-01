@@ -3,8 +3,9 @@
 import Link from "next/link";
 import AppLink from "@/components/common/AppLink";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Sparkles } from "lucide-react";
 import { TOP_NAV_ITEMS, TOOLS_NAV_ITEMS } from "./nav.config";
-import type { NavbarData } from "@/features/online-store/sections/navbar";
+import type { NavbarData, NavToolItem, NavChild } from "@/features/online-store/sections/navbar";
 
 interface NavbarProps {
   config?: Partial<NavbarData>;
@@ -84,7 +85,43 @@ export default function Navbar({ config }: NavbarProps) {
   const ctaHref = config?.ctaHref ?? "/tools";
   const loginHref = config?.loginHref ?? "/login";
   const topNavItems = config?.topNavItems ?? TOP_NAV_ITEMS;
-  const toolsNavItems = config?.toolsNavItems ?? TOOLS_NAV_ITEMS;
+  const rawToolsNavItems = config?.toolsNavItems ?? TOOLS_NAV_ITEMS;
+
+  // Guarantee the Flagship Keyword Research item is always present at the END of the tools navbar
+  const nonKeywordItems = rawToolsNavItems.filter(
+    (item) => !item.href?.includes("keyword-research")
+  );
+  const existingKeywordItem = rawToolsNavItems.find(
+    (item) => item.href?.includes("keyword-research")
+  );
+
+  const keywordNavItem: NavToolItem = {
+    label: existingKeywordItem?.label || "Keyword Research",
+    href: existingKeywordItem?.href || "/seo/tools/keyword-research",
+    isSpecial: true,
+    badge: (existingKeywordItem?.badge || "hot") as any,
+    children: existingKeywordItem?.children || [],
+  };
+
+  const toolsNavItems: NavToolItem[] = [
+    ...(nonKeywordItems as NavToolItem[]),
+    keywordNavItem,
+  ];
+
+  // Guarantee it also appears inside the SEO Tools dropdown if present
+  toolsNavItems.forEach((item) => {
+    if (
+      item.label?.toLowerCase().includes("seo") &&
+      item.children &&
+      !item.children.some((c) => c.href?.includes("keyword-research"))
+    ) {
+      item.children.unshift({
+        label: "Keyword Research Tool",
+        href: "/seo/tools/keyword-research",
+        badge: "hot",
+      });
+    }
+  });
 
   /* ── Build flat search index ── */
   const searchIndex: SearchResult[] = toolsNavItems.flatMap((item) => {
@@ -92,7 +129,7 @@ export default function Navbar({ config }: NavbarProps) {
       item.children?.map((c) => ({
         label: c.label,
         href: c.href,
-        badge: c.badge,
+        badge: c.badge as any,
         parent: item.label,
         icon: getIcon(c.label),
       })) ?? [];
@@ -259,12 +296,17 @@ export default function Navbar({ config }: NavbarProps) {
       {/* ── Announcement Strip ── */}
       {showAnnouncement && (
         <div className="announce-strip">
-          <span className="announce-pill">New</span>
-          AI-powered tools are here — Smarter, faster, better.
-          <span className="announce-arrow">→</span>
+          <AppLink href="/seo/tools/keyword-research" className="announce-inner-link">
+            <span className="announce-pill">New Flagship</span>
+            <span>Free Keyword Research & Intent Tool is live — Explore search volumes & KD%</span>
+            <span className="announce-arrow">→</span>
+          </AppLink>
           <button
             className="announce-dismiss"
-            onClick={() => setShowAnnouncement(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAnnouncement(false);
+            }}
             aria-label="Dismiss announcement"
           >
             ✕
@@ -425,6 +467,34 @@ export default function Navbar({ config }: NavbarProps) {
           <div className="nav-container">
             <nav className="nav-tools-menu">
               {toolsNavItems.map((item, index) => {
+                if (item.isSpecial) {
+                  return (
+                    <div key={item.label} className="nav-item nav-item-special">
+                      <AppLink
+                        href={item.href!}
+                        className="nav-special-pill"
+                        onClick={() =>
+                          trackTool({
+                            label: item.label,
+                            href: item.href!,
+                            badge: item.badge,
+                            icon: "✨",
+                          })
+                        }
+                      >
+                        <span className="nav-special-pulse" aria-hidden="true" />
+                        <Sparkles size={13} className="nav-special-icon" aria-hidden="true" />
+                        <span className="nav-special-label">{item.label}</span>
+                        {item.badge && (
+                          <span className={`badge badge-${item.badge} nav-special-badge`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </AppLink>
+                    </div>
+                  );
+                }
+
                 const hasDropdown = item.children && item.children.length > 0;
                 return (
                   <div
@@ -537,6 +607,27 @@ export default function Navbar({ config }: NavbarProps) {
           ))}
           <li className="mobile-divider">Tools</li>
           {toolsNavItems.map((item, index) => {
+            if (item.isSpecial) {
+              return (
+                <li key={item.label} className="mobile-item-special">
+                  <AppLink
+                    href={item.href!}
+                    className="mobile-special-pill"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span className="nav-special-pulse" aria-hidden="true" />
+                    <Sparkles size={14} className="nav-special-icon" aria-hidden="true" />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className={`badge badge-${item.badge} nav-special-badge`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </AppLink>
+                </li>
+              );
+            }
+
             const hasChildren = item.children && item.children.length > 0;
             const isOpen = mobileSub === index;
             return (
