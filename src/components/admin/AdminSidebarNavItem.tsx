@@ -27,38 +27,65 @@ export default function AdminSidebarNavItem({
     }, [pathname, item, hasChildren]);
 
     /**
-     * openUser: user-controlled state only (no effects)
-     * openFinal: derived open state (auto-open when active)
+     * openUser: user-controlled accordion toggle when sidebar is expanded
      */
     const [openUser, setOpenUser] = useState(false);
 
+    /**
+     * flyoutOpen: hover state for floating popover when sidebar is collapsed
+     */
+    const [flyoutOpen, setFlyoutOpen] = useState(false);
+
     const openFinal = useMemo(() => {
-        if (collapsed) return false; // when collapsed we hide submenu UI anyway
-        return openUser || isActive; // auto-open if route is active
+        if (collapsed) return false;
+        return openUser || isActive;
     }, [collapsed, openUser, isActive]);
 
-    // Leaf item
+    // ── 1. LEAF NAV ITEM (NO CHILDREN) ──
     if (!hasChildren) {
         return (
             <Link
                 href={item.href || "#"}
                 className={`navItem ${isActive ? "active" : ""}`}
                 onClick={onNavigate}
+                data-label={item.label}
+                title={collapsed ? item.label : undefined}
             >
-                {item.icon && <i className={`bi ${item.icon} navIcon`} />}
-                {!collapsed && <span className="navLabel">{item.label}</span>}
+                <div className="navGroupLeft">
+                    {item.icon && <i className={`bi ${item.icon} navIcon`} />}
+                    {!collapsed && <span className="navLabel">{item.label}</span>}
+                </div>
+
+                {!collapsed && item.badge && (
+                    <span className={`navBadgePill ${item.badgeVariant ?? "primary"}`}>
+                        {item.badge}
+                    </span>
+                )}
             </Link>
         );
     }
 
-    // Parent with submenu
+    // ── 2. PARENT NAV ITEM WITH SUBMENU ──
     return (
-        <div className={`navGroup ${isActive ? "activeGroup" : ""}`}>
+        <div
+            className={`navGroup ${isActive ? "activeGroup" : ""}`}
+            style={{ position: "relative" }}
+            onMouseEnter={() => collapsed && setFlyoutOpen(true)}
+            onMouseLeave={() => collapsed && setFlyoutOpen(false)}
+        >
             <button
                 type="button"
                 className={`navItem navGroupBtn ${isActive ? "active" : ""}`}
-                onClick={() => setOpenUser((v) => !v)}
-                aria-expanded={openFinal}
+                onClick={() => {
+                    if (collapsed) {
+                        setFlyoutOpen((v) => !v);
+                    } else {
+                        setOpenUser((v) => !v);
+                    }
+                }}
+                aria-expanded={collapsed ? flyoutOpen : openFinal}
+                data-label={item.label}
+                title={collapsed ? item.label : undefined}
             >
                 <div className="navGroupLeft">
                     {item.icon && <i className={`bi ${item.icon} navIcon`} />}
@@ -66,16 +93,67 @@ export default function AdminSidebarNavItem({
                 </div>
 
                 {!collapsed && (
-                    <i
-                        className={`bi ${openFinal ? "bi-chevron-up" : "bi-chevron-down"
-                            } navChevron`}
-                    />
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        {item.badge && (
+                            <span className={`navBadgePill ${item.badgeVariant ?? "primary"}`}>
+                                {item.badge}
+                            </span>
+                        )}
+                        <i
+                            className={`bi bi-chevron-down navChevron ${openFinal ? "rotated" : ""}`}
+                        />
+                    </div>
                 )}
             </button>
 
-            {/* Submenu */}
-            {!collapsed && (
-                <div className={`subNav ${openFinal ? "open" : ""}`}>
+            {/* A. Collapsed Mode: Floating Flyout Popover on Hover */}
+            {collapsed && flyoutOpen && (
+                <div
+                    className="navFlyoutMenu"
+                    onMouseEnter={() => setFlyoutOpen(true)}
+                    onMouseLeave={() => setFlyoutOpen(false)}
+                >
+                    <div className="navFlyoutHeader">
+                        <span>{item.label}</span>
+                        {item.icon && <i className={`bi ${item.icon}`} style={{ color: "var(--admin-accent)" }} />}
+                    </div>
+                    <div className="navFlyoutBody">
+                        {item.children!.map((child) => {
+                            const childActive = isRouteActive(
+                                pathname,
+                                child.href,
+                                child.match ?? "prefix"
+                            );
+
+                            return (
+                                <Link
+                                    key={child.id}
+                                    href={child.href || "#"}
+                                    className={`navFlyoutItem ${childActive ? "active" : ""}`}
+                                    onClick={() => {
+                                        setFlyoutOpen(false);
+                                        onNavigate?.();
+                                    }}
+                                >
+                                    {child.icon && (
+                                        <i className={`bi ${child.icon}`} style={{ fontSize: "13px" }} />
+                                    )}
+                                    <span style={{ flex: 1 }}>{child.label}</span>
+                                    {child.badge && (
+                                        <span className={`navBadgePill ${child.badgeVariant ?? "primary"}`}>
+                                            {child.badge}
+                                        </span>
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* B. Expanded Mode: Tree Submenu with Vertical Guide */}
+            {!collapsed && openFinal && (
+                <div className="navSubTree">
                     {item.children!.map((child) => {
                         const childActive = isRouteActive(
                             pathname,
@@ -87,11 +165,18 @@ export default function AdminSidebarNavItem({
                             <Link
                                 key={child.id}
                                 href={child.href || "#"}
-                                className={`subNavItem ${childActive ? "active" : ""}`}
+                                className={`navSubLink ${childActive ? "active" : ""}`}
                                 onClick={onNavigate}
                             >
-                                <span className="subNavDot" />
-                                <span className="subNavLabel">{child.label}</span>
+                                {child.icon && (
+                                    <i className={`bi ${child.icon} navSubIcon`} />
+                                )}
+                                <span style={{ flex: 1 }}>{child.label}</span>
+                                {child.badge && (
+                                    <span className={`navBadgePill ${child.badgeVariant ?? "primary"}`}>
+                                        {child.badge}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}

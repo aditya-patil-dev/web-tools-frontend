@@ -128,10 +128,10 @@ export const pagesSEO = {
   },
 
   pricing: {
-    title: "Pricing – Free & Premium Plans | FusionTools",
+    title: "Pricing – 100% Free & Unlimited Access | FusionTools",
     description:
-      "Explore FusionTools plans. Enjoy generous free access or upgrade for high-capacity batch processing and team workflows.",
-    keywords: ["pricing", "plans", "premium tools", "fusiontools pricing"],
+      "All 100+ tools on FusionTools are 100% free with unlimited usage. Zero paywalls, no subscriptions, and no credit card required.",
+    keywords: ["free tools", "unlimited tools", "free online tools", "pricing", "fusiontools pricing"],
     url: "/pricing",
     ogImage: "/images/pricing-og.jpg",
   },

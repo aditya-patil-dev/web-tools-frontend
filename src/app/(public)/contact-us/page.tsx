@@ -32,9 +32,9 @@ const CONTACT_METHODS = [
     {
         icon: "📧",
         label: "General Support",
-        value: "adityapatil93564@gmail.com",
+        value: "aditya@fusiontools.in",
         note: "Reply within 2 business hours",
-        href: "mailto:adityapatil93564@gmail.com",
+        href: "mailto:aditya@fusiontools.in",
     },
 ];
 

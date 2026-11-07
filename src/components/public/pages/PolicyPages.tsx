@@ -144,7 +144,7 @@ export default function PolicyPages({
 
                 <div className={styles.sidebarFooter}>
                     <p>Need help?</p>
-                    <a href="mailto:adityapatil93564@gmail.com">adityapatil93564@gmail.com</a>
+                    <a href="mailto:aditya@fusiontools.in">aditya@fusiontools.in</a>
                 </div>
             </aside>
 

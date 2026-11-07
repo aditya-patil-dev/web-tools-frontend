@@ -9,6 +9,7 @@ import Textarea from "@/components/forms/Textarea";
 import Select from "@/components/forms/Select";
 import Toggle from "@/components/forms/Toggle";
 import { Form, FormSection, FormGroup } from "@/components/forms/FormLayout";
+import SeoPreviewCard from "@/components/forms/SeoPreviewCard";
 import { toast } from "@/components/toast/toast";
 import { loading } from "@/components/loading/loading";
 import { useToolCategory } from "@/hooks/useToolCategories";
@@ -362,6 +363,13 @@ export default function CategoryFormPage() {
                         }
                         leftAddon="https://"
                         helperText="Set if this page has a preferred URL"
+                    />
+
+                    <SeoPreviewCard
+                        title={formData.meta_title || formData.page_title}
+                        description={formData.meta_description || formData.page_description}
+                        slug={formData.category_slug ? `tools/${formData.category_slug}` : "tools"}
+                        canonicalUrl={formData.canonical_url}
                     />
                 </FormSection>
             </Form>

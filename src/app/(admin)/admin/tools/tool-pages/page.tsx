@@ -14,6 +14,7 @@ import type { ToolPageWithTool } from "@/types/tool-page.types";
 
 export default function ToolPagesPage() {
     const router = useRouter();
+    const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
 
     // ── Table query state ──
     const [query, setQuery] = useState<DataTableQueryState>({
@@ -34,6 +35,12 @@ export default function ToolPagesPage() {
 
     const { toolPages, isLoading, error, pagination, refetch } = useToolPagesList(apiParams);
 
+    const filteredPages = useMemo(() => {
+        const list = toolPages ?? [];
+        if (statusFilter === "all") return list;
+        return list.filter((p) => p.status === statusFilter);
+    }, [toolPages, statusFilter]);
+
     // ── Selected pages for bulk actions ──
     const [selectedPages, setSelectedPages] = useState<ToolPageWithTool[]>([]);
 
@@ -43,13 +50,17 @@ export default function ToolPagesPage() {
         [router]
     );
 
+    const handleOpenLive = useCallback((toolPage: ToolPageWithTool) => {
+        const cat = toolPage.tool?.category_slug || "tools";
+        window.open(`/tools/${cat}/${toolPage.tool_slug}`, "_blank");
+    }, []);
+
     const handleBulkDelete = useCallback(async () => {
         if (selectedPages.length === 0) return;
 
         if (
             !confirm(
-                `Are you sure you want to delete ${selectedPages.length} tool page${selectedPages.length === 1 ? "" : "s"
-                }?`
+                `Are you sure you want to delete ${selectedPages.length} tool page${selectedPages.length === 1 ? "" : "s"}?`
             )
         ) {
             return;
@@ -80,7 +91,9 @@ export default function ToolPagesPage() {
                     <div className="dtCellText">
                         <div className="dtCellTitle">{row.original.page_title}</div>
                         {row.original.tool?.title && (
-                            <div className="dtCellSub">Tool: {row.original.tool.title}</div>
+                            <div className="dtCellSub">
+                                Tool: <strong>{row.original.tool.title}</strong>
+                            </div>
                         )}
                     </div>
                 ),
@@ -91,7 +104,7 @@ export default function ToolPagesPage() {
                 id: "tool_slug",
                 accessorKey: "tool_slug",
                 header: "Tool Slug",
-                cell: ({ row }) => <code className="dtCode">{row.original.tool_slug}</code>,
+                cell: ({ row }) => <code className="dtCode">/{row.original.tool_slug}</code>,
                 enableSorting: true,
             },
 
@@ -119,7 +132,7 @@ export default function ToolPagesPage() {
             {
                 id: "noindex",
                 accessorKey: "noindex",
-                header: "SEO",
+                header: "Indexing",
                 cell: ({ row }) =>
                     row.original.noindex ? (
                         <span className="dtBadge danger">Noindex</span>
@@ -130,25 +143,9 @@ export default function ToolPagesPage() {
             },
 
             {
-                id: "created_at",
-                accessorKey: "created_at",
-                header: "Created",
-                cell: ({ row }) => (
-                    <span className="dtMuted">
-                        {new Date(row.original.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                        })}
-                    </span>
-                ),
-                enableSorting: true,
-            },
-
-            {
                 id: "updated_at",
                 accessorKey: "updated_at",
-                header: "Lat Updated",
+                header: "Last Updated",
                 cell: ({ row }) => (
                     <span className="dtMuted">
                         {new Date(row.original.updated_at).toLocaleDateString("en-US", {
@@ -165,32 +162,45 @@ export default function ToolPagesPage() {
                 id: "actions",
                 header: "Actions",
                 cell: ({ row }) => (
-                    <div style={{ display: "flex", gap: "6px" }}>
+                    <div className="tableRowActions">
                         <button
-                            className="dt-btn"
+                            type="button"
+                            className="tableActionBtn"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleEdit(row.original.tool_slug);
                             }}
-                            title="Edit page"
+                            title="Edit page content & SEO"
                         >
                             <i className="bi bi-pencil" />
+                        </button>
+
+                        <button
+                            type="button"
+                            className="tableActionBtn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenLive(row.original);
+                            }}
+                            title="View live landing page in new tab ↗"
+                        >
+                            <i className="bi bi-box-arrow-up-right" />
                         </button>
                     </div>
                 ),
                 enableSorting: false,
                 enableHiding: false,
-                size: 120,
+                size: 100,
             },
         ],
-        [handleEdit]
+        [handleEdit, handleOpenLive]
     );
 
     return (
         <div className="adminPage">
             <PageHeader
-                title="Tool Pages"
-                subtitle="Manage SEO content and details for each tool"
+                title="Tool Landing Pages"
+                subtitle="Manage tool landing page content, SEO metadata, FAQs, and feature bullets"
                 actions={[
                     {
                         label: "New Tool Page",
@@ -202,10 +212,40 @@ export default function ToolPagesPage() {
                 variant="flat"
             />
 
+            {/* Quick Filter Bar */}
+            <div className="tableFilterBar">
+                <div className="tableFilterPills">
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "all" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("all")}
+                    >
+                        <span>All Pages</span>
+                        <span className="pillCount">{pagination?.total ?? toolPages?.length ?? 0}</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "published" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("published")}
+                    >
+                        <span>Published</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "draft" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("draft")}
+                    >
+                        <span>Drafts</span>
+                    </button>
+                </div>
+            </div>
+
             <DataTable
                 tableId="admin-tool-pages"
                 columns={columns}
-                data={toolPages ?? []}
+                data={filteredPages}
                 getRowId={(row) => row.tool_slug}
                 mode="server"
                 totalRows={pagination?.total ?? 0}
@@ -218,9 +258,14 @@ export default function ToolPagesPage() {
                 onSelectionChange={setSelectedPages}
                 rightActions={
                     selectedPages.length > 0 ? (
-                        <button className="dtBtn danger" onClick={handleBulkDelete}>
+                        <button
+                            type="button"
+                            className="dtBtn danger sm"
+                            onClick={handleBulkDelete}
+                            title="Delete selected pages"
+                        >
                             <i className="bi bi-trash" />
-                            Delete ({selectedPages.length})
+                            <span>Delete ({selectedPages.length})</span>
                         </button>
                     ) : null
                 }

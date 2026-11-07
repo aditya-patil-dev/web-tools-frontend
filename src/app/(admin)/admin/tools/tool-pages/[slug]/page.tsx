@@ -9,6 +9,7 @@ import Textarea from "@/components/forms/Textarea";
 import Select from "@/components/forms/Select";
 import Toggle from "@/components/forms/Toggle";
 import { Form, FormSection, FormGroup } from "@/components/forms/FormLayout";
+import SeoPreviewCard from "@/components/forms/SeoPreviewCard";
 import { toast } from "@/components/toast/toast";
 import { loading } from "@/components/loading/loading";
 import RepeatableField from "@/components/forms/RepeatableField";
@@ -508,6 +509,13 @@ export default function ToolPageFormPage() {
             onChange={(val) =>
               setFormData((prev) => ({ ...prev, noindex: val }))
             }
+          />
+        
+          <SeoPreviewCard
+            title={formData.meta_title || formData.page_title}
+            description={formData.meta_description || formData.page_intro || ""}
+            slug={formData.tool_slug ? `tools/${formData.tool_slug}` : "tools"}
+            canonicalUrl={formData.canonical_url || ""}
           />
         </FormSection>
 

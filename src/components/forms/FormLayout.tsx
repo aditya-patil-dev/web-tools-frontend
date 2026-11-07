@@ -3,7 +3,7 @@
 import React from "react";
 
 // ==============================
-// FormGroup - wraps a row of fields
+// FormGroup - wraps a responsive row of fields
 // ==============================
 interface FormGroupProps {
     children: React.ReactNode;
@@ -18,13 +18,23 @@ export const FormGroup: React.FC<FormGroupProps> = ({
     gap = 20,
     className = "",
 }) => {
+    const gridStyle =
+        columns === 1
+            ? "1fr"
+            : columns === 2
+                ? "repeat(auto-fit, minmax(280px, 1fr))"
+                : columns === 3
+                    ? "repeat(auto-fit, minmax(220px, 1fr))"
+                    : "repeat(auto-fit, minmax(180px, 1fr))";
+
     return (
         <div
             className={className}
             style={{
                 display: "grid",
-                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                gridTemplateColumns: gridStyle,
                 gap,
+                width: "100%",
             }}
         >
             {children}
@@ -61,22 +71,22 @@ export const FormSection: React.FC<FormSectionProps> = ({
     const [open, setOpen] = React.useState(defaultOpen);
 
     const containerStyle: React.CSSProperties = {
-        borderRadius: "var(--radius-xl)",
+        borderRadius: "var(--radius-xl, 14px)",
         overflow: "hidden",
-        transition: "all var(--transition-base)",
+        transition: "all var(--transition-base, 0.2s ease)",
         ...(variant === "default"
             ? {
-                background: "var(--bg-primary)",
-                border: "1.5px solid var(--border-primary)",
-                boxShadow: "var(--shadow-sm)",
+                background: "var(--bg-primary, #ffffff)",
+                border: "1px solid var(--border-primary, #e2e8f0)",
+                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }
             : variant === "bordered"
                 ? {
                     background: "transparent",
-                    border: "1.5px solid var(--border-secondary)",
+                    border: "1.5px solid var(--border-secondary, #cbd5e1)",
                 }
                 : {
-                    background: "var(--bg-secondary)",
+                    background: "var(--bg-secondary, #f8fafc)",
                     border: "none",
                 }),
     };
@@ -86,8 +96,9 @@ export const FormSection: React.FC<FormSectionProps> = ({
             {(title || description) && (
                 <div
                     style={{
-                        padding: "20px 24px",
-                        borderBottom: open ? "1px solid var(--border-primary)" : "none",
+                        padding: "18px 24px",
+                        borderBottom: open ? "1px solid var(--border-primary, #e2e8f0)" : "none",
+                        background: "var(--bg-secondary, #f8fafc)",
                         display: "flex",
                         alignItems: "flex-start",
                         justifyContent: "space-between",
@@ -101,9 +112,9 @@ export const FormSection: React.FC<FormSectionProps> = ({
                             {title && (
                                 <h3
                                     style={{
-                                        fontSize: "1rem",
+                                        fontSize: "0.9375rem",
                                         fontWeight: 700,
-                                        color: "var(--text-primary)",
+                                        color: "var(--text-primary, #0f172a)",
                                         margin: 0,
                                         lineHeight: 1.3,
                                     }}
@@ -115,13 +126,13 @@ export const FormSection: React.FC<FormSectionProps> = ({
                                 <span
                                     style={{
                                         display: "inline-flex",
-                                        padding: "2px 10px",
-                                        background: "rgba(255,107,53,0.1)",
-                                        color: "var(--color-primary)",
-                                        borderRadius: "var(--radius-full)",
-                                        fontSize: "0.75rem",
+                                        padding: "2px 9px",
+                                        background: "rgba(255, 107, 53, 0.12)",
+                                        color: "var(--color-primary, #ff6b35)",
+                                        borderRadius: "9999px",
+                                        fontSize: "0.72rem",
                                         fontWeight: 700,
-                                        border: "1px solid rgba(255,107,53,0.25)",
+                                        border: "1px solid rgba(255, 107, 53, 0.25)",
                                     }}
                                 >
                                     {badge}
@@ -129,7 +140,7 @@ export const FormSection: React.FC<FormSectionProps> = ({
                             )}
                         </div>
                         {description && (
-                            <p style={{ margin: "4px 0 0", fontSize: "0.875rem", color: "var(--text-tertiary)", lineHeight: 1.5 }}>
+                            <p style={{ margin: "4px 0 0", fontSize: "0.8125rem", color: "var(--text-tertiary, #64748b)", lineHeight: 1.5 }}>
                                 {description}
                             </p>
                         )}
@@ -141,8 +152,8 @@ export const FormSection: React.FC<FormSectionProps> = ({
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
-                                    color: "var(--text-tertiary)",
-                                    transition: "transform var(--transition-base)",
+                                    color: "var(--text-tertiary, #64748b)",
+                                    transition: "transform 0.2s ease",
                                     transform: `rotate(${open ? 180 : 0}deg)`,
                                 }}
                             >
@@ -193,7 +204,7 @@ export const FormActions: React.FC<FormActionsProps> = ({
                 alignItems: "center",
                 gap: "12px",
                 paddingTop: divider ? "20px" : 0,
-                borderTop: divider ? "1px solid var(--border-primary)" : "none",
+                borderTop: divider ? "1px solid var(--border-primary, #e2e8f0)" : "none",
                 flexWrap: "wrap",
             }}
         >
@@ -221,4 +232,5 @@ export const Form: React.FC<FormProps> = ({ children, gap = 24, style, ...rest }
     );
 };
 
-export default { Form, FormGroup, FormSection, FormActions };
+const FormLayout = { Form, FormGroup, FormSection, FormActions };
+export default FormLayout;

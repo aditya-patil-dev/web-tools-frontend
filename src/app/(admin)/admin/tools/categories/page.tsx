@@ -12,6 +12,7 @@ import type { ToolCategory } from "@/types/tool-category.types";
 
 export default function ToolCategoriesPage() {
     const router = useRouter();
+    const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
 
     // ── Table query state ──
     const [query, setQuery] = useState<DataTableQueryState>({
@@ -30,12 +31,21 @@ export default function ToolCategoriesPage() {
         sort_order: query.sorting[0]?.desc ? "desc" : "asc",
     });
 
+    const categories = useMemo(() => {
+        const list = data?.categories ?? [];
+        if (statusFilter === "all") return list;
+        return list.filter((c) => c.status === statusFilter);
+    }, [data?.categories, statusFilter]);
 
     // ── Actions ──
     const handleEdit = useCallback(
         (slug: string) => router.push(`/admin/tools/categories/${slug}`),
         [router]
     );
+
+    const handleOpenLive = useCallback((slug: string) => {
+        window.open(`/tools/${slug}`, "_blank");
+    }, []);
 
     // ── Columns ──
     const columns = useMemo<ColumnDef<ToolCategory>[]>(
@@ -47,7 +57,7 @@ export default function ToolCategoriesPage() {
                 accessorKey: "category_slug",
                 header: "Slug",
                 cell: ({ row }) => (
-                    <code className="dtCode">{row.original.category_slug}</code>
+                    <code className="dtCode">/{row.original.category_slug}</code>
                 ),
                 enableSorting: true,
             },
@@ -55,7 +65,7 @@ export default function ToolCategoriesPage() {
             {
                 id: "page_title",
                 accessorKey: "page_title",
-                header: "Title",
+                header: "Category Title",
                 cell: ({ row }) => (
                     <div className="dtCellText">
                         <div className="dtCellTitle">{row.original.page_title}</div>
@@ -73,7 +83,7 @@ export default function ToolCategoriesPage() {
             {
                 id: "tool_count",
                 accessorKey: "tool_count",
-                header: "Tools",
+                header: "Tools Count",
                 cell: ({ row }) => (
                     <span className="dtBadge neutral">
                         {row.original.tool_count ?? 0} tools
@@ -104,7 +114,7 @@ export default function ToolCategoriesPage() {
             {
                 id: "created_at",
                 accessorKey: "created_at",
-                header: "Created",
+                header: "Created Date",
                 cell: ({ row }) => (
                     <span className="dtMuted">
                         {new Date(row.original.created_at).toLocaleDateString("en-US", {
@@ -121,13 +131,29 @@ export default function ToolCategoriesPage() {
                 id: "actions",
                 header: "Actions",
                 cell: ({ row }) => (
-                    <div style={{ display: "flex", gap: "6px" }}>
+                    <div className="tableRowActions">
                         <button
-                            className="dt-btn"
-                            onClick={(e) => { e.stopPropagation(); handleEdit(row.original.category_slug); }}
+                            type="button"
+                            className="tableActionBtn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(row.original.category_slug);
+                            }}
                             title="Edit category"
                         >
                             <i className="bi bi-pencil" />
+                        </button>
+
+                        <button
+                            type="button"
+                            className="tableActionBtn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenLive(row.original.category_slug);
+                            }}
+                            title="View live category page in new tab ↗"
+                        >
+                            <i className="bi bi-box-arrow-up-right" />
                         </button>
                     </div>
                 ),
@@ -136,14 +162,14 @@ export default function ToolCategoriesPage() {
                 size: 100,
             },
         ],
-        [handleEdit]
+        [handleEdit, handleOpenLive]
     );
 
     return (
         <div className="adminPage">
             <PageHeader
                 title="Tool Categories"
-                subtitle="Manage tool category pages and SEO content"
+                subtitle="Manage tool category taxonomies, descriptions, and SEO landing content"
                 actions={[
                     {
                         label: "New Category",
@@ -155,10 +181,40 @@ export default function ToolCategoriesPage() {
                 variant="flat"
             />
 
+            {/* Quick Filter Bar */}
+            <div className="tableFilterBar">
+                <div className="tableFilterPills">
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "all" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("all")}
+                    >
+                        <span>All Categories</span>
+                        <span className="pillCount">{data?.meta?.total ?? categories.length}</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "published" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("published")}
+                    >
+                        <span>Published</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        className={`tableFilterPill ${statusFilter === "draft" ? "active" : ""}`}
+                        onClick={() => setStatusFilter("draft")}
+                    >
+                        <span>Drafts</span>
+                    </button>
+                </div>
+            </div>
+
             <DataTable
                 tableId="admin-tool-categories"
                 columns={columns}
-                data={data?.categories ?? []}
+                data={categories}
                 getRowId={(row) => row.category_slug}
                 mode="server"
                 totalRows={data?.meta?.total ?? 0}

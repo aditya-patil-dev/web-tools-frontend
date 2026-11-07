@@ -17,7 +17,6 @@ type UserRow = {
 };
 
 export default function UsersPage() {
-
     const [rows, setRows] = useState<UserRow[]>([
         { id: "1", name: "Admin", email: "admin@company.com", role: "Super Admin" },
         { id: "2", name: "John", email: "john@company.com", role: "Manager" },
@@ -26,21 +25,43 @@ export default function UsersPage() {
     const columns = useMemo<ColumnDef<UserRow>[]>(() => {
         return [
             selectionColumn<UserRow>(),
-            { header: "Name", accessorKey: "name" },
-            { header: "Email", accessorKey: "email" },
-            { header: "Role", accessorKey: "role" },
+            {
+                header: "Name",
+                accessorKey: "name",
+                cell: ({ row }) => (
+                    <div className="dtCellText">
+                        <div className="dtCellTitle">{row.original.name}</div>
+                    </div>
+                ),
+            },
+            {
+                header: "Email",
+                accessorKey: "email",
+                cell: ({ row }) => <span className="dtMuted">{row.original.email}</span>,
+            },
+            {
+                header: "Role",
+                accessorKey: "role",
+                cell: ({ row }) => <span className="dtBadge neutral">{row.original.role}</span>,
+            },
             {
                 id: "actions",
                 header: "Actions",
                 enableSorting: false,
                 enableHiding: false,
                 cell: ({ row }) => (
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button className="dtBtn" onClick={() => toast.info(`Edit ${row.original.name}`)}>
-                            <i className="bi bi-pencil" /> Edit
+                    <div className="tableRowActions">
+                        <button
+                            type="button"
+                            className="tableActionBtn"
+                            onClick={() => toast.info(`Edit ${row.original.name}`)}
+                            title="Edit user"
+                        >
+                            <i className="bi bi-pencil" />
                         </button>
                         <button
-                            className="dtBtn danger"
+                            type="button"
+                            className="tableActionBtn danger"
                             onClick={async () => {
                                 const ok = await confirmDelete("this user");
                                 if (!ok) return;
@@ -54,8 +75,9 @@ export default function UsersPage() {
                                     loading.hide();
                                 }
                             }}
+                            title="Delete user"
                         >
-                            <i className="bi bi-trash" /> Delete
+                            <i className="bi bi-trash" />
                         </button>
                     </div>
                 ),
@@ -64,44 +86,28 @@ export default function UsersPage() {
     }, []);
 
     return (
-        <div className="container-fluid">
-
-            <div>
-                <PageHeader
-                    title="Users"
-                    subtitle="Manage platform users"
-                    actions={[
-                        {
-                            label: "Add User",
-                            icon: "bi-person-plus",
-                            href: "/admin/users/new",
-                            variant: "primary",
-                        },
-                        {
-                            label: "Logs",
-                            icon: "bi-file-earmark-text",
-                            href: "/admin/users/logs",
-                            variant: "primary",
-                        },
-                    ]}
-                />
-
-            </div>
+        <div className="adminPage">
+            <PageHeader
+                title="Users & Roles"
+                subtitle="Manage administrative accounts, team access, and permission levels"
+                actions={[
+                    {
+                        label: "Add User",
+                        icon: "bi-person-plus",
+                        href: "/admin/users/new",
+                        variant: "primary",
+                    },
+                ]}
+                variant="flat"
+            />
 
             <DataTable<UserRow>
                 tableId="users-table"
-                title="Users"
-                subtitle="Manage platform users"
                 data={rows}
                 columns={columns}
                 getRowId={(r) => r.id}
                 enableRowSelection
-                onSelectionChange={(selected) => {
-                    // optional: update bulk actions
-                    // console.log(selected)
-                }}
             />
-
         </div>
     );
 }
