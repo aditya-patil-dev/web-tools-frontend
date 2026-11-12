@@ -1,58 +1,79 @@
 'use client'
 
 // ─────────────────────────────────────────────────────────────
-//  SectionEngine — Layout Variants
-//  D: hero-side  |  E: accent-grid  |  F: two-col
-//  All hardcoded hex colors replaced with CSS theme variables
+//  SectionEngine — Modern Layout Variants
+//  Hero-Side | Accent-Grid | Two-Col
+//  Elevated, rich glassmorphism UI/UX matching website theme
 // ─────────────────────────────────────────────────────────────
 
 import React from 'react'
-import type { SectionConfig } from './types'
+import type { SectionConfig, ToolItem } from './types'
 import {
     IconBox, TagPill, ArrowBtn, Badge,
     CardMotion, SectionHeader,
     ACCENT_MAP,
 } from './components'
-import Link from 'next/link'
+import AppLink from '@/components/common/AppLink'
+import { LuArrowRight } from 'react-icons/lu'
+// import { LuStar } from 'react-icons/lu'
 
 // ─────────────────────────────────────────────────────────────
 //  LAYOUT D — Featured Hero + Side Cards
 // ─────────────────────────────────────────────────────────────
-function HeroCard({ tool }: { tool: import('./types').ToolItem }) {
+function HeroCard({ tool }: { tool: ToolItem }) {
     return (
-        <Link href={tool.href} className="no-underline">
+        <AppLink href={tool.href} className="no-underline se-card-link">
             <CardMotion className="se-hero-card">
-                {tool.badge && <Badge label={tool.badge} />}
-                <IconBox icon={tool.icon} size={20} />
+                <div className="se-card-ambient-glow" />
+                <div className="se-hero-card__top">
+                    <IconBox icon={tool.icon} size={28} />
+                    {tool.badge && <Badge label={tool.badge} />}
+                </div>
+
                 <div className="se-hero-card__body">
+                    {/* Rating commented out:
+                    <div className="se-card-rating">
+                        <LuStar size={12} fill="#f59e0b" color="#f59e0b" />
+                        <span>4.95 Rating · Verified Free</span>
+                    </div>
+                    */}
                     <h3 className="se-hero-card__title">{tool.title}</h3>
                     <p className="se-hero-card__desc">{tool.description}</p>
                 </div>
+
                 <div className="se-card__footer">
                     <TagPill tag={tool.tag} />
-                    <ArrowBtn />
+                    <div className="se-hero-card__launch">
+                        <span>Launch Tool</span>
+                        <LuArrowRight size={15} className="launch-arrow" />
+                    </div>
                 </div>
             </CardMotion>
-        </Link>
+        </AppLink>
     )
 }
 
-function CompactCard({ tool }: { tool: import('./types').ToolItem }) {
+function CompactCard({ tool }: { tool: ToolItem }) {
     return (
-        <Link href={tool.href} className="no-underline">
+        <AppLink href={tool.href} className="no-underline se-card-link">
             <CardMotion className="se-compact-card">
-                <IconBox icon={tool.icon} />
+                <div className="se-card-ambient-glow" />
+                <div className="se-compact-card__icon-wrap">
+                    <IconBox icon={tool.icon} size={22} />
+                </div>
                 <div className="se-compact-card__body">
-                    <div className="se-compact-card__title">{tool.title}</div>
+                    <div className="se-compact-card__title-row">
+                        <div className="se-compact-card__title">{tool.title}</div>
+                        {tool.badge && <Badge label={tool.badge} />}
+                    </div>
                     <div className="se-compact-card__desc">{tool.description}</div>
                 </div>
                 <div className="se-compact-card__right">
-                    {tool.badge && <Badge label={tool.badge} />}
                     <TagPill tag={tool.tag} />
                     <ArrowBtn />
                 </div>
             </CardMotion>
-        </Link>
+        </AppLink>
     )
 }
 
@@ -70,7 +91,7 @@ export function HeroSideLayout({ section }: { section: SectionConfig }) {
                     viewAllLabel={section.viewAllLabel}
                 />
                 <div className="se-hero-grid">
-                    <div>
+                    <div className="se-hero-main-col">
                         <HeroCard tool={hero} />
                     </div>
                     <div className="se-hero-side">
@@ -89,24 +110,36 @@ export function HeroSideLayout({ section }: { section: SectionConfig }) {
 // ─────────────────────────────────────────────────────────────
 //  LAYOUT E — Colored Accent Bar Grid
 // ─────────────────────────────────────────────────────────────
-function AccentCard({ tool }: { tool: import('./types').ToolItem }) {
+function AccentCard({ tool }: { tool: ToolItem }) {
     const accentClass = ACCENT_MAP[tool.accent ?? 'coral']
     return (
-        <Link href={tool.href} className="no-underline">
+        <AppLink href={tool.href} className="no-underline se-card-link">
             <CardMotion className="se-accent-card">
                 <div className={`se-accent-bar ${accentClass}`} />
+                <div className="se-card-ambient-glow" />
                 <div className="se-accent-card__body">
-                    {tool.badge && <Badge label={tool.badge} />}
-                    <IconBox icon={tool.icon} />
+                    <div className="se-accent-card__top">
+                        <IconBox icon={tool.icon} size={24} />
+                        {tool.badge && <Badge label={tool.badge} />}
+                    </div>
+
+                    {/* Rating commented out:
+                    <div className="se-card-rating">
+                        <LuStar size={11} fill="#f59e0b" color="#f59e0b" />
+                        <span>4.9★</span>
+                    </div>
+                    */}
+
                     <h3 className="se-accent-card__title">{tool.title}</h3>
                     <p className="se-accent-card__desc">{tool.description}</p>
+
                     <div className="se-card__footer">
                         <TagPill tag={tool.tag} />
                         <ArrowBtn />
                     </div>
                 </div>
             </CardMotion>
-        </Link>
+        </AppLink>
     )
 }
 
@@ -119,6 +152,8 @@ export function AccentGridLayout({ section }: { section: SectionConfig }) {
                     title={section.title}
                     titleAccent={section.titleAccent}
                     subtitle={section.subtitle}
+                    viewAllHref={section.viewAllHref}
+                    viewAllLabel={section.viewAllLabel}
                 />
                 <div className="se-accent-grid">
                     {section.tools.map((tool) => (
@@ -127,13 +162,6 @@ export function AccentGridLayout({ section }: { section: SectionConfig }) {
                         </div>
                     ))}
                 </div>
-                {section.viewAllHref && (
-                    <div className="se-view-all-center">
-                        <a href={section.viewAllHref} className="se-view-all-btn">
-                            {section.viewAllLabel ?? 'View All'} →
-                        </a>
-                    </div>
-                )}
             </div>
         </section>
     )
@@ -142,26 +170,35 @@ export function AccentGridLayout({ section }: { section: SectionConfig }) {
 // ─────────────────────────────────────────────────────────────
 //  LAYOUT F — 2-Col Horizontal Cards
 // ─────────────────────────────────────────────────────────────
-function HorizontalCard({ tool }: { tool: import('./types').ToolItem }) {
+function HorizontalCard({ tool }: { tool: ToolItem }) {
     return (
-        <Link href={tool.href} className="no-underline">
+        <AppLink href={tool.href} className="no-underline se-card-link">
             <CardMotion className="se-horiz-card">
-                {tool.badge && <Badge label={tool.badge} />}
+                <div className="se-card-ambient-glow" />
                 <div className="se-horiz-card__top">
                     <div className="se-horiz-card__icon-wrap">
-                        <IconBox icon={tool.icon} />
+                        <IconBox icon={tool.icon} size={24} />
                     </div>
-                    <div>
-                        <div className="se-horiz-card__title">{tool.title}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="se-horiz-card__title-row">
+                            <div className="se-horiz-card__title">{tool.title}</div>
+                            {tool.badge && <Badge label={tool.badge} />}
+                        </div>
                         <div className="se-horiz-card__desc">{tool.description}</div>
                     </div>
                 </div>
                 <div className="se-card__footer">
                     <TagPill tag={tool.tag} />
+                    {/* Rating commented out:
+                    <div className="se-card-rating">
+                        <LuStar size={11} fill="#f59e0b" color="#f59e0b" />
+                        <span>4.9★</span>
+                    </div>
+                    */}
                     <ArrowBtn />
                 </div>
             </CardMotion>
-        </Link>
+        </AppLink>
     )
 }
 
@@ -174,6 +211,8 @@ export function TwoColLayout({ section }: { section: SectionConfig }) {
                     title={section.title}
                     titleAccent={section.titleAccent}
                     subtitle={section.subtitle}
+                    viewAllHref={section.viewAllHref}
+                    viewAllLabel={section.viewAllLabel}
                 />
                 <div className="se-two-col-grid">
                     {section.tools.map((tool) => (
@@ -182,13 +221,6 @@ export function TwoColLayout({ section }: { section: SectionConfig }) {
                         </div>
                     ))}
                 </div>
-                {section.viewAllHref && (
-                    <div className="se-view-all-center">
-                        <a href={section.viewAllHref} className="se-view-all-btn">
-                            {section.viewAllLabel ?? 'View All'} →
-                        </a>
-                    </div>
-                )}
             </div>
         </section>
     )

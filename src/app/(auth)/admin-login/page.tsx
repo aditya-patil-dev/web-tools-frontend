@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
         setIsSubmitting(true);
 
         try {
-            const result = await loginAction(email, password);
+            const result = await loginAction(email, password, rememberMe);
 
             if (!result.success) {
                 setError(result.message || "Login failed. Please check your credentials.");

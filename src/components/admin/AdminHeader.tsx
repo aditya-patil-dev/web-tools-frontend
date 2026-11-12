@@ -26,6 +26,21 @@ const ROUTE_MAP: Record<string, { title: string; subtitle: string; section?: str
         title: "Dashboard",
         subtitle: "Real-time metrics, system health, and website overview",
     },
+    "/admin/analytics": {
+        title: "Executive Analytics Overview",
+        subtitle: "Traffic volume, tool execution trends, and global conversion rate",
+        section: "Analytics",
+    },
+    "/admin/analytics/tools": {
+        title: "Tool Performance Diagnostics",
+        subtitle: "Side-by-side usage metrics, health tier triage, and quick actions",
+        section: "Analytics",
+    },
+    "/admin/analytics/events": {
+        title: "Live Visitor Activity Feed",
+        subtitle: "Real-time feed of visitor actions, tool executions, and user journeys",
+        section: "Analytics",
+    },
     "/admin/tools/categories": {
         title: "Tool Categories",
         subtitle: "Organize taxonomy, landing pages, and category SEO",

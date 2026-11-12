@@ -7,6 +7,7 @@ import { loginRequest, logoutRequest } from "@/lib/api/auth";
 export async function loginAction(
   email: string,
   password: string,
+  rememberMe: boolean = false,
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const result = await loginRequest({
@@ -17,13 +18,18 @@ export async function loginAction(
 
     const cookieStore = await cookies();
 
+    // Default to at least 7 days, or 30 days if rememberMe is enabled
+    const tokenMaxAge = rememberMe
+      ? 30 * 24 * 60 * 60
+      : (result.expires_in || 7 * 24 * 60 * 60);
+
     // ── Secure httpOnly cookie — stores JWT (not accessible by JS) ──
     cookieStore.set("admin_token", result.token, {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: result.expires_in,
+      maxAge: tokenMaxAge,
     });
 
     // ── Readable cookie — stores user info for UI use only ──
@@ -41,7 +47,7 @@ export async function loginAction(
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: result.expires_in,
+        maxAge: tokenMaxAge,
       },
     );
 

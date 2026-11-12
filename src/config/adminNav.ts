@@ -44,6 +44,18 @@ export const ADMIN_NAV: AdminNavItem[] = [
         ],
     },
     {
+        id: "analytics",
+        label: "Analytics & Traffic",
+        icon: "bi-graph-up-arrow",
+        match: "prefix",
+        section: "ANALYTICS",
+        children: [
+            { id: "analytics-overview", label: "Executive Overview", href: "/admin/analytics", icon: "bi-speedometer2", match: "exact" },
+            { id: "analytics-tools", label: "Tool Diagnostics", href: "/admin/analytics/tools", icon: "bi-bar-chart-line", match: "prefix" },
+            { id: "analytics-events", label: "Live Activity Feed", href: "/admin/analytics/events", icon: "bi-activity", badge: "Live", badgeVariant: "success", match: "prefix" },
+        ],
+    },
+    {
         id: "online-store",
         label: "Visual Storefront",
         href: "/admin/online-store",

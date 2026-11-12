@@ -1,132 +1,181 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import Link from "next/link";
-import AppLink from '@/components/common/AppLink';
+import AppLink from "@/components/common/AppLink";
 import { POPULAR_TOOLS } from "./tools.config";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import { LuArrowRight, LuChevronLeft, LuChevronRight, LuStar, LuFlame } from "react-icons/lu";
 
 interface Tool {
-    title: string;
-    description: string;
-    icon: string;
-    href: string;
-    badge?: string | null;
-    category?: string;
+  title: string;
+  description: string;
+  icon: string;
+  href: string;
+  badge?: string | null;
+  category?: string;
 }
+
 interface PopularToolsConfig {
-    header: { title: string; subtitle: string };
-    tools: Tool[];
-    footer: { text: string; href: string };
+  header: { title: string; subtitle: string };
+  tools: Tool[];
+  footer: { text: string; href: string };
 }
+
 interface PopularToolsProps {
-    config?: PopularToolsConfig;
+  config?: PopularToolsConfig;
 }
 
 const DEFAULT_CONFIG: PopularToolsConfig = {
-    header: {
-        title: "Popular <span>Tools</span>",
-        subtitle: "Our most-used tools by people like you",
-    },
-    tools: POPULAR_TOOLS,
-    footer: { text: "View All Tools →", href: "/tools" },
+  header: {
+    title: "Most Popular <span>Web Utilities</span>",
+    subtitle: "Everyday essentials trusted by thousands of creators, developers, and marketers.",
+  },
+  tools: POPULAR_TOOLS,
+  footer: { text: "View All 25+ Tools →", href: "/tools" },
 };
 
 export default function PopularTools({ config = DEFAULT_CONFIG }: PopularToolsProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
-    const [hasMoved, setHasMoved] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [hasMoved, setHasMoved] = useState(false);
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!scrollRef.current) return;
-        setIsDragging(true);
-        setHasMoved(false);
-        setStartX(e.pageX - scrollRef.current.offsetLeft);
-        setScrollLeft(scrollRef.current.scrollLeft);
-    };
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setHasMoved(false);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
 
-    const handleMouseLeave = () => setIsDragging(false);
-    const handleMouseUp = () => {
-        // Delay resetting isDragging to allow the click handler to run
-        setTimeout(() => setIsDragging(false), 0);
-    };
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => {
+    setTimeout(() => setIsDragging(false), 0);
+  };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !scrollRef.current) return;
-        e.preventDefault();
-        const x = e.pageX - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // scroll-fast factor
-        if (Math.abs(x - startX) > 5) {
-            setHasMoved(true);
-        }
-        scrollRef.current.scrollLeft = scrollLeft - walk;
-    };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    if (Math.abs(x - startX) > 5) {
+      setHasMoved(true);
+    }
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
-    const handleLinkClick = (e: React.MouseEvent) => {
-        if (hasMoved) {
-            e.preventDefault();
-        }
-    };
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (hasMoved) {
+      e.preventDefault();
+    }
+  };
 
-    return (
-        <section className="tools-wrapper">
-            <div className="tools-container">
-                <div className="tools-header">
-                    <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
-                    <p>{config.header.subtitle}</p>
-                </div>
+  const scrollBy = (offset: number) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
 
-                <div
-                    className={`tools-grid horizontal-row ${isDragging ? 'dragging' : ''}`}
-                    ref={scrollRef}
-                    onMouseDown={handleMouseDown}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseUp={handleMouseUp}
-                    onMouseMove={handleMouseMove}
-                    style={{
-                        cursor: isDragging ? 'grabbing' : 'grab',
-                        userSelect: isDragging ? 'none' : 'auto'
-                    }}
+  return (
+    <section className="popular-tools-modern-section">
+      <div className="popular-tools-inner">
+        {/* Header with Navigation Controls */}
+        <div className="popular-header-row">
+          <div className="popular-header-text">
+            <span className="popular-eyebrow">
+              <LuFlame size={14} className="eyebrow-flame" />
+              TOP PICKS · TRUSTED BY 100K+ USERS
+            </span>
+            <h2 dangerouslySetInnerHTML={{ __html: config.header.title }} />
+            <p>{config.header.subtitle}</p>
+          </div>
+
+          <div className="popular-nav-arrows">
+            <button
+              type="button"
+              className="scroll-arrow-btn"
+              onClick={() => scrollBy(-360)}
+              aria-label="Scroll left"
+            >
+              <LuChevronLeft size={20} />
+            </button>
+            <button
+              type="button"
+              className="scroll-arrow-btn"
+              onClick={() => scrollBy(360)}
+              aria-label="Scroll right"
+            >
+              <LuChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Carousel / Scroll Track */}
+        <div
+          className={`popular-scroll-track ${isDragging ? "dragging" : ""}`}
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+        >
+          {config.tools.map((tool, index) => {
+            const badgeType = tool.badge?.toLowerCase() || "";
+            let badgeClass = "highlight-card-badge";
+            if (badgeType.includes("ai")) badgeClass += " badge-ai";
+            else if (badgeType.includes("popular") || badgeType.includes("top")) badgeClass += " badge-popular";
+            else if (badgeType.includes("fast") || badgeType.includes("free")) badgeClass += " badge-fast";
+            else badgeClass += " badge-hot";
+
+            return (
+              <div key={index} className="popular-tool-card-wrap">
+                <AppLink
+                  href={tool.href}
+                  className="popular-tool-card-modern"
+                  onClick={handleLinkClick}
                 >
-                    {config.tools.map((tool, index) => (
-                        <div
-                            key={index}
-                            className="tool-card"
-                            onDragStart={(e) => e.preventDefault()}
-                        >
-                            <AppLink
-                                href={tool.href}
-                                className="tool-card-link"
-                                onClick={handleLinkClick}
-                            >
-                                <div className="tool-glow"></div>
-                                {tool.badge && <span className="tool-card-badge">{tool.badge}</span>}
-                                <div className="tool-icon">
-                                    <DynamicIcon name={tool.icon} size={32} fallback={<span>🔧</span>} />
-                                </div>
-                                <div className="tool-content">
-                                    <h3>{tool.title}</h3>
-                                    <p>{tool.description}</p>
-                                </div>
-                                <div className="tool-card-footer">
-                                    {tool.category && <span className="tool-usage-tag">{tool.category}</span>}
-                                    <div className="tool-action-icon">
-                                        <DynamicIcon name="LuArrowRight" size={16} />
-                                    </div>
-                                </div>
-                            </AppLink>
-                        </div>
-                    ))}
-                </div>
+                  <div className="card-top-bar">
+                    <div className="tool-icon-box">
+                      <DynamicIcon name={tool.icon} size={24} fallback={<span>🔧</span>} />
+                    </div>
+                    {tool.badge && (
+                      <span className={badgeClass}>{tool.badge}</span>
+                    )}
+                  </div>
 
-                <div className="tools-footer">
-                    <AppLink href={config.footer.href} className="tools-view-all">
-                        {config.footer.text}
-                    </AppLink>
-                </div>
-            </div>
-        </section>
-    );
+                  <div className="card-content-area">
+                    {/* Rating commented out:
+                    <div className="rating-pill">
+                      <LuStar size={12} fill="currentColor" />
+                      <span>4.95 Rating</span>
+                    </div>
+                    */}
+                    <h3>{tool.title}</h3>
+                    <p>{tool.description}</p>
+                  </div>
+
+                  <div className="card-footer-bar">
+                    {tool.category && (
+                      <span className="category-pill-tag">{tool.category}</span>
+                    )}
+                    <div className="card-action-circle">
+                      <LuArrowRight size={15} />
+                    </div>
+                  </div>
+                </AppLink>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom CTA Link */}
+        <div className="popular-bottom-row">
+          <AppLink href={config.footer.href} className="popular-view-all-cta">
+            {config.footer.text}
+          </AppLink>
+        </div>
+      </div>
+    </section>
+  );
 }

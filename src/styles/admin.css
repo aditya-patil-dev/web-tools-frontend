@@ -1180,3 +1180,467 @@
   color: #ff6b35;
   font-weight: 600;
 }
+
+/* ==========================================================================
+   9. ANALYTICS & TELEMETRY DESIGN SYSTEM
+   ========================================================================== */
+
+/* Date & Range Filter Bar */
+.analyticsFilterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.analyticsDatePresets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.datePresetBtn {
+  padding: 6px 13px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.datePresetBtn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.datePresetBtn.active {
+  background: rgba(255, 107, 53, 0.12);
+  color: #ea580c;
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.liveTelemetryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.livePulseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseLiveDot 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseLiveDot {
+  0%, 100% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Trend Indicator Pills */
+.metricTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.metricTrend.up {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.metricTrend.down {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.metricTrend.neutral {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Conversion Progress Bar */
+.convBarTrack {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.convBarFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.convBarFill.high {
+  background: #10b981;
+}
+
+.convBarFill.mid {
+  background: #f59e0b;
+}
+
+.convBarFill.low {
+  background: #ef4444;
+}
+
+/* Health Tier Badges */
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tierBadge.star {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.tierBadge.highPotential {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.tierBadge.needsOpt {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.tierBadge.dormant {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.tierBadge.normal {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Smart Action Recommendation Cards */
+.insightActionCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.insightActionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.insightActionCard.warning {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fffafa 0%, #ffffff 100%);
+}
+
+.insightActionCard.opportunity {
+  border-left: 4px solid #6366f1;
+  background: linear-gradient(135deg, #fbfbfe 0%, #ffffff 100%);
+}
+
+.insightActionCard.success {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, #f7fdfa 0%, #ffffff 100%);
+}
+
+/* Simple CSS SVG Area Chart for Overview */
+.chartContainer {
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 16px 0 0 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chartBarGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 4px;
+  position: relative;
+}
+
+.chartBarGroup:hover .chartTooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-4px);
+}
+
+.chartBarFillViews {
+  width: 100%;
+  max-width: 14px;
+  background: rgba(99, 102, 241, 0.35);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+.chartBarFillRuns {
+  width: 100%;
+  max-width: 14px;
+  background: #ff6b35;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+.chartTooltip {
+  position: absolute;
+  bottom: 100%;
+  padding: 6px 10px;
+  background: #0f172a;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* ── Live Activity Feed & Easy View Styles ── */
+.activitySummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.activitySummaryCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.activitySummaryIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.activityExplainerBanner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.viewModeToggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.viewModeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viewModeBtn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.activityFeedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activityFeedCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.activityFeedCard:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  border-color: #cbd5e1;
+}
+
+.activityFeedCard.realtimeFlash {
+  animation: flashHighlight 2s ease-out;
+}
+
+@keyframes flashHighlight {
+  0% { background: #fef3c7; }
+  100% { background: #ffffff; }
+}
+
+.activityIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.activityIcon.run {
+  background: rgba(255, 107, 53, 0.12);
+  color: #ea580c;
+  border: 1px solid rgba(255, 107, 53, 0.25);
+}
+
+.activityIcon.view {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.activityIcon.rec {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.activityBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityStoryTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.activityStorySub {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.activityMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+
+.visitorJourneyPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.76rem;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.visitorJourneyPill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.journeyActiveBanner {
+  background: #fef3c7;
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
