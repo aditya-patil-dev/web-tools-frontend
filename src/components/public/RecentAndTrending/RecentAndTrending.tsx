@@ -67,13 +67,29 @@ export default function RecentAndTrending() {
 
         {/* Scroll Track (takes full width on mobile) */}
         <div className="trending-tools-scroll">
-          {toolsToShow.map((tool) => (
-            <AppLink key={tool.id} href={tool.href} className="trending-pill-link">
-              <DynamicIcon name={tool.icon} size={15} fallback={<LuSparkles size={14} />} />
-              <span>{tool.title}</span>
-              {tool.badge && <span className="trending-pill-badge">{tool.badge}</span>}
-            </AppLink>
-          ))}
+          {toolsToShow.map((tool) => {
+            const badgeClass = tool.badge
+              ? tool.badge.toLowerCase().includes("ai")
+                ? "trend-badge-ai"
+                : tool.badge.toLowerCase().includes("hot")
+                ? "trend-badge-hot"
+                : tool.badge.toLowerCase().includes("fast")
+                ? "trend-badge-fast"
+                : "trend-badge-popular"
+              : "";
+
+            return (
+              <AppLink key={tool.id} href={tool.href} className="trending-pill-link">
+                <DynamicIcon name={tool.icon} size={15} fallback={<LuSparkles size={14} />} />
+                <span>{tool.title}</span>
+                {tool.badge && (
+                  <span className={`trending-pill-badge ${badgeClass}`}>
+                    {tool.badge}
+                  </span>
+                )}
+              </AppLink>
+            );
+          })}
         </div>
 
         {/* Desktop View All Link */}

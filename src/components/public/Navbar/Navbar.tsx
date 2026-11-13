@@ -1,299 +1,205 @@
 "use client";
 
-import Link from "next/link";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import AppLink from "@/components/common/AppLink";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles } from "lucide-react";
-import { TOP_NAV_ITEMS, TOOLS_NAV_ITEMS } from "./nav.config";
-import type { NavbarData, NavToolItem, NavChild } from "@/features/online-store/sections/navbar";
+import DynamicIcon from "@/components/ui/DynamicIcon";
+import {
+  MEGA_NAV_CATEGORIES,
+  NavCategory,
+  NavTool,
+} from "./mega-nav.config";
+import { MASTER_TOOLS, MasterTool } from "@/config/tools-registry";
+import {
+  LuChevronDown,
+  LuSearch,
+  LuSparkles,
+  LuArrowRight,
+  LuShieldCheck,
+  LuMenu,
+  LuX,
+  LuTrendingUp,
+  LuFileText,
+  LuImage,
+  LuCode,
+  LuCheck,
+  LuFlame,
+  LuLayers,
+} from "react-icons/lu";
 
 interface NavbarProps {
-  config?: Partial<NavbarData>;
-}
-
-/* ── Flat search index built from toolsNavItems ── */
-interface SearchResult {
-  label: string;
-  href: string;
-  badge?: string;
-  parent?: string;
-  icon?: string;
-}
-
-const TOOL_ICONS: Record<string, string> = {
-  default: "🔧",
-  pdf: "📄",
-  image: "🖼️",
-  video: "🎬",
-  ai: "🤖",
-  seo: "📈",
-  dev: "💻",
-  text: "✏️",
-  link: "🔗",
-};
-
-function getIcon(label: string): string {
-  const l = label.toLowerCase();
-  if (l.includes("pdf")) return TOOL_ICONS.pdf;
-  if (
-    l.includes("image") ||
-    l.includes("photo") ||
-    l.includes("crop") ||
-    l.includes("background")
-  )
-    return TOOL_ICONS.image;
-  if (l.includes("video")) return TOOL_ICONS.video;
-  if (l.includes("ai") || l.includes("generat") || l.includes("summar"))
-    return TOOL_ICONS.ai;
-  if (l.includes("seo") || l.includes("analytic")) return TOOL_ICONS.seo;
-  if (l.includes("code") || l.includes("developer") || l.includes("api"))
-    return TOOL_ICONS.dev;
-  if (l.includes("text") || l.includes("writ") || l.includes("word"))
-    return TOOL_ICONS.text;
-  if (l.includes("url") || l.includes("link")) return TOOL_ICONS.link;
-  return TOOL_ICONS.default;
+  config?: {
+    logoText?: string;
+    logoHighlight?: string;
+    ctaText?: string;
+    ctaHref?: string;
+    topNavItems?: { label: string; href: string }[];
+  };
 }
 
 export default function Navbar({ config }: NavbarProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSub, setMobileSub] = useState<number | null>(null);
+  const pathname = usePathname();
+  const isHomepage = pathname === "/";
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
 
-  /* Search */
-  const [searchExpanded, setSearchExpanded] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [recentTools, setRecentTools] = useState<SearchResult[]>([]);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchWrapRef = useRef<HTMLDivElement>(null);
-
-  /* Typewriter */
-  const [typewriterText, setTypewriterText] = useState("");
-  const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const twStateRef = useRef({ phraseIdx: 0, charIdx: 0, deleting: false });
-
-  /* Announcement strip */
-  const [showAnnouncement, setShowAnnouncement] = useState(true);
-
-  /* Dark mode */
-  const [darkMode, setDarkMode] = useState(false);
-
-  /* ── Merge config with static defaults ── */
-  const logoText = config?.logoText ?? "Web";
-  const logoHighlight = config?.logoHighlight ?? "Tools";
-  const ctaText = config?.ctaText ?? "Try Tools";
-  const ctaHref = config?.ctaHref ?? "/tools";
-  const loginHref = config?.loginHref ?? "/login";
-  const topNavItems = config?.topNavItems ?? TOP_NAV_ITEMS;
-  const rawToolsNavItems = config?.toolsNavItems ?? TOOLS_NAV_ITEMS;
-
-  // Guarantee the Flagship Keyword Research item is always present at the END of the tools navbar
-  const nonKeywordItems = rawToolsNavItems.filter(
-    (item) => !item.href?.includes("keyword-research")
-  );
-  const existingKeywordItem = rawToolsNavItems.find(
-    (item) => item.href?.includes("keyword-research")
-  );
-
-  const keywordNavItem: NavToolItem = {
-    label: existingKeywordItem?.label || "Keyword Research",
-    href: existingKeywordItem?.href || "/seo/tools/keyword-research",
-    isSpecial: true,
-    badge: (existingKeywordItem?.badge || "hot") as any,
-    children: existingKeywordItem?.children || [],
-  };
-
-  const toolsNavItems: NavToolItem[] = [
-    ...(nonKeywordItems as NavToolItem[]),
-    keywordNavItem,
-  ];
-
-  // Guarantee it also appears inside the SEO Tools dropdown if present
-  toolsNavItems.forEach((item) => {
-    if (
-      item.label?.toLowerCase().includes("seo") &&
-      item.children &&
-      !item.children.some((c) => c.href?.includes("keyword-research"))
-    ) {
-      item.children.unshift({
-        label: "Keyword Research Tool",
-        href: "/seo/tools/keyword-research",
-        badge: "hot",
-      });
-    }
-  });
-
-  /* ── Build flat search index ── */
-  const searchIndex: SearchResult[] = toolsNavItems.flatMap((item) => {
-    const children: SearchResult[] =
-      item.children?.map((c) => ({
-        label: c.label,
-        href: c.href,
-        badge: c.badge as any,
-        parent: item.label,
-        icon: getIcon(c.label),
-      })) ?? [];
-    return [
-      { label: item.label, href: item.href ?? "#", icon: getIcon(item.label) },
-      ...children,
-    ];
-  });
-
-  /* ── Typewriter phrases ── */
-  const TYPEWRITER_PHRASES = [
-    "PDF Converter…",
-    "Image Resizer…",
-    "Background Remover…",
-    "URL Shortener…",
-    "AI Writer…",
-    "Video Compressor…",
-    "SEO Analyzer…",
-    "QR Code Generator…",
-  ];
-
-  const runTypewriter = useCallback(() => {
-    const state = twStateRef.current;
-    const phrase = TYPEWRITER_PHRASES[state.phraseIdx];
-    if (!state.deleting) {
-      state.charIdx++;
-      setTypewriterText(phrase.slice(0, state.charIdx));
-      if (state.charIdx === phrase.length) {
-        state.deleting = true;
-        // eslint-disable-next-line react-hooks/immutability
-        typewriterRef.current = setTimeout(runTypewriter, 1600);
-      } else {
-        typewriterRef.current = setTimeout(runTypewriter, 68);
-      }
-    } else {
-      state.charIdx--;
-      setTypewriterText(phrase.slice(0, state.charIdx));
-      if (state.charIdx === 0) {
-        state.deleting = false;
-        state.phraseIdx = (state.phraseIdx + 1) % TYPEWRITER_PHRASES.length;
-        typewriterRef.current = setTimeout(runTypewriter, 400);
-      } else {
-        typewriterRef.current = setTimeout(runTypewriter, 38);
-      }
-    }
-  }, []);
-
-  const startTypewriter = useCallback(() => {
-    if (typewriterRef.current) clearTimeout(typewriterRef.current);
-    typewriterRef.current = setTimeout(runTypewriter, 800);
-  }, [runTypewriter]);
-
-  const stopTypewriter = useCallback(() => {
-    if (typewriterRef.current) clearTimeout(typewriterRef.current);
-  }, []);
-
-  /* ── Start typewriter on mount ── */
   useEffect(() => {
-    startTypewriter();
-    return () => stopTypewriter();
-  }, [startTypewriter, stopTypewriter]);
-
-  /* ── Load recents from localStorage ── */
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("wt_recent_tools");
-      if (stored) setRecentTools(JSON.parse(stored));
-    } catch {}
-  }, []);
-
-  /* ── Filter search ── */
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
+    if (!isHomepage) {
+      setIsScrolledPastHero(true);
       return;
     }
-    const q = searchQuery.toLowerCase();
-    const filtered = searchIndex
-      .filter(
-        (r) =>
-          r.label.toLowerCase().includes(q) ||
-          r.parent?.toLowerCase().includes(q),
-      )
-      .slice(0, 6);
-    setSearchResults(filtered);
-  }, [searchQuery]);
+    const handleScroll = () => {
+      setIsScrolledPastHero(window.scrollY > 340);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHomepage]);
 
-  /* ── ⌘K / Ctrl+K global shortcut ── */
+  // Top announcement state
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
+
+  // Mega-menu state
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("image-tools");
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Command palette state (Ctrl + K)
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState("");
+  const [cmdCategory, setCmdCategory] = useState<string>("all");
+  const [selectedCmdIndex, setSelectedCmdIndex] = useState(0);
+  const cmdInputRef = useRef<HTMLInputElement>(null);
+
+  // Mobile drawer state
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileCategory, setMobileCategory] = useState<string>("all");
+  const [mobileExpandedSubCat, setMobileExpandedSubCat] = useState<string | null>("img-compress-convert");
+
+  // Config fallbacks
+  const logoText = config?.logoText ?? "Fusion";
+  const logoHighlight = config?.logoHighlight ?? "Tools";
+  const ctaText = config?.ctaText ?? "Explore All Tools";
+  const ctaHref = config?.ctaHref ?? "/tools";
+
+  // Static top nav items (Pricing, About)
+  const topNavItems = config?.topNavItems ?? [
+    { label: "Pricing", href: "/pricing" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact-us" },
+  ];
+
+  // Active Category Data for Mega-Menu
+  const activeCategory = useMemo(() => {
+    return (
+      MEGA_NAV_CATEGORIES.find((c) => c.slug === activeCategorySlug) ||
+      MEGA_NAV_CATEGORIES[0]
+    );
+  }, [activeCategorySlug]);
+
+  // Mega-Menu Hover Handlers with Intent Delay
+  const handleTriggerEnter = (categorySlug?: string) => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    if (categorySlug) {
+      setActiveCategorySlug(categorySlug);
+    }
+    setMegaMenuOpen(true);
+  };
+
+  const handleMenuEnter = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+  };
+
+  const handleMouseLeave = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      setMegaMenuOpen(false);
+    }, 200);
+  };
+
+  // Keyboard shortcut listener for Command Palette (Ctrl+K / Cmd+K)
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        searchInputRef.current?.focus();
-        setSearchExpanded(true);
+        setCmdOpen((prev) => !prev);
       }
       if (e.key === "Escape") {
-        searchInputRef.current?.blur();
-        setSearchExpanded(false);
-        setSearchQuery("");
-        startTypewriter();
+        setCmdOpen(false);
+        setMegaMenuOpen(false);
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  /* ── Click outside to close search ── */
+  // Auto-focus Command Palette input when opened
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        searchWrapRef.current &&
-        !searchWrapRef.current.contains(e.target as Node)
-      ) {
-        setSearchExpanded(false);
-        setSearchQuery("");
-        startTypewriter();
-      }
+    if (cmdOpen) {
+      setTimeout(() => {
+        cmdInputRef.current?.focus();
+      }, 50);
+      setSelectedCmdIndex(0);
+    } else {
+      setCmdQuery("");
+      setCmdCategory("all");
+    }
+  }, [cmdOpen]);
+
+  // Lock body scroll when mobile drawer or command palette is open
+  useEffect(() => {
+    if (mobileOpen || cmdOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [mobileOpen, cmdOpen]);
 
-  /* ── Dark mode toggle ── */
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
-
-  /* ── Track recently used tool ── */
-  const trackTool = useCallback((tool: SearchResult) => {
-    setRecentTools((prev) => {
-      const updated = [tool, ...prev.filter((t) => t.href !== tool.href)].slice(
-        0,
-        3,
+  // Filter tools for Command Palette
+  const filteredCmdTools = useMemo(() => {
+    let list = MASTER_TOOLS;
+    if (cmdCategory !== "all") {
+      list = list.filter((t) => t.category === cmdCategory);
+    }
+    if (cmdQuery.trim()) {
+      const q = cmdQuery.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.shortDescription.toLowerCase().includes(q) ||
+          t.categoryLabel.toLowerCase().includes(q) ||
+          t.keywords.some((k) => k.toLowerCase().includes(q))
       );
-      try {
-        localStorage.setItem("wt_recent_tools", JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-    setSearchExpanded(false);
-    setSearchQuery("");
-  }, []);
+    }
+    return list.slice(0, 8);
+  }, [cmdQuery, cmdCategory]);
 
-  const showDropdown =
-    searchExpanded &&
-    (searchQuery
-      ? searchResults.length > 0
-      : recentTools.length > 0 || searchIndex.length > 0);
+  // Command palette keyboard navigation
+  const handleCmdKeyDown = (e: React.KeyboardEvent) => {
+    if (filteredCmdTools.length === 0) return;
 
-  const displayResults = searchQuery
-    ? searchResults
-    : recentTools.length > 0
-      ? recentTools
-      : searchIndex.slice(0, 5);
-
-  const dropdownLabel = searchQuery
-    ? "Results"
-    : recentTools.length > 0
-      ? "Recently used"
-      : "Popular tools";
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedCmdIndex((prev) => (prev + 1) % filteredCmdTools.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedCmdIndex((prev) => (prev - 1 + filteredCmdTools.length) % filteredCmdTools.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const target = filteredCmdTools[selectedCmdIndex];
+      if (target) {
+        setCmdOpen(false);
+        window.location.href = target.href;
+      }
+    }
+  };
 
   return (
     <>
-      {/* ── Announcement Strip ── */}
+      {/* ── 1. Top Announcement Bar ── */}
       {showAnnouncement && (
         <div className="announce-strip">
           <AppLink href="/seo/tools/keyword-research" className="announce-inner-link">
@@ -314,231 +220,497 @@ export default function Navbar({ config }: NavbarProps) {
         </div>
       )}
 
-      <header className="nav-wrapper">
-        {/* ── TOP ROW ── */}
-        <div className="nav-top-row">
-          <div className="nav-container">
-            {/* Logo */}
-            <AppLink href="/" className="nav-logo">
-              {logoText}
-              <span>{logoHighlight}</span>
-            </AppLink>
+      {/* ── 2. Streamlined Single-Row Modern Navigation Bar ── */}
+      <header className="modern-nav-wrapper">
+        <div className="modern-nav-container">
+          {/* Brand Logo */}
+          <AppLink href="/" className="modern-nav-logo" onClick={() => setMegaMenuOpen(false)}>
+            <span className="modern-logo-dot" />
+            <span>{logoText}</span>
+            <span>{logoHighlight}</span>
+          </AppLink>
 
-            {/* ── Full-width Animated Search Bar ── */}
+          {/* Center Navigation Links (Desktop) */}
+          <nav className="modern-nav-links desktop-nav-only">
+            {/* Primary Mega-Menu Trigger: "All Tools" */}
             <div
-              className={`search-wrap ${searchExpanded ? "expanded" : ""}`}
-              ref={searchWrapRef}
+              className="nav-trigger-wrap"
+              onMouseEnter={() => handleTriggerEnter()}
+              onMouseLeave={handleMouseLeave}
             >
-              <div
-                className={`search-bar ${searchExpanded ? "open" : ""} ${searchQuery ? "has-text" : ""}`}
-                onClick={() => {
-                  searchInputRef.current?.focus();
-                  setSearchExpanded(true);
-                  stopTypewriter();
-                }}
+              <button
+                type="button"
+                className={`nav-mega-trigger-btn ${megaMenuOpen ? "active" : ""}`}
+                onClick={() => setMegaMenuOpen((prev) => !prev)}
+                aria-expanded={megaMenuOpen}
+                aria-label="Open Tools Mega-Menu"
               >
-                {/* Search icon */}
-                <svg
-                  className="search-icon"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <circle cx="8.5" cy="8.5" r="5.5" />
-                  <path d="M15 15l-3-3" />
-                </svg>
-
-                {/* Input + typewriter placeholder stacked */}
-                <div className="search-input-wrap">
-                  <input
-                    ref={searchInputRef}
-                    className="search-input"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => {
-                      setSearchExpanded(true);
-                      stopTypewriter();
-                    }}
-                    aria-label="Search tools"
-                    autoComplete="off"
-                  />
-                  {/* Typewriter placeholder — hidden when user is typing */}
-                  {!searchQuery && (
-                    <div
-                      className={`search-placeholder ${searchExpanded ? "ph-hidden" : ""}`}
-                      aria-hidden="true"
-                    >
-                      <span className="ph-typed">{typewriterText}</span>
-                      <span className="ph-cursor" />
-                    </div>
-                  )}
-                </div>
-
-                
-              </div>
-
-              {/* Search Dropdown */}
-              {showDropdown && (
-                <div className="search-dropdown" role="listbox">
-                  <div className="search-dropdown-label">{dropdownLabel}</div>
-                  <div className="search-results-grid">
-                    {displayResults.map((result) => (
-                      <AppLink
-                        key={result.href}
-                        href={result.href}
-                        className="search-result-item"
-                        role="option"
-                        onClick={() => trackTool(result)}
-                      >
-                        <span className="search-result-icon">
-                          {result.icon}
-                        </span>
-                        <span className="search-result-text">
-                          <span className="search-result-label">
-                            {result.label}
-                          </span>
-                          {result.parent && (
-                            <span className="search-result-sub">
-                              {result.parent}
-                            </span>
-                          )}
-                        </span>
-                        {result.badge && (
-                          <span className={`badge badge-${result.badge}`}>
-                            {result.badge}
-                          </span>
-                        )}
-                      </AppLink>
-                    ))}
-                  </div>
-                  <div className="search-footer">
-                    <kbd>↑</kbd>
-                    <kbd>↓</kbd>&nbsp;navigate&nbsp;·&nbsp;<kbd>↵</kbd>
-                    &nbsp;open&nbsp;·&nbsp;<kbd>Esc</kbd>&nbsp;close
-                  </div>
-                </div>
-              )}
+                <span>All Tools</span>
+                <LuChevronDown size={14} className="trigger-chevron" />
+              </button>
             </div>
 
-            {/* Desktop Top Navigation */}
-            <div className="nav-top-links desktop-only">
-              {topNavItems.map((item) => (
-                <AppLink
-                  key={item.label}
-                  href={item.href}
-                  className="nav-top-link"
-                >
-                  {item.label}
-                </AppLink>
-              ))}
-            </div>
-
-            {/* Desktop Actions */}
-            <div className="nav-actions desktop-only">
-              <div className="nav-sep" />
-
-              {/* <AppLink href={loginHref} className="nav-link">Login</AppLink> */}
-              <AppLink href={ctaHref} className="nav-cta">
-                {ctaText}
-                <span className="cta-arrow" aria-hidden="true">
-                  →
-                </span>
+            {/* Direct Category Hover Triggers */}
+            <div
+              className="nav-trigger-wrap"
+              onMouseEnter={() => handleTriggerEnter("image-tools")}
+              onMouseLeave={handleMouseLeave}
+            >
+              <AppLink
+                href="/tools/image-tools"
+                className={`nav-mega-trigger-btn ${megaMenuOpen && activeCategorySlug === "image-tools" ? "active" : ""}`}
+              >
+                <LuImage size={15} />
+                <span>Image</span>
               </AppLink>
             </div>
 
-            {/* Mobile Hamburger */}
-            <button
-              className="mobile-toggle mobile-only"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
+            <div
+              className="nav-trigger-wrap"
+              onMouseEnter={() => handleTriggerEnter("pdf-tools")}
+              onMouseLeave={handleMouseLeave}
             >
-              <span />
-              <span />
-              <span />
+              <AppLink
+                href="/tools/pdf-tools"
+                className={`nav-mega-trigger-btn ${megaMenuOpen && activeCategorySlug === "pdf-tools" ? "active" : ""}`}
+              >
+                <LuFileText size={15} />
+                <span>PDF</span>
+              </AppLink>
+            </div>
+
+            <div
+              className="nav-trigger-wrap"
+              onMouseEnter={() => handleTriggerEnter("seo-tools")}
+              onMouseLeave={handleMouseLeave}
+            >
+              <AppLink
+                href="/tools/seo-tools"
+                className={`nav-mega-trigger-btn ${megaMenuOpen && activeCategorySlug === "seo-tools" ? "active" : ""}`}
+              >
+                <LuTrendingUp size={15} />
+                <span>SEO</span>
+                <span className="nav-pill-badge badge-hot">HOT</span>
+              </AppLink>
+            </div>
+
+            <div
+              className="nav-trigger-wrap"
+              onMouseEnter={() => handleTriggerEnter("developer-tools")}
+              onMouseLeave={handleMouseLeave}
+            >
+              <AppLink
+                href="/tools/developer-tools"
+                className={`nav-mega-trigger-btn ${megaMenuOpen && activeCategorySlug === "developer-tools" ? "active" : ""}`}
+              >
+                <LuCode size={15} />
+                <span>Dev & Text</span>
+              </AppLink>
+            </div>
+
+            {/* Static pages */}
+            {topNavItems.map((item) => (
+              <AppLink
+                key={item.label}
+                href={item.href}
+                className="nav-mega-trigger-btn"
+                onClick={() => setMegaMenuOpen(false)}
+              >
+                <span>{item.label}</span>
+              </AppLink>
+            ))}
+          </nav>
+
+          {/* Right-Side Command Search Pill & Actions */}
+          <div className="modern-nav-right">
+            {/* Quick Command Trigger Pill (Ctrl + K) - Contextual (hidden on homepage top to prevent search clash) */}
+            <button
+              type="button"
+              className={`nav-cmd-trigger-btn ${isHomepage && !isScrolledPastHero ? "nav-cmd-hidden" : ""}`}
+              onClick={() => setCmdOpen(true)}
+              aria-label="Open search command palette"
+            >
+              <LuSearch size={15} className="cmd-icon" />
+              <span>Search 25+ tools...</span>
+              <kbd className="cmd-kbd-badge">⌘K</kbd>
+            </button>
+
+            {/* CTA Explore Button */}
+            <AppLink href={ctaHref} className="nav-cta-btn desktop-nav-only">
+              <span>{ctaText}</span>
+              <LuArrowRight size={14} />
+            </AppLink>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              className="mobile-nav-toggle"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open mobile navigation menu"
+            >
+              <LuMenu size={22} />
             </button>
           </div>
         </div>
 
-        {/* ── BOTTOM ROW ── */}
-        <div className="nav-bottom-row desktop-only">
-          <div className="nav-container">
-            <nav className="nav-tools-menu">
-              {toolsNavItems.map((item, index) => {
-                if (item.isSpecial) {
-                  return (
-                    <div key={item.label} className="nav-item nav-item-special">
-                      <AppLink
-                        href={item.href!}
-                        className="nav-special-pill"
-                        onClick={() =>
-                          trackTool({
-                            label: item.label,
-                            href: item.href!,
-                            badge: item.badge,
-                            icon: "✨",
-                          })
-                        }
-                      >
-                        <span className="nav-special-pulse" aria-hidden="true" />
-                        <Sparkles size={13} className="nav-special-icon" aria-hidden="true" />
-                        <span className="nav-special-label">{item.label}</span>
-                        {item.badge && (
-                          <span className={`badge badge-${item.badge} nav-special-badge`}>
-                            {item.badge}
-                          </span>
-                        )}
-                      </AppLink>
-                    </div>
+        {/* ── 3. The Interactive Glassmorphic Mega-Menu Panel ── */}
+        {megaMenuOpen && (
+          <div
+            className="mega-menu-overlay-panel"
+            onMouseEnter={handleMenuEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="mega-menu-inner-grid">
+              {/* Column 1: Left Categories Rail */}
+              <div className="mega-categories-rail">
+                <span className="mega-rail-label">Categories</span>
+                {MEGA_NAV_CATEGORIES.map((cat) => {
+                  const isActive = cat.slug === activeCategorySlug;
+                  const totalCount = cat.subCategories.reduce(
+                    (acc, sub) => acc + sub.tools.length,
+                    0
                   );
-                }
-
-                const hasDropdown = item.children && item.children.length > 0;
-                return (
-                  <div
-                    key={item.label}
-                    className={`nav-item ${hasDropdown ? "nav-dropdown" : ""} ${openIndex === index ? "open" : ""}`}
-                    onMouseEnter={() => hasDropdown && setOpenIndex(index)}
-                    onMouseLeave={() => hasDropdown && setOpenIndex(null)}
-                  >
-                    {hasDropdown ? (
-                      <div className="nav-item-wrapper">
-                        <AppLink href={item.href!} className="nav-item-link">
-                          {item.label}
-                        </AppLink>
-                        <button
-                          className="dropdown-trigger-btn"
-                          aria-label={`Open ${item.label} menu`}
-                        >
-                          <span className="caret" />
-                        </button>
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onMouseEnter={() => setActiveCategorySlug(cat.slug)}
+                      onClick={() => setActiveCategorySlug(cat.slug)}
+                      className={`mega-cat-tab-btn ${isActive ? "active" : ""}`}
+                    >
+                      <div className="mega-cat-tab-left">
+                        <DynamicIcon name={cat.icon} size={16} fallback={<span>📁</span>} />
+                        <span>{cat.label}</span>
                       </div>
-                    ) : (
-                      <AppLink href={item.href!}>{item.label}</AppLink>
-                    )}
+                      <span className="mega-cat-count">{totalCount}</span>
+                    </button>
+                  );
+                })}
 
-                    {hasDropdown && (
-                      <div className="dropdown-menu">
-                        {item.children!.map((child) => (
+                <AppLink
+                  href="/tools"
+                  className="mega-rail-all-tools-link"
+                  onClick={() => setMegaMenuOpen(false)}
+                >
+                  <LuLayers size={15} />
+                  <span>View All 25+ Directory →</span>
+                </AppLink>
+              </div>
+
+              {/* Column 2: Center Sub-Categories & Tools Matrix */}
+              <div className="mega-tools-matrix">
+                <div className="mega-category-header">
+                  <div className="mega-cat-title">
+                    <DynamicIcon name={activeCategory.icon} size={20} fallback={<span>📁</span>} />
+                    <span>{activeCategory.label}</span>
+                  </div>
+                  <AppLink
+                    href={activeCategory.href}
+                    className="mega-view-category-link"
+                    onClick={() => setMegaMenuOpen(false)}
+                  >
+                    <span>Browse {activeCategory.label} Hub</span>
+                    <LuArrowRight size={13} />
+                  </AppLink>
+                </div>
+
+                {/* Sub-Categories Grid */}
+                <div className="mega-subcats-grid">
+                  {activeCategory.subCategories.map((subcat) => (
+                    <div key={subcat.id} className="mega-subcat-group">
+                      <span className="mega-subcat-heading">{subcat.title}</span>
+                      {subcat.tools.map((tool) => (
+                        <AppLink
+                          key={tool.id}
+                          href={tool.href}
+                          className="mega-tool-item-link"
+                          onClick={() => setMegaMenuOpen(false)}
+                        >
+                          <div className="mega-tool-icon-wrap">
+                            <DynamicIcon
+                              name={tool.icon}
+                              size={16}
+                              fallback={<LuSparkles size={14} />}
+                            />
+                          </div>
+                          <div className="mega-tool-text-content">
+                            <div className="mega-tool-title-row">
+                              <span className="mega-tool-title">{tool.title}</span>
+                              {tool.badge && (
+                                <span className="mega-tool-badge">{tool.badge}</span>
+                              )}
+                            </div>
+                            <span className="mega-tool-desc">{tool.shortDescription}</span>
+                          </div>
+                        </AppLink>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column 3: Right Featured Spotlight Card */}
+              <div className="mega-spotlight-col">
+                <div className="mega-spotlight-card">
+                  <div className="spotlight-eyebrow">
+                    <span className="spotlight-pill">
+                      {activeCategory.featured.badge}
+                    </span>
+                    <span className="spotlight-privacy-chip">
+                      <LuShieldCheck size={13} />
+                      <span>100% In-Browser</span>
+                    </span>
+                  </div>
+
+                  <div className="spotlight-body">
+                    <h4>{activeCategory.featured.title}</h4>
+                    <div className="spotlight-tagline">
+                      {activeCategory.featured.tagline}
+                    </div>
+                    <p className="spotlight-desc">
+                      {activeCategory.featured.description}
+                    </p>
+                  </div>
+
+                  <AppLink
+                    href={activeCategory.featured.href}
+                    className="spotlight-cta-btn"
+                    onClick={() => setMegaMenuOpen(false)}
+                  >
+                    <span>{activeCategory.featured.cta}</span>
+                    <LuArrowRight size={14} />
+                  </AppLink>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Assurance Bar */}
+            <div className="mega-bottom-assurance-bar">
+              <div className="mega-assurance-inner">
+                <div className="mega-assurance-chips">
+                  <span className="mega-assurance-chip">
+                    <LuShieldCheck size={14} color="#10b981" />
+                    <span>Zero Server Uploads · Files Process in Browser Memory</span>
+                  </span>
+                  <span className="mega-assurance-chip">
+                    <LuSparkles size={14} color="#ff6b35" />
+                    <span>Instant WebAssembly Speed</span>
+                  </span>
+                </div>
+                <AppLink
+                  href="/tools"
+                  style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}
+                  onClick={() => setMegaMenuOpen(false)}
+                >
+                  Explore Complete Directory (25+ Tools) →
+                </AppLink>
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* ── 4. Modern Command Palette Modal (Ctrl + K) ── */}
+      {cmdOpen && (
+        <div
+          className="cmd-modal-backdrop"
+          onClick={() => setCmdOpen(false)}
+        >
+          <div
+            className="cmd-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={handleCmdKeyDown}
+          >
+            {/* Input Header */}
+            <div className="cmd-input-header">
+              <LuSearch size={18} color="var(--color-primary)" />
+              <input
+                ref={cmdInputRef}
+                type="text"
+                value={cmdQuery}
+                onChange={(e) => setCmdQuery(e.target.value)}
+                placeholder="Search tools by name, category, or task (e.g. compress, convert, serp)..."
+                className="cmd-modal-input"
+              />
+              <button
+                type="button"
+                className="cmd-esc-btn"
+                onClick={() => setCmdOpen(false)}
+              >
+                ESC
+              </button>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="cmd-filter-tabs">
+              {[
+                { id: "all", label: "All Tools" },
+                { id: "image-tools", label: "Image" },
+                { id: "pdf-tools", label: "PDF" },
+                { id: "seo-tools", label: "SEO" },
+                { id: "developer-tools", label: "Dev & Code" },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => setCmdCategory(pill.id)}
+                  className={`cmd-filter-pill ${cmdCategory === pill.id ? "active" : ""}`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Results List */}
+            <div className="cmd-results-list">
+              {filteredCmdTools.length > 0 ? (
+                filteredCmdTools.map((tool, idx) => (
+                  <AppLink
+                    key={tool.id}
+                    href={tool.href}
+                    className={`cmd-result-row ${idx === selectedCmdIndex ? "selected" : ""}`}
+                    onClick={() => setCmdOpen(false)}
+                  >
+                    <div className="cmd-row-left">
+                      <div className="cmd-row-icon">
+                        <DynamicIcon name={tool.icon} size={16} fallback={<LuSparkles size={14} />} />
+                      </div>
+                      <div className="cmd-row-info">
+                        <span className="cmd-row-title">{tool.title}</span>
+                        <span className="cmd-row-sub">{tool.shortDescription}</span>
+                      </div>
+                    </div>
+                    {tool.badge && (
+                      <span className="mega-tool-badge">{tool.badge}</span>
+                    )}
+                  </AppLink>
+                ))
+              ) : (
+                <div style={{ padding: "30px 20px", textAlign: "center", color: "var(--text-tertiary)", fontSize: "14px" }}>
+                  No tools found matching &quot;{cmdQuery}&quot;. Try &quot;image&quot;, &quot;compress&quot;, or &quot;pdf&quot;.
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="cmd-footer-bar">
+              <span>Navigate with <kbd>↑</kbd> <kbd>↓</kbd> · Select with <kbd>↵</kbd></span>
+              <span>25+ Free Web Tools</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. Mobile & Tablet App Drawer ── */}
+      {mobileOpen && (
+        <div
+          className="mobile-drawer-backdrop"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <div className={`mobile-app-drawer ${mobileOpen ? "open" : ""}`}>
+        {/* Drawer Header */}
+        <div className="drawer-header">
+          <AppLink
+            href="/"
+            className="modern-nav-logo"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span className="modern-logo-dot" />
+            <span>{logoText}</span>
+            <span>{logoHighlight}</span>
+          </AppLink>
+          <button
+            type="button"
+            className="drawer-close-btn"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close mobile menu"
+          >
+            <LuX size={18} />
+          </button>
+        </div>
+
+        {/* Drawer Category Swipe Strip */}
+        <div className="drawer-category-strip">
+          <button
+            type="button"
+            onClick={() => setMobileCategory("all")}
+            className={`drawer-cat-pill ${mobileCategory === "all" ? "active" : ""}`}
+          >
+            All Categories
+          </button>
+          {MEGA_NAV_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => {
+                setMobileCategory(cat.slug);
+                if (cat.subCategories[0]) {
+                  setMobileExpandedSubCat(cat.subCategories[0].id);
+                }
+              }}
+              className={`drawer-cat-pill ${mobileCategory === cat.slug ? "active" : ""}`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Drawer Body Scroll */}
+        <div className="drawer-body-scroll">
+          {MEGA_NAV_CATEGORIES.filter(
+            (c) => mobileCategory === "all" || c.slug === mobileCategory
+          ).map((cat) => (
+            <div key={cat.id} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 4px 2px" }}>
+                <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--color-primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {cat.label}
+                </span>
+                <AppLink
+                  href={cat.href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{ fontSize: "11.5px", color: "var(--text-tertiary)", textDecoration: "none" }}
+                >
+                  View All →
+                </AppLink>
+              </div>
+
+              {cat.subCategories.map((subcat) => {
+                const isExpanded = mobileExpandedSubCat === subcat.id;
+                return (
+                  <div key={subcat.id} className="drawer-subcat-card">
+                    <button
+                      type="button"
+                      className="drawer-subcat-toggle"
+                      onClick={() =>
+                        setMobileExpandedSubCat(isExpanded ? null : subcat.id)
+                      }
+                    >
+                      <span>{subcat.title} ({subcat.tools.length})</span>
+                      <LuChevronDown
+                        size={14}
+                        style={{
+                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                        }}
+                      />
+                    </button>
+
+                    {isExpanded && (
+                      <div className="drawer-subcat-content">
+                        {subcat.tools.map((tool) => (
                           <AppLink
-                            key={child.href}
-                            href={child.href}
-                            onClick={() =>
-                              trackTool({
-                                label: child.label,
-                                href: child.href,
-                                badge: child.badge,
-                                parent: item.label,
-                                icon: getIcon(child.label),
-                              })
-                            }
+                            key={tool.id}
+                            href={tool.href}
+                            className="drawer-tool-link"
+                            onClick={() => setMobileOpen(false)}
                           >
-                            {child.label}
-                            {child.badge && (
-                              <span className={`badge badge-${child.badge}`}>
-                                {child.badge}
+                            <DynamicIcon name={tool.icon} size={15} fallback={<LuSparkles size={14} />} />
+                            <span>{tool.title}</span>
+                            {tool.badge && (
+                              <span className="mega-tool-badge" style={{ marginLeft: "auto" }}>
+                                {tool.badge}
                               </span>
                             )}
                           </AppLink>
@@ -548,160 +720,55 @@ export default function Navbar({ config }: NavbarProps) {
                   </div>
                 );
               })}
-            </nav>
-          </div>
-        </div>
-      </header>
+            </div>
+          ))}
 
-      {/* ── Mobile Slide Panel ── */}
-      <div className={`mobile-panel ${mobileOpen ? "open" : ""}`}>
-        <div className="mobile-header">
-          <span className="nav-logo">
-            <span className="logo-dot" aria-hidden="true" />
-            {logoText}
-            <span>{logoHighlight}</span>
-          </span>
-          <button
-            className="close-btn"
-            onClick={() => {
-              setMobileOpen(false);
-              setMobileSub(null);
-            }}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Mobile Search */}
-        <div className="mobile-search">
-          <svg
-            className="search-icon"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="8.5" cy="8.5" r="5.5" />
-            <path d="M15 15l-3-3" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search tools…"
-            className="mobile-search-input"
-            autoComplete="off"
-          />
-        </div>
-
-        <ul className="mobile-menu">
-          {topNavItems.map((item) => (
-            <li key={item.label}>
+          {/* Static Pages Links */}
+          <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px", borderTop: "1px solid var(--border-primary)", paddingTop: "14px" }}>
+            {topNavItems.map((item) => (
               <AppLink
+                key={item.label}
                 href={item.href}
-                className="mobile-link"
+                className="drawer-tool-link"
                 onClick={() => setMobileOpen(false)}
               >
-                {item.label}
+                <span>{item.label}</span>
               </AppLink>
-            </li>
-          ))}
-          <li className="mobile-divider">Tools</li>
-          {toolsNavItems.map((item, index) => {
-            if (item.isSpecial) {
-              return (
-                <li key={item.label} className="mobile-item-special">
-                  <AppLink
-                    href={item.href!}
-                    className="mobile-special-pill"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <span className="nav-special-pulse" aria-hidden="true" />
-                    <Sparkles size={14} className="nav-special-icon" aria-hidden="true" />
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <span className={`badge badge-${item.badge} nav-special-badge`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </AppLink>
-                </li>
-              );
-            }
+            ))}
+          </div>
+        </div>
 
-            const hasChildren = item.children && item.children.length > 0;
-            const isOpen = mobileSub === index;
-            return (
-              <li key={item.label}>
-                {hasChildren ? (
-                  <>
-                    <div className="mobile-link-wrapper">
-                      <AppLink
-                        href={item.href!}
-                        className="mobile-link"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {item.label}
-                      </AppLink>
-                      <button
-                        className="mobile-dropdown-btn"
-                        onClick={() => setMobileSub(isOpen ? null : index)}
-                        aria-label={`Toggle ${item.label} submenu`}
-                      >
-                        <span className={`caret ${isOpen ? "rotate" : ""}`} />
-                      </button>
-                    </div>
-                    <div className={`mobile-submenu ${isOpen ? "open" : ""}`}>
-                      {item.children!.map((child) => (
-                        <AppLink
-                          key={child.href}
-                          href={child.href}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          {child.label}
-                          {child.badge && (
-                            <span className={`badge badge-${child.badge}`}>
-                              {child.badge}
-                            </span>
-                          )}
-                        </AppLink>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <AppLink
-                    href={item.href!}
-                    className="mobile-link"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </AppLink>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="mobile-actions">
-          {/* <AppLink href={loginHref} onClick={() => setMobileOpen(false)}>Login</AppLink> */}
+        {/* Drawer Bottom Actions */}
+        <div className="drawer-bottom-actions">
           <AppLink
-            href={ctaHref}
-            className="nav-cta"
+            href="/seo/tools/keyword-research"
+            className="drawer-tool-link"
+            style={{
+              background: "rgba(255, 107, 53, 0.1)",
+              border: "1px solid rgba(255, 107, 53, 0.25)",
+              color: "var(--color-primary)",
+              fontWeight: 700,
+              justifyContent: "space-between",
+            }}
             onClick={() => setMobileOpen(false)}
           >
-            {ctaText} →
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <LuFlame size={15} />
+              <span>Keyword Research Suite</span>
+            </span>
+            <span className="nav-pill-badge badge-hot">HOT</span>
+          </AppLink>
+
+          <AppLink
+            href="/tools"
+            className="drawer-cta-full"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span>Explore All 25+ Tools</span>
+            <LuArrowRight size={15} />
           </AppLink>
         </div>
       </div>
-
-      {mobileOpen && (
-        <div
-          className="mobile-overlay"
-          onClick={() => {
-            setMobileOpen(false);
-            setMobileSub(null);
-          }}
-        />
-      )}
     </>
   );
 }

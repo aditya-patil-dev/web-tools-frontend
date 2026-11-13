@@ -5,6 +5,7 @@ import MaintenancePage from "@/components/maintenance/MaintenancePage";
 import { fetchLayoutData } from "@/lib/page-data/layout.data";
 import { getSiteSettings } from "@/services/settings.public.service";
 import { cookies } from "next/headers";
+import "@/styles/navbar-modern.css";
 
 export default async function PublicLayout({
     children,

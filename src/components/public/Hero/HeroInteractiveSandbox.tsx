@@ -3,10 +3,7 @@
 import React, { useState } from "react";
 import AppLink from "@/components/common/AppLink";
 import {
-  LuImage,
   LuFileText,
-  LuSearch,
-  LuBraces,
   LuUpload,
   LuArrowRight,
   LuSparkles,
@@ -16,53 +13,50 @@ import {
   LuActivity,
 } from "react-icons/lu";
 
-type SandboxTab = "image" | "pdf" | "seo" | "dev";
+export type SandboxScope = "all" | "image" | "pdf" | "seo" | "dev";
 
-export default function HeroInteractiveSandbox() {
-  const [activeTab, setActiveTab] = useState<SandboxTab>("image");
+interface HeroInteractiveSandboxProps {
+  activeScope?: SandboxScope;
+  onScopeChange?: (scope: SandboxScope) => void;
+}
+
+export default function HeroInteractiveSandbox({
+  activeScope = "image",
+  onScopeChange,
+}: HeroInteractiveSandboxProps) {
+  // If "all" is selected on the search console, default the sandbox to "image" (flagship)
+  const effectiveTab = activeScope === "all" ? "image" : activeScope;
   const [sampleUrl, setSampleUrl] = useState("mywebsite.com");
 
   return (
     <div className="sandbox-card">
-      {/* Tab Navigation */}
-      <div className="sandbox-tabs">
-        <button
-          type="button"
-          onClick={() => setActiveTab("image")}
-          className={`sandbox-tab-btn ${activeTab === "image" ? "active" : ""}`}
-        >
-          <LuImage size={15} />
-          <span>Image</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("pdf")}
-          className={`sandbox-tab-btn ${activeTab === "pdf" ? "active" : ""}`}
-        >
-          <LuFileText size={15} />
-          <span>PDF</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("seo")}
-          className={`sandbox-tab-btn ${activeTab === "seo" ? "active" : ""}`}
-        >
-          <LuSearch size={15} />
-          <span>SEO</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("dev")}
-          className={`sandbox-tab-btn ${activeTab === "dev" ? "active" : ""}`}
-        >
-          <LuBraces size={15} />
-          <span>Dev & Text</span>
-        </button>
+      {/* ── Connected Interactive Studio Window Header (No duplicate tabs) ── */}
+      <div className="sandbox-window-header">
+        <div className="sandbox-window-left">
+          <div className="sandbox-mac-dots">
+            <span className="mac-dot dot-red" />
+            <span className="mac-dot dot-yellow" />
+            <span className="mac-dot dot-green" />
+          </div>
+          <span className="sandbox-header-title">
+            {effectiveTab === "pdf" && "PDF Hub · In-Browser Processing"}
+            {effectiveTab === "seo" && "Technical SEO & SERP Simulator"}
+            {effectiveTab === "dev" && "Developer Code & JSON Studio"}
+            {effectiveTab === "image" && "Image Studio · Client-Side WASM"}
+          </span>
+        </div>
+
+        <div className="sandbox-window-right">
+          <span className="sandbox-live-pill">
+            <span className="live-pulse-dot" />
+            <span>Interactive Demo</span>
+          </span>
+        </div>
       </div>
 
       {/* Tab Body */}
       <div className="sandbox-body">
-        {activeTab === "image" && (
+        {effectiveTab === "image" && (
           <div className="sandbox-interactive-zone">
             <div className="sandbox-zone-title">
               <h3>Image Studio (Client-Side)</h3>
@@ -112,7 +106,7 @@ export default function HeroInteractiveSandbox() {
           </div>
         )}
 
-        {activeTab === "pdf" && (
+        {effectiveTab === "pdf" && (
           <div className="sandbox-interactive-zone">
             <div className="sandbox-zone-title">
               <h3>PDF Hub & Converters</h3>
@@ -161,7 +155,7 @@ export default function HeroInteractiveSandbox() {
           </div>
         )}
 
-        {activeTab === "seo" && (
+        {effectiveTab === "seo" && (
           <div className="sandbox-interactive-zone">
             <div className="sandbox-zone-title">
               <h3>Live Technical SEO Suite</h3>
@@ -226,7 +220,7 @@ export default function HeroInteractiveSandbox() {
           </div>
         )}
 
-        {activeTab === "dev" && (
+        {effectiveTab === "dev" && (
           <div className="sandbox-interactive-zone">
             <div className="sandbox-zone-title">
               <h3>Developer & Text Tools</h3>

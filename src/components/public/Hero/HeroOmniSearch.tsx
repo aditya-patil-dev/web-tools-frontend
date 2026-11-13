@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import AppLink from "@/components/common/AppLink";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import { searchTools, MasterTool } from "@/config/tools-registry";
+import { searchTools, MasterTool, MASTER_TOOLS } from "@/config/tools-registry";
 import {
   LuSearch,
   LuSparkles,
@@ -11,15 +11,75 @@ import {
   LuEraser,
   LuFileText,
   LuCode,
+  LuX,
+  LuArrowRight,
+  LuSlidersHorizontal,
 } from "react-icons/lu";
 
-export default function HeroOmniSearch() {
+export type SearchScope = "all" | "image" | "pdf" | "seo" | "dev";
+
+export interface ScopeTab {
+  id: SearchScope;
+  label: string;
+  icon?: React.ReactNode;
+  placeholder: string;
+}
+
+export const SCOPE_TABS: ScopeTab[] = [
+  {
+    id: "all",
+    label: "All (25+)",
+    placeholder: "Search tools, actions, or file types (e.g. compress, pdf to word, serp)...",
+  },
+  {
+    id: "image",
+    label: "Image",
+    icon: <LuImage size={13} />,
+    placeholder: "Search image tools: compress, erase background, crop, resize, convert...",
+  },
+  {
+    id: "pdf",
+    label: "PDF",
+    icon: <LuFileText size={13} />,
+    placeholder: "Search PDF tools: pdf to word, merge pdf, compress, jpg to pdf...",
+  },
+  {
+    id: "seo",
+    label: "SEO",
+    icon: <LuSearch size={13} />,
+    placeholder: "Search SEO tools: keyword research, serp simulator, meta tags...",
+  },
+  {
+    id: "dev",
+    label: "Dev & Code",
+    icon: <LuCode size={13} />,
+    placeholder: "Search developer tools: format json, beautify code, qr generator...",
+  },
+];
+
+interface HeroOmniSearchProps {
+  activeScope?: SearchScope;
+  onScopeChange?: (scope: SearchScope) => void;
+}
+
+export default function HeroOmniSearch({
+  activeScope: controlledScope,
+  onScopeChange,
+}: HeroOmniSearchProps) {
+  const [internalScope, setInternalScope] = useState<SearchScope>("all");
+  const activeScope = controlledScope !== undefined ? controlledScope : internalScope;
+
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<MasterTool[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Active placeholder based on scope
+  const currentPlaceholder = useMemo(() => {
+    const tab = SCOPE_TABS.find((t) => t.id === activeScope);
+    return tab?.placeholder ?? SCOPE_TABS[0].placeholder;
+  }, [activeScope]);
 
   // Keyboard shortcut listener (Ctrl+K or Cmd+K)
   useEffect(() => {
@@ -38,28 +98,39 @@ export default function HeroOmniSearch() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Update search results on input change
-  useEffect(() => {
+  // Filter tools based on query and activeScope
+  const filteredResults = useMemo(() => {
     if (!query.trim()) {
-      setResults([]);
-      setIsOpen(false);
-      return;
+      if (activeScope === "all") return [];
+      // If scope is selected but query is empty, show top 5 tools from that scope!
+      return MASTER_TOOLS.filter((t) => {
+        if (activeScope === "image") return t.category === "image-tools";
+        if (activeScope === "pdf") return t.category === "pdf-tools";
+        if (activeScope === "seo") return t.category === "seo-tools";
+        if (activeScope === "dev") return t.category === "developer-tools";
+        return true;
+      }).slice(0, 5);
     }
 
-    const matches = searchTools(query, 6);
-    setResults(matches);
-    setIsOpen(true);
-    setSelectedIndex(0);
-  }, [query]);
+    let matches = searchTools(query, 8);
+    if (activeScope !== "all") {
+      matches = matches.filter((t) => {
+        if (activeScope === "image") return t.category === "image-tools";
+        if (activeScope === "pdf") return t.category === "pdf-tools";
+        if (activeScope === "seo") return t.category === "seo-tools";
+        if (activeScope === "dev") return t.category === "developer-tools";
+        return true;
+      });
+    }
+    return matches.slice(0, 6);
+  }, [query, activeScope]);
 
   // Handle outside clicks to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(e.target as Node)
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -71,99 +142,144 @@ export default function HeroOmniSearch() {
 
   // Key navigation in dropdown
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen || results.length === 0) return;
+    if (!isOpen || filteredResults.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % results.length);
+      setSelectedIndex((prev) => (prev + 1) % filteredResults.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + results.length) % results.length);
+      setSelectedIndex((prev) => (prev - 1 + filteredResults.length) % filteredResults.length);
     } else if (e.key === "Enter") {
-      if (results[selectedIndex]) {
+      if (filteredResults[selectedIndex]) {
         e.preventDefault();
-        window.location.href = results[selectedIndex].href;
+        window.location.href = filteredResults[selectedIndex].href;
       }
     }
   };
 
+  const handleScopeClick = (scopeId: SearchScope) => {
+    if (controlledScope === undefined) {
+      setInternalScope(scopeId);
+    }
+    onScopeChange?.(scopeId);
+    inputRef.current?.focus();
+    setIsOpen(true);
+  };
+
   return (
-    <div className="omni-search-wrapper">
-      <div className="omni-search-input-box">
-        <LuSearch className="omni-search-icon" size={19} />
+    <div className="omni-command-console" ref={containerRef}>
+      {/* ── 1. Interactive Scope Category Selector Tabs ── */}
+      <div className="omni-scope-bar">
+        {SCOPE_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => handleScopeClick(tab.id)}
+            className={`omni-scope-tab ${activeScope === tab.id ? "active" : ""}`}
+          >
+            {tab.icon && <span className="scope-tab-icon">{tab.icon}</span>}
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── 2. Unified Search Console Bar ── */}
+      <div className="omni-console-input-row">
+        <div className="omni-console-search-icon">
+          <LuSearch size={18} />
+        </div>
+
         <input
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            if (query.trim()) setIsOpen(true);
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+            setSelectedIndex(0);
           }}
+          onFocus={() => setIsOpen(true)}
           onKeyDown={handleInputKeyDown}
-          placeholder="Search 25+ tools (e.g. compress, background remover, pdf to word, serp)..."
-          className="omni-search-input"
+          placeholder={currentPlaceholder}
+          className="omni-console-input"
           aria-label="Search tools"
         />
-        <div className="omni-search-shortcut">
+
+        {query && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
+            className="omni-clear-btn"
+            aria-label="Clear search"
+          >
+            <LuX size={14} />
+          </button>
+        )}
+
+        <div className="omni-shortcut-pill">
           <span>Ctrl</span>
           <span>K</span>
         </div>
       </div>
 
-      {/* Live Popover Dropdown */}
-      {isOpen && (
-        <div ref={dropdownRef} className="omni-search-dropdown">
-          {results.length > 0 ? (
-            results.map((tool, idx) => (
-              <AppLink
-                key={tool.id}
-                href={tool.href}
-                className={`omni-dropdown-item ${idx === selectedIndex ? "active" : ""}`}
-                onClick={() => setIsOpen(false)}
-              >
-                <div className="omni-item-left">
-                  <div className="omni-item-icon">
-                    <DynamicIcon name={tool.icon} size={18} fallback={<LuSparkles size={16} />} />
+      {/* ── 3. Live Popover Dropdown Results ── */}
+      {isOpen && (filteredResults.length > 0 || query.trim().length > 0) && (
+        <div className="omni-dropdown-popover">
+          {filteredResults.length > 0 ? (
+            <div className="omni-results-group">
+              <div className="omni-results-header">
+                <span>
+                  {query.trim()
+                    ? `Results for "${query}"`
+                    : `Popular in ${SCOPE_TABS.find((t) => t.id === activeScope)?.label}`}
+                </span>
+                <span className="omni-results-count">{filteredResults.length} found</span>
+              </div>
+
+              {filteredResults.map((tool, idx) => (
+                <AppLink
+                  key={tool.id}
+                  href={tool.href}
+                  className={`omni-result-item ${idx === selectedIndex ? "active" : ""}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <div className="omni-result-left">
+                    <div className="omni-tool-icon-frame">
+                      <DynamicIcon name={tool.icon} size={17} fallback={<LuSparkles size={15} />} />
+                    </div>
+                    <div className="omni-result-info">
+                      <span className="omni-result-title">{tool.title}</span>
+                      <span className="omni-result-desc">{tool.shortDescription}</span>
+                    </div>
                   </div>
-                  <div className="omni-item-info">
-                    <span className="omni-item-title">{tool.title}</span>
-                    <span className="omni-item-category">{tool.categoryLabel}</span>
+
+                  <div className="omni-result-right">
+                    {tool.badge && (
+                      <span className="omni-tool-status-badge">{tool.badge}</span>
+                    )}
+                    <LuArrowRight size={14} className="omni-result-arrow" />
                   </div>
-                </div>
-                {tool.badge && <span className="omni-item-badge">{tool.badge}</span>}
-              </AppLink>
-            ))
+                </AppLink>
+              ))}
+            </div>
           ) : (
-            <div className="omni-empty-state">
-              No direct matches for &quot;{query}&quot;. Try &quot;image&quot;, &quot;pdf&quot;, or &quot;seo&quot;.
+            <div className="omni-empty-box">
+              <p>No tools found matching &quot;{query}&quot; in {activeScope.toUpperCase()}.</p>
+              <button
+                type="button"
+                onClick={() => handleScopeClick("all")}
+                className="omni-reset-scope-btn"
+              >
+                Search all 25+ tools instead
+              </button>
             </div>
           )}
         </div>
       )}
-
-      {/* Quick Action Pills (Using Lucide Icons instead of emojis) */}
-      <div className="omni-intent-pills">
-        <AppLink href="/tools/image-tools/image-compressor" className="omni-pill">
-          <LuImage size={14} className="omni-pill-icon" />
-          <span>Compress Image</span>
-        </AppLink>
-        <AppLink href="/tools/image-tools/background-remover" className="omni-pill">
-          <LuEraser size={14} className="omni-pill-icon" />
-          <span>Erase Background</span>
-        </AppLink>
-        <AppLink href="/tools/pdf-tools/pdf-to-word-converter" className="omni-pill">
-          <LuFileText size={14} className="omni-pill-icon" />
-          <span>PDF to Word</span>
-        </AppLink>
-        <AppLink href="/tools/seo-tools/google-serp-snippet-simulator" className="omni-pill">
-          <LuSearch size={14} className="omni-pill-icon" />
-          <span>Google SERP Preview</span>
-        </AppLink>
-        <AppLink href="/tools/developer-tools/json-formatter" className="omni-pill">
-          <LuCode size={14} className="omni-pill-icon" />
-          <span>JSON Formatter</span>
-        </AppLink>
-      </div>
     </div>
   );
 }

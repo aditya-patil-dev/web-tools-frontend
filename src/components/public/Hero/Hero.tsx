@@ -4,7 +4,7 @@ import AppLink from "@/components/common/AppLink";
 import { useEffect, useState } from "react";
 import { HeroConfig, DEFAULT_HERO_CONFIG } from "./hero.config";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import HeroOmniSearch from "./HeroOmniSearch";
+import HeroOmniSearch, { SearchScope } from "./HeroOmniSearch";
 import HeroInteractiveSandbox from "./HeroInteractiveSandbox";
 
 function useIsMobile(breakpoint = 900): boolean {
@@ -29,6 +29,7 @@ interface HeroProps {
 
 export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
   const isMobile = useIsMobile(900);
+  const [activeScope, setActiveScope] = useState<SearchScope>("all");
 
   return (
     <section className="hero-wrapper">
@@ -54,11 +55,14 @@ export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
             {config.subtitle}
           </p>
 
-          {/* Universal Action Search Bar */}
-          <HeroOmniSearch />
+          {/* Universal Action Search Bar (Synchronized Scope) */}
+          <HeroOmniSearch
+            activeScope={activeScope}
+            onScopeChange={setActiveScope}
+          />
 
           {/* Trust badges */}
-          <div className="hero-trust" style={{ marginTop: "16px" }}>
+          <div className="hero-trust" style={{ marginTop: "18px" }}>
             {config.trustBadges.map((badge, index) => (
               <span
                 key={index}
@@ -71,9 +75,12 @@ export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
           </div>
         </div>
 
-        {/* ── RIGHT: Multi-Tool Interactive Sandbox ── */}
+        {/* ── RIGHT: Multi-Tool Interactive Sandbox (Synchronized with Scope) ── */}
         <div className="hero-demo-col">
-          <HeroInteractiveSandbox />
+          <HeroInteractiveSandbox
+            activeScope={activeScope}
+            onScopeChange={setActiveScope}
+          />
         </div>
       </div>
     </section>
