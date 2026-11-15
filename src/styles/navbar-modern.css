@@ -127,6 +127,104 @@
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
 }
 
+/* Flagship Menu Item in Navbar */
+.nav-flagship-btn {
+  background: rgba(255, 107, 53, 0.06);
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.nav-flagship-btn:hover {
+  background: rgba(255, 107, 53, 0.12) !important;
+  border-color: rgba(255, 107, 53, 0.45) !important;
+  color: var(--color-primary) !important;
+  transform: translateY(-1px);
+}
+
+.flagship-star-icon {
+  color: #f59e0b;
+  animation: star-sparkle 2.5s infinite ease-in-out;
+}
+
+@keyframes star-sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.22) rotate(15deg); opacity: 0.85; }
+}
+
+.nav-pill-badge.badge-flagship-vip {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 1px 6px rgba(249, 115, 22, 0.45);
+}
+
+/* Mobile Drawer Flagship VIP Card */
+.drawer-flagship-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(249, 115, 22, 0.04) 100%);
+  border: 1.5px solid rgba(255, 107, 53, 0.3);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.drawer-flagship-card:hover {
+  background: rgba(255, 107, 53, 0.12);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.drawer-flagship-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-flagship-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ea580c 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3);
+}
+
+.drawer-flagship-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer-flagship-title-row strong {
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.drawer-flagship-desc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+  line-height: 1.25;
+}
+
+.drawer-flagship-arrow {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
 /* ── Right-Side Command Search Pill & Actions ── */
 .modern-nav-right {
   display: flex;

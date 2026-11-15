@@ -1,5 +1,6 @@
 import Hero from "@/components/public/Hero/Hero";
 import RecentAndTrending from "@/components/public/RecentAndTrending/RecentAndTrending";
+import PromotedServicesShowcase from "@/components/public/PromotedServices/PromotedServicesShowcase";
 import MicroPlayground from "@/components/public/MicroPlayground/MicroPlayground";
 import RoleExplorer from "@/components/public/RoleExplorer/RoleExplorer";
 import PopularTools from "@/components/public/PopularTools/PopularTools";
@@ -25,13 +26,28 @@ export default async function Home() {
 
     return (
         <>
-            <Hero />
+            {/* 1. Full-screen sliding trending tools ticker on top of website */}
             <RecentAndTrending />
+
+            {/* 2. Hero Section (Unified Command Omnibar + Synchronized Studio) */}
+            <Hero />
+
+            {/* 3. Promoted Services Showcase ("Like Carousel but not carousel") */}
+            <PromotedServicesShowcase />
+
+            {/* 4. Micro Playground Interactive Simulator */}
             <MicroPlayground />
+
+            {/* 5. Role Explorer */}
             <RoleExplorer />
+
+            {/* 6. Popular Tools Directory */}
             <PopularTools />
-            {/* <SectionEngine config={homePageConfig} /> */}
+
+            {/* 7. Privacy Proof */}
             <PrivacyProof />
+
+            {/* 8. Final CTA & SEO Content */}
             <FinalCTA config={pageData.finalCta} />
             <SEOContent config={pageData.seoContent} />
         </>

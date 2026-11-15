@@ -4,7 +4,6 @@ export interface ToolChip {
 }
 
 export interface HeroConfig {
-  badge: string;
   title: string;
   subtitle: string;
   primaryCta: {
@@ -27,7 +26,6 @@ export interface HeroConfig {
 }
 
 export const DEFAULT_HERO_CONFIG: HeroConfig = {
-  badge: "✦ 30+ Free Web Tools · 100% In-Browser Privacy · No Signup Needed",
   title: "Explore All Free Web Tools — <span>Image, PDF, SEO & Developer Utilities</span>",
   subtitle:
     "Browse our complete directory of free online web tools. From PDF converters to developer utilities and SEO generators, find exactly what you need to work faster.",

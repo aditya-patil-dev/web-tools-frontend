@@ -36,14 +36,6 @@ export default function Hero({ config = DEFAULT_HERO_CONFIG }: HeroProps) {
       <div className="hero-inner">
         {/* ── LEFT: Text content + Universal OmniSearch ── */}
         <div className="hero-content">
-          {/* Highlighted Badge */}
-          <div className="hero-badge-highlight-wrap">
-            <span className="hero-badge highlight-badge">
-              <span className="badge-pulse-indicator" />
-              {config.badge}
-            </span>
-          </div>
-
           {/* Headline */}
           <h1
             className="hero-title"

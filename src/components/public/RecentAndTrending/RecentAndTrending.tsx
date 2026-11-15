@@ -20,7 +20,7 @@ export default function RecentAndTrending() {
           .filter(Boolean) as MasterTool[];
 
         if (matched.length > 0) {
-          setToolsToShow(matched.slice(0, 6));
+          setToolsToShow(matched.slice(0, 10));
           setIsRecent(true);
           return;
         }
@@ -29,75 +29,65 @@ export default function RecentAndTrending() {
       // LocalStorage unavailable or parse error
     }
 
-    // Fallback: Trending tools
-    setToolsToShow(getTrendingTools(6));
+    // Fallback: 10 top trending tools
+    setToolsToShow(getTrendingTools(10));
     setIsRecent(false);
   }, []);
 
   if (toolsToShow.length === 0) return null;
 
+  // Duplicate tools array for seamless infinite marquee loop
+  const seamlessTrack = [...toolsToShow, ...toolsToShow];
+
   return (
-    <section className="trending-strip-section">
-      <div className="trending-strip-inner">
-        {/* Header row (Title + Mobile View All) */}
-        <div className="trending-strip-header-row">
-          <div className="trending-strip-title">
-            {isRecent ? (
-              <>
-                <LuHistory size={16} className="trending-strip-title-icon" />
-                <span>Recently Used:</span>
-              </>
-            ) : (
-              <>
-                <LuFlame size={16} className="trending-strip-title-icon" />
-                <span>Trending Tools:</span>
-              </>
-            )}
-          </div>
-
-          <div className="trending-strip-view-all mobile-only">
-            <AppLink href="/tools" className="trending-view-all-link">
-              <span>All 25+ Tools</span>
-              <LuArrowRight size={13} />
-            </AppLink>
-          </div>
+    <section className="trending-strip-section fullscreen-top-slider" aria-label="Trending tools ticker">
+      <div className="trending-slider-wrapper">
+        {/* Pinned Left Header */}
+        <div className="trending-slider-label">
+          {isRecent ? (
+            <>
+              <LuHistory size={14} style={{ color: "#f59e0b" }} />
+              <span>Recent:</span>
+            </>
+          ) : (
+            <>
+              <LuFlame size={15} style={{ color: "#f59e0b" }} />
+              <span>Trending:</span>
+            </>
+          )}
         </div>
 
-        <div className="trending-strip-divider desktop-only" />
+        {/* Sliding Viewport with Infinite Marquee */}
+        <div className="trending-slider-viewport">
+          <div className="trending-slider-track">
+            {seamlessTrack.map((tool, idx) => {
+              const badgeClass = tool.badge
+                ? tool.badge.toLowerCase().includes("ai")
+                  ? "trend-badge-ai"
+                  : tool.badge.toLowerCase().includes("hot")
+                    ? "trend-badge-hot"
+                    : tool.badge.toLowerCase().includes("fast")
+                      ? "trend-badge-fast"
+                      : "trend-badge-popular"
+                : "";
 
-        {/* Scroll Track (takes full width on mobile) */}
-        <div className="trending-tools-scroll">
-          {toolsToShow.map((tool) => {
-            const badgeClass = tool.badge
-              ? tool.badge.toLowerCase().includes("ai")
-                ? "trend-badge-ai"
-                : tool.badge.toLowerCase().includes("hot")
-                ? "trend-badge-hot"
-                : tool.badge.toLowerCase().includes("fast")
-                ? "trend-badge-fast"
-                : "trend-badge-popular"
-              : "";
-
-            return (
-              <AppLink key={tool.id} href={tool.href} className="trending-pill-link">
-                <DynamicIcon name={tool.icon} size={15} fallback={<LuSparkles size={14} />} />
-                <span>{tool.title}</span>
-                {tool.badge && (
-                  <span className={`trending-pill-badge ${badgeClass}`}>
-                    {tool.badge}
-                  </span>
-                )}
-              </AppLink>
-            );
-          })}
-        </div>
-
-        {/* Desktop View All Link */}
-        <div className="trending-strip-view-all desktop-only">
-          <AppLink href="/tools" className="trending-view-all-link">
-            <span>All 25+ Tools</span>
-            <LuArrowRight size={13} />
-          </AppLink>
+              return (
+                <AppLink
+                  key={`${tool.id}-${idx}`}
+                  href={tool.href}
+                  className="trending-pill-link"
+                >
+                  <DynamicIcon name={tool.icon} size={15} fallback={<LuSparkles size={14} />} />
+                  <span>{tool.title}</span>
+                  {tool.badge && (
+                    <span className={`trending-pill-badge ${badgeClass}`}>
+                      {tool.badge}
+                    </span>
+                  )}
+                </AppLink>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

@@ -308,6 +308,19 @@ export default function Navbar({ config }: NavbarProps) {
               </AppLink>
             </div>
 
+            {/* Dedicated Special Menu: Keyword Research */}
+            <div className="nav-trigger-wrap">
+              <AppLink
+                href="/keyword-research"
+                className="nav-mega-trigger-btn nav-flagship-btn"
+                onClick={() => setMegaMenuOpen(false)}
+              >
+                <LuSparkles size={14} className="flagship-star-icon" />
+                <span>Keyword Research</span>
+                <span className="nav-pill-badge badge-flagship-vip">HOT</span>
+              </AppLink>
+            </div>
+
             {/* Static pages */}
             {topNavItems.map((item) => (
               <AppLink
@@ -629,6 +642,29 @@ export default function Navbar({ config }: NavbarProps) {
           >
             <LuX size={18} />
           </button>
+        </div>
+
+        {/* Mobile Drawer VIP Flagship Card */}
+        <div style={{ padding: "8px 16px 12px" }}>
+          <AppLink
+            href="/keyword-research"
+            className="drawer-flagship-card"
+            onClick={() => setMobileOpen(false)}
+          >
+            <div className="drawer-flagship-left">
+              <span className="drawer-flagship-icon-box">
+                <LuSparkles size={16} />
+              </span>
+              <div>
+                <div className="drawer-flagship-title-row">
+                  <strong>Keyword Research</strong>
+                  <span className="nav-pill-badge badge-flagship-vip">HOT</span>
+                </div>
+                <p className="drawer-flagship-desc">Search volume, intent clusters & KD% difficulty</p>
+              </div>
+            </div>
+            <LuArrowRight size={15} className="drawer-flagship-arrow" />
+          </AppLink>
         </div>
 
         {/* Drawer Category Swipe Strip */}

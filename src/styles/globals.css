@@ -959,9 +959,11 @@ a {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 8px rgba(255, 107, 53, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
   }
@@ -1526,7 +1528,7 @@ a {
 .hero-inner {
   position: relative;
   max-width: 1450px;
-  margin: 0 auto;
+  margin: 18px auto;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -3140,6 +3142,7 @@ a {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -3162,24 +3165,20 @@ a {
 
 /* Inner shimmer elements on dark card background */
 .tool-skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.13) 50%,
-    rgba(255, 255, 255, 0.04) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.13) 50%,
+      rgba(255, 255, 255, 0.04) 100%);
   background-size: 200% 100%;
   animation: tool-skeleton-shimmer 1.8s ease-in-out infinite;
 }
 
 /* Outer page shimmer elements (header, stats, search, pills) */
 .tool-page-skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(148, 163, 184, 0.15) 0%,
-    rgba(148, 163, 184, 0.32) 50%,
-    rgba(148, 163, 184, 0.15) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(148, 163, 184, 0.15) 0%,
+      rgba(148, 163, 184, 0.32) 50%,
+      rgba(148, 163, 184, 0.15) 100%);
   background-size: 200% 100%;
   animation: tool-skeleton-shimmer 1.8s ease-in-out infinite;
 }
@@ -3232,24 +3231,31 @@ a {
 .tools-page-grid .tool-card--skeleton:nth-child(2) .tool-skeleton-shimmer {
   animation-delay: 0.12s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(3) .tool-skeleton-shimmer {
   animation-delay: 0.24s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(4) .tool-skeleton-shimmer {
   animation-delay: 0.36s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(5) .tool-skeleton-shimmer {
   animation-delay: 0.48s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(6) .tool-skeleton-shimmer {
   animation-delay: 0.60s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(7) .tool-skeleton-shimmer {
   animation-delay: 0.72s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(8) .tool-skeleton-shimmer {
   animation-delay: 0.84s;
 }
+
 .tools-page-grid .tool-card--skeleton:nth-child(9) .tool-skeleton-shimmer {
   animation-delay: 0.96s;
 }

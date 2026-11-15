@@ -159,36 +159,6 @@ export default function AllToolsClient() {
                     <p>Browse our complete directory of free online web tools. From PDF converters to developer utilities and SEO generators, find exactly what you need to work faster.</p>
                 </div>
 
-                {/* ── Stats bar ───────────────────────────────── */}
-                {(tools.length > 0 || totalUsers > 0) && (
-                    <div className="stats-bar">
-                        {tools.length > 0 && (
-                            <div className="stat-item">
-                                <span className="stat-number">{tools.length}</span>
-                                <span className="stat-label">Tools Available</span>
-                            </div>
-                        )}
-                        {categories.length > 0 && (
-                            <div className="stat-item">
-                                <span className="stat-number">{categories.length}</span>
-                                <span className="stat-label">Categories</span>
-                            </div>
-                        )}
-                        {totalUsers > 0 && (
-                            <div className="stat-item">
-                                <span className="stat-number">
-                                    {totalUsers.toLocaleString()}
-                                </span>
-                                <span className="stat-label">Active Users</span>
-                            </div>
-                        )}
-                        <div className="stat-item">
-                            <span className="stat-number">100%</span>
-                            <span className="stat-label">Free to Use</span>
-                        </div>
-                    </div>
-                )}
-
                 {/* ── Search ──────────────────────────────────── */}
                 <div className="all-tools-search-wrapper">
                     <AiOutlineSearch className="all-tools-search-icon" />
